@@ -14,8 +14,14 @@ This version targets the latest .NET and Entity Framework versions. For >= .NET 
     class Person : EntityWithTriggers<Person> {
         [Key]
         public Int64 Id { get; protected set; }
+        public DateTime InsertDateTime { get; protected set; }
+        public DateTime UpdateDateTime { get; protected set; }
         public String FirstName { get; set; }
         public String LastName { get; set; }
+        public Person() {
+            Inserting += entity => entity.InsertDateTime = entity.UpdateDateTime = DateTime.Now;
+            Updating += entity => entity.UpdateDateTime = DateTime.Now;
+        }
     }
     
     class Context : DbContextWithTriggers {
