@@ -9,18 +9,66 @@ using System.Threading.Tasks;
 namespace EntityFrameworkTriggers {
     /// <summary>Base class to enable 'EntityWithTriggers' events. Derive your context class from this class to have those events raised accordingly when 'SaveChanges' and 'SaveChangesAsync' are invoked</summary>
     public abstract class DbContextWithTriggers : DbContext {
-#pragma warning disable 1591
+        /// <summary>
+        /// Constructs a new context instance using conventions to create the name of the database to
+        ///             which a connection will be made.  The by-convention name is the full name (namespace + class name)
+        ///             of the derived context class.
+        ///             See the class remarks for how this is used to create a connection.
+        /// 
+        /// </summary>
         protected DbContextWithTriggers() : base() {}
+        /// <summary>
+        /// Constructs a new context instance using conventions to create the name of the database to
+        ///             which a connection will be made, and initializes it from the given model.
+        ///             The by-convention name is the full name (namespace + class name) of the derived context class.
+        ///             See the class remarks for how this is used to create a connection.
+        /// 
+        /// </summary>
+        /// <param name="model">The model that will back this context. </param>
         protected DbContextWithTriggers(DbCompiledModel model) : base(model) {}
+        /// <summary>
+        /// Constructs a new context instance using the given string as the name or connection string for the
+        ///             database to which a connection will be made.
+        ///             See the class remarks for how this is used to create a connection.
+        /// 
+        /// </summary>
+        /// <param name="nameOrConnectionString">Either the database name or a connection string. </param>
         public DbContextWithTriggers(String nameOrConnectionString) : base(nameOrConnectionString) {}
-        public DbContextWithTriggers(ObjectContext objectContext, Boolean dbContextOwnsObjectContext) : base(objectContext, dbContextOwnsObjectContext) { }
+        /// <summary>
+        /// Constructs a new context instance using the given string as the name or connection string for the
+        ///             database to which a connection will be made, and initializes it from the given model.
+        ///             See the class remarks for how this is used to create a connection.
+        /// 
+        /// </summary>
+        /// <param name="nameOrConnectionString">Either the database name or a connection string. </param><param name="model">The model that will back this context. </param>
         public DbContextWithTriggers(String nameOrConnectionString, DbCompiledModel model) : base(nameOrConnectionString, model) {}
-        public DbContextWithTriggers(System.Data.Common.DbConnection existingConnection, Boolean contextOwnsConnection) : base(existingConnection, contextOwnsConnection) { }
-        public DbContextWithTriggers(System.Data.Common.DbConnection existingConnection, DbCompiledModel model, Boolean contextOwnsConnection) : base(existingConnection, model, contextOwnsConnection) { }
-#pragma warning restore 1591
-
-        private IEnumerable<Action> RaiseTheBeforeEvents()
-        {
+        /// <summary>
+        /// Constructs a new context instance using the existing connection to connect to a database.
+        ///             The connection will not be disposed when the context is disposed if <paramref name="contextOwnsConnection"/>
+        ///             is <c>false</c>.
+        /// 
+        /// </summary>
+        /// <param name="existingConnection">An existing connection to use for the new context. </param><param name="contextOwnsConnection">If set to <c>true</c> the connection is disposed when the context is disposed, otherwise the caller must dispose the connection.
+        ///             </param>
+        public DbContextWithTriggers(System.Data.Common.DbConnection existingConnection, Boolean contextOwnsConnection) : base(existingConnection, contextOwnsConnection) {}
+        /// <summary>
+        /// Constructs a new context instance using the existing connection to connect to a database,
+        ///             and initializes it from the given model.
+        ///             The connection will not be disposed when the context is disposed if <paramref name="contextOwnsConnection"/>
+        ///             is <c>false</c>.
+        /// 
+        /// </summary>
+        /// <param name="existingConnection">An existing connection to use for the new context. </param><param name="model">The model that will back this context. </param><param name="contextOwnsConnection">If set to <c>true</c> the connection is disposed when the context is disposed, otherwise the caller must dispose the connection.
+        ///             </param>
+        public DbContextWithTriggers(System.Data.Common.DbConnection existingConnection, DbCompiledModel model, Boolean contextOwnsConnection) : base(existingConnection, model, contextOwnsConnection) {}
+        /// <summary>
+        /// Constructs a new context instance around an existing ObjectContext.
+        /// 
+        /// </summary>
+        /// <param name="objectContext">An existing ObjectContext to wrap with the new context. </param><param name="dbContextOwnsObjectContext">If set to <c>true</c> the ObjectContext is disposed when the DbContext is disposed, otherwise the caller must dispose the connection.
+        ///             </param>
+        public DbContextWithTriggers(ObjectContext objectContext, Boolean dbContextOwnsObjectContext) : base(objectContext, dbContextOwnsObjectContext) {}
+        private IEnumerable<Action> RaiseTheBeforeEvents() {
             var afterActions = new List<Action>();
             foreach (var entry in ChangeTracker.Entries<IEntityWithTriggers>()) {
                 switch (entry.State) {
@@ -40,13 +88,10 @@ namespace EntityFrameworkTriggers {
             }
             return afterActions;
         }
-
-        private void RaiseTheAfterEvents(IEnumerable<Action> afterActions)
-        {
+        private void RaiseTheAfterEvents(IEnumerable<Action> afterActions) {
             foreach (var afterAction in afterActions)
                 afterAction();
         }
-
         /// <summary>
         /// Saves all changes made in this context to the underlying database.
         /// </summary>
@@ -66,7 +111,6 @@ namespace EntityFrameworkTriggers {
             RaiseTheAfterEvents(afterActions);
             return result;
         }
-
         /// <summary>
         /// Asynchronously saves all changes made in this context to the underlying database.
         /// </summary>
@@ -81,8 +125,7 @@ namespace EntityFrameworkTriggers {
         ///             The task result contains the number of objects written to the underlying database.
         /// </returns>
         /// <exception cref="T:System.InvalidOperationException">Thrown if the context has been disposed.</exception>
-        public override async Task<Int32> SaveChangesAsync(CancellationToken cancellationToken)
-        {
+        public override async Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
             var afterActions = RaiseTheBeforeEvents();
             var result = await base.SaveChangesAsync(cancellationToken);
             RaiseTheAfterEvents(afterActions);
