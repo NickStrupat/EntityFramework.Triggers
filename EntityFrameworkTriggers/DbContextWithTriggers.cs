@@ -12,11 +12,11 @@ namespace EntityFrameworkTriggers {
 #pragma warning disable 1591
         protected DbContextWithTriggers() : base() {}
         protected DbContextWithTriggers(DbCompiledModel model) : base(model) {}
-        protected DbContextWithTriggers(String nameOrConnectionString) : base(nameOrConnectionString) {}
-        protected DbContextWithTriggers(ObjectContext objectContext, Boolean dbContextOwnsObjectContext) : base(objectContext, dbContextOwnsObjectContext) {}
-        protected DbContextWithTriggers(String nameOrConnectionString, DbCompiledModel model) : base(nameOrConnectionString, model) {}
-        protected DbContextWithTriggers(System.Data.Common.DbConnection existingConnection, Boolean contextOwnsConnection) : base(existingConnection, contextOwnsConnection) {}
-        protected DbContextWithTriggers(System.Data.Common.DbConnection existingConnection, DbCompiledModel model, Boolean contextOwnsConnection) : base(existingConnection, model, contextOwnsConnection) {}
+        public DbContextWithTriggers(String nameOrConnectionString) : base(nameOrConnectionString) {}
+        public DbContextWithTriggers(ObjectContext objectContext, Boolean dbContextOwnsObjectContext) : base(objectContext, dbContextOwnsObjectContext) { }
+        public DbContextWithTriggers(String nameOrConnectionString, DbCompiledModel model) : base(nameOrConnectionString, model) {}
+        public DbContextWithTriggers(System.Data.Common.DbConnection existingConnection, Boolean contextOwnsConnection) : base(existingConnection, contextOwnsConnection) { }
+        public DbContextWithTriggers(System.Data.Common.DbConnection existingConnection, DbCompiledModel model, Boolean contextOwnsConnection) : base(existingConnection, model, contextOwnsConnection) { }
 #pragma warning restore 1591
 
         private IEnumerable<Action> RaiseTheBeforeEvents()
