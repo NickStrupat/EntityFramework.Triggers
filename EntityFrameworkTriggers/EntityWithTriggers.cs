@@ -1,5 +1,8 @@
 ﻿namespace EntityFrameworkTriggers {
+    /// <summary>Base class for entities which need events to fire before and after being added to, modified in, or removed from the store</summary>
+    /// <typeparam name="T">Derived class (see: CRTP)</typeparam>
     public abstract class EntityWithTriggers<T> : IEntityWithTriggers where T : EntityWithTriggers<T> {
+        /// <param name="entity">The instance of the changed entity</param>
         public delegate void DbEntityEntriesChangeEventHandler(T entity);
 
         /// <summary>Fired just before this entity is added to the store</summary>
