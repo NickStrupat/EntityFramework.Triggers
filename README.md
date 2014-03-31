@@ -41,7 +41,7 @@ This version targets the latest .NET and Entity Framework versions. For >= .NET 
         context.SaveChanges();
         
         context.People.Remove(nickStrupat);
-        <strong>await context.SaveChangesAsync();</strong>
+        await context.SaveChangesAsync();
         
         context.Database.Delete();
     }
