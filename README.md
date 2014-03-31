@@ -5,17 +5,25 @@ Adds events for entity inserting, inserted, updating, updated, deleting, and del
 
 NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFrameworkTriggers/
 
-<strong>qsync/await supported</strong>
+<strong>async/await supported</strong>
 
-This version targets the latest .NET and Entity Framework versions. For >= .NET 4.0 and >= EF5, get https://github.com/NickStrupat/EntityFrameworkCodeFirstTriggers (NuGet link in that repository's README)
+This version targets the latest .NET and Entity Framework versions.
+
+For .NET 4.0 and EF5, check out https://github.com/NickStrupat/EntityFrameworkCodeFirstTriggers (NuGet link in that repository's README)
 
 ## Usage
 
     class Person : EntityWithTriggers<Person> {
         [Key]
         public Int64 Id { get; protected set; }
+        public DateTime InsertDateTime { get; protected set; }
+        public DateTime UpdateDateTime { get; protected set; }
         public String FirstName { get; set; }
         public String LastName { get; set; }
+        public Person() {
+            Inserting += entity => entity.InsertDateTime = entity.UpdateDateTime = DateTime.Now;
+            Updating += entity => entity.UpdateDateTime = DateTime.Now;
+        }
     }
     
     class Context : DbContextWithTriggers {
