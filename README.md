@@ -5,9 +5,11 @@ Adds events for entity inserting, inserted, updating, updated, deleting, and del
 
 NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFrameworkTriggers/
 
-<strong>qsync/await supported</strong>
+<strong>async/await supported</strong>
 
-This version targets the latest .NET and Entity Framework versions. For >= .NET 4.0 and >= EF5, get https://github.com/NickStrupat/EntityFrameworkCodeFirstTriggers (NuGet link in that repository's README)
+This version targets the latest .NET and Entity Framework versions.
+
+For .NET 4.0 and EF5, check out https://github.com/NickStrupat/EntityFrameworkCodeFirstTriggers (NuGet link in that repository's README)
 
 ## Usage
 
