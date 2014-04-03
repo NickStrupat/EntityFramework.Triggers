@@ -41,7 +41,7 @@ For .NET 4.0 and EF5, check out https://github.com/NickStrupat/EntityFrameworkCo
                                          LastName = "Strupat"
         };
         nickStrupat.Inserting += (c, e) => {
-			c.Log.Add(new LogEntry {Message = "Insert trigger first for " + e.FirstName};
+			c.Log.Add(new LogEntry {Message = "Insert trigger first for " + e.FirstName});
 			Console.WriteLine("Inserting " + e.FirstName);
 		};
         nickStrupat.Updating += (c, e) => Console.WriteLine("Updating " + e.FirstName);
