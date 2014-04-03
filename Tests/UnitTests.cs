@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -44,6 +45,7 @@ namespace Tests {
 
                 saveChangesAction(context);
                 AssertInsertEventsHaveFired();
+                Assert.IsTrue(context.Things.First().Value == "Insert trigger fired for Nick");
 
                 nickStrupat.FirstName = "Nicholas";
                 saveChangesAction(context);
@@ -58,12 +60,15 @@ namespace Tests {
             }
         }
         private void AddHandlers(Person person) {
-            person.Inserting += e => ++insertingFiredCount;
-            person.Updating += e => ++updatingFiredCount;
-            person.Deleting += e => ++deletingFiredCount;
-            person.Inserted += e => ++insertedFiredCount;
-            person.Updated += e => ++updatedFiredCount;
-            person.Deleted += e => ++deletedFiredCount;
+            person.Inserting += (c, e) => {
+                                    c.Things.Add(new Thing {Value = "Insert trigger fired for " + e.FirstName});
+                                    ++insertingFiredCount;
+                                };
+            person.Updating += (c, e) => ++updatingFiredCount;
+            person.Deleting += (c, e) => ++deletingFiredCount;
+            person.Inserted += (c, e) => ++insertedFiredCount;
+            person.Updated += (c, e) => ++updatedFiredCount;
+            person.Deleted += (c, e) => ++deletedFiredCount;
         }
         private void AssertAllEventsHaveFired() {
             Assert.AreEqual(insertingFiredCount, 2);

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace EntityFrameworkTriggers {
     /// <summary>Base class to enable 'EntityWithTriggers' events. Derive your context class from this class to have those events raised accordingly when 'SaveChanges' and 'SaveChangesAsync' are invoked</summary>
-    public abstract class DbContextWithTriggers : DbContext {
+    public abstract class DbContextWithTriggers<TContext> : DbContext where TContext : DbContextWithTriggers<TContext> {
         /// <summary>
         /// Constructs a new context instance using conventions to create the name of the database to
         ///             which a connection will be made.  The by-convention name is the full name (namespace + class name)
@@ -68,29 +68,29 @@ namespace EntityFrameworkTriggers {
         /// <param name="objectContext">An existing ObjectContext to wrap with the new context. </param><param name="dbContextOwnsObjectContext">If set to <c>true</c> the ObjectContext is disposed when the DbContext is disposed, otherwise the caller must dispose the connection.
         ///             </param>
         public DbContextWithTriggers(ObjectContext objectContext, Boolean dbContextOwnsObjectContext) : base(objectContext, dbContextOwnsObjectContext) {}
-        private IEnumerable<Action> RaiseTheBeforeEvents() {
-            var afterActions = new List<Action>();
-            foreach (var entry in ChangeTracker.Entries<IEntityWithTriggers>()) {
+        private IEnumerable<Action<TContext>> RaiseTheBeforeEvents() {
+            var afterActions = new List<Action<TContext>>();
+            foreach (var entry in ChangeTracker.Entries<IEntityWithTriggers<TContext>>()) {
                 switch (entry.State) {
                     case EntityState.Added:
-                        entry.Entity.OnBeforeInsert();
+                        entry.Entity.OnBeforeInsert((TContext)this);
                         afterActions.Add(entry.Entity.OnAfterInsert);
                         break;
                     case EntityState.Deleted:
-                        entry.Entity.OnBeforeDelete();
+                        entry.Entity.OnBeforeDelete((TContext)this);
                         afterActions.Add(entry.Entity.OnAfterDelete);
                         break;
                     case EntityState.Modified:
-                        entry.Entity.OnBeforeUpdate();
+                        entry.Entity.OnBeforeUpdate((TContext)this);
                         afterActions.Add(entry.Entity.OnAfterUpdate);
                         break;
                 }
             }
             return afterActions;
         }
-        private void RaiseTheAfterEvents(IEnumerable<Action> afterActions) {
+        private void RaiseTheAfterEvents(IEnumerable<Action<TContext>> afterActions) {
             foreach (var afterAction in afterActions)
-                afterAction();
+                afterAction((TContext)this);
         }
         /// <summary>
         /// Saves all changes made in this context to the underlying database.

@@ -13,21 +13,26 @@ For .NET 4.0 and EF5, check out https://github.com/NickStrupat/EntityFrameworkCo
 
 ## Usage
 
-    class Person : EntityWithTriggers<Person> {
-        [Key]
+    class Person : EntityWithTriggers<Person, Context> {
         public Int64 Id { get; protected set; }
         public DateTime InsertDateTime { get; protected set; }
         public DateTime UpdateDateTime { get; protected set; }
         public String FirstName { get; set; }
         public String LastName { get; set; }
         public Person() {
-            Inserting += entity => entity.InsertDateTime = entity.UpdateDateTime = DateTime.Now;
-            Updating += entity => entity.UpdateDateTime = DateTime.Now;
+            Inserting += (context, entity) => entity.InsertDateTime = entity.UpdateDateTime = DateTime.Now;
+            Updating += (context, entity) => entity.UpdateDateTime = DateTime.Now;
         }
     }
+	
+	class LogEntry {
+        public Int64 Id { get; protected set; }
+		public String Message { get; set; }
+	}
     
-    class Context : DbContextWithTriggers {
+    class Context : DbContextWithTriggers<Context> {
         public DbSet<Person> People { get; set; }
+        public DbSet<LogEntry> Log { get; set; }
     }
     
     using (var context = new Context()) {
@@ -35,12 +40,15 @@ For .NET 4.0 and EF5, check out https://github.com/NickStrupat/EntityFrameworkCo
                                          FirstName = "Nick",
                                          LastName = "Strupat"
         };
-        nickStrupat.Inserting += e => Console.WriteLine("Inserting " + e.FirstName);
-        nickStrupat.Updating += e => Console.WriteLine("Updating " + e.FirstName);
-        nickStrupat.Deleting += e => Console.WriteLine("Deleting " + e.FirstName);
-        nickStrupat.Inserted += e => Console.WriteLine("Inserted " + e.FirstName);
-        nickStrupat.Updated += e => Console.WriteLine("Updated " + e.FirstName);
-        nickStrupat.Deleted += e => Console.WriteLine("Deleted " + e.FirstName);
+        nickStrupat.Inserting += (c, e) => {
+			c.Log.Add(new LogEntry {Message = "Insert trigger first for " + e.FirstName};
+			Console.WriteLine("Inserting " + e.FirstName);
+		};
+        nickStrupat.Updating += (c, e) => Console.WriteLine("Updating " + e.FirstName);
+        nickStrupat.Deleting += (c, e) => Console.WriteLine("Deleting " + e.FirstName);
+        nickStrupat.Inserted += (c, e) => Console.WriteLine("Inserted " + e.FirstName);
+        nickStrupat.Updated += (c, e) => Console.WriteLine("Updated " + e.FirstName);
+        nickStrupat.Deleted += (c, e) => Console.WriteLine("Deleted " + e.FirstName);
         
         context.People.Add(nickStrupat);
         context.SaveChanges();
