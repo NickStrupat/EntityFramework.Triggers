@@ -1,35 +1,43 @@
-﻿using System.Data.Entity;
+﻿using System;
 
 namespace EntityFrameworkTriggers {
     /// <summary>Base class for entities which need events to fire before and after being added to, modified in, or removed from the store</summary>
     /// <typeparam name="TEntity">Derived entity class (see: CRTP)</typeparam>
     /// <typeparam name="TContext">Derived context class (see: CRTP)</typeparam>
     public abstract class EntityWithTriggers<TEntity, TContext> : IEntityWithTriggers<TContext> where TEntity : EntityWithTriggers<TEntity, TContext> where TContext : DbContextWithTriggers<TContext> {
-        /// <param name="context">The context</param>
-        /// <param name="entity">The instance of the changed entity</param>
-        public delegate void DbEntityEntriesChangeEventHandler(TContext context, TEntity entity);
+        /// <summary>Contains the context and the instance of the changed entity</summary>
+        public struct Entry {
+            /// <summary></summary>
+            public TContext Context { get; private set; }
+            /// <summary></summary>
+            public TEntity Entity { get; private set; }
+            internal Entry(TContext context, TEntity entity) : this() {
+                Context = context;
+                Entity = entity;
+            }
+        }
 
-        /// <summary>Fired just before this entity is added to the store</summary>
-        public event DbEntityEntriesChangeEventHandler Inserting;
+        /// <summary>Raised just before this entity is added to the store</summary>
+        public event Action<Entry> Inserting;
 
-        /// <summary>Fired just before this entity is updated in the store</summary>
-        public event DbEntityEntriesChangeEventHandler Updating;
+        /// <summary>Raised just before this entity is updated in the store</summary>
+        public event Action<Entry> Updating;
 
-        /// <summary>Fired just before this entity is deleted from the store</summary>
-        public event DbEntityEntriesChangeEventHandler Deleting;
+        /// <summary>Raised just before this entity is deleted from the store</summary>
+        public event Action<Entry> Deleting;
 
-        /// <summary>Fired just after this entity is added to the store</summary>
-        public event DbEntityEntriesChangeEventHandler Inserted;
+        /// <summary>Raised just after this entity is added to the store</summary>
+        public event Action<Entry> Inserted;
 
-        /// <summary>Fired just after this entity is updated in the store</summary>
-        public event DbEntityEntriesChangeEventHandler Updated;
+        /// <summary>Raised just after this entity is updated in the store</summary>
+        public event Action<Entry> Updated;
 
-        /// <summary>Fired just after this entity is deleted from the store</summary>
-        public event DbEntityEntriesChangeEventHandler Deleted;
+        /// <summary>Raised just after this entity is deleted from the store</summary>
+        public event Action<Entry> Deleted;
 
-        private void RaiseDbEntityEntriesChangeEvent(DbEntityEntriesChangeEventHandler eventHandler, TContext context) {
+        private void RaiseDbEntityEntriesChangeEvent(Action<Entry> eventHandler, TContext context) {
             if (eventHandler != null)
-                eventHandler(context, (TEntity) this);
+                eventHandler(new Entry(context, (TEntity) this));
         }
         void IEntityWithTriggers<TContext>.OnBeforeInsert(TContext context) { RaiseDbEntityEntriesChangeEvent(Inserting, context); }
         void IEntityWithTriggers<TContext>.OnBeforeUpdate(TContext context) { RaiseDbEntityEntriesChangeEvent(Updating, context); }

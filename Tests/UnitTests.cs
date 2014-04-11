@@ -60,15 +60,15 @@ namespace Tests {
             }
         }
         private void AddHandlers(Person person) {
-            person.Inserting += (c, e) => {
-                                    c.Things.Add(new Thing {Value = "Insert trigger fired for " + e.FirstName});
+            person.Inserting += e => {
+                                    e.Context.Things.Add(new Thing {Value = "Insert trigger fired for " + e.Entity.FirstName});
                                     ++insertingFiredCount;
                                 };
-            person.Updating += (c, e) => ++updatingFiredCount;
-            person.Deleting += (c, e) => ++deletingFiredCount;
-            person.Inserted += (c, e) => ++insertedFiredCount;
-            person.Updated += (c, e) => ++updatedFiredCount;
-            person.Deleted += (c, e) => ++deletedFiredCount;
+            person.Updating += e => ++updatingFiredCount;
+            person.Deleting += e => ++deletingFiredCount;
+            person.Inserted += e => ++insertedFiredCount;
+            person.Updated += e => ++updatedFiredCount;
+            person.Deleted += e => ++deletedFiredCount;
         }
         private void AssertAllEventsHaveFired() {
             Assert.AreEqual(insertingFiredCount, 2);
