@@ -61,7 +61,7 @@ namespace Tests {
         }
         private void AddHandlers(TriggerablePerson person, SealedContext context) {
             person.Triggers().Inserting += e => {
-                                    context.Things.Add(new TriggerableThing {Value = "Insert trigger fired for " + e.FirstName});
+                                    e.GetContext<SealedContext>().Things.Add(new TriggerableThing {Value = "Insert trigger fired for " + e.Entity.FirstName});
                                     ++insertingFiredCount;
                                 };
             person.Triggers().Updating += e => ++updatingFiredCount;
