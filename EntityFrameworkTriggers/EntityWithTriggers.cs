@@ -4,17 +4,15 @@ namespace EntityFrameworkTriggers {
     /// <summary>Base class for entities which need events to fire before and after being added to, modified in, or removed from the store</summary>
     /// <typeparam name="TEntity">Derived entity class (see: CRTP)</typeparam>
     /// <typeparam name="TContext">Derived context class (see: CRTP)</typeparam>
-    public abstract class EntityWithTriggers<TEntity, TContext> : IEntityWithTriggers<TContext> where TEntity : EntityWithTriggers<TEntity, TContext> where TContext : DbContextWithTriggers<TContext> {
+    public abstract class EntityWithTriggers<TEntity, TContext> : IEntityWithTriggers<TContext>
+		where TEntity : EntityWithTriggers<TEntity, TContext>
+		where TContext : DbContextWithTriggers<TContext> {
         /// <summary>Contains the context and the instance of the changed entity</summary>
         public struct Entry {
             /// <summary></summary>
-            public TContext Context { get; private set; }
+			public TContext Context { get; internal set; }
             /// <summary></summary>
-            public TEntity Entity { get; private set; }
-            internal Entry(TContext context, TEntity entity) : this() {
-                Context = context;
-                Entity = entity;
-            }
+			public TEntity Entity { get; internal set; }
         }
 
         /// <summary>Raised just before this entity is added to the store</summary>
@@ -37,7 +35,7 @@ namespace EntityFrameworkTriggers {
 
         private void RaiseDbEntityEntriesChangeEvent(Action<Entry> eventHandler, TContext context) {
             if (eventHandler != null)
-                eventHandler(new Entry(context, (TEntity) this));
+                eventHandler(new Entry { Context = context, Entity = (TEntity) this});
         }
         void IEntityWithTriggers<TContext>.OnBeforeInsert(TContext context) { RaiseDbEntityEntriesChangeEvent(Inserting, context); }
         void IEntityWithTriggers<TContext>.OnBeforeUpdate(TContext context) { RaiseDbEntityEntriesChangeEvent(Updating, context); }

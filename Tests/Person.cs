@@ -9,4 +9,11 @@ namespace Tests {
         public String FirstName { get; set; }
         public String LastName { get; set; }
     }
+
+	public class TriggerablePerson : ITriggerable<TriggerablePerson> {
+		[Key]
+		public Int64 Id { get; protected set; }
+		public String FirstName { get; set; }
+		public String LastName { get; set; }
+	}
 }
