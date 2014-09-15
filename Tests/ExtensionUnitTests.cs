@@ -41,14 +41,14 @@ namespace Tests {
                                                  FirstName = "Nick",
                                                  LastName = "Strupat",
                                              };
-                AddHandlers(nickStrupat, context);
+                AddHandlers(nickStrupat);
                 context.People.Add(nickStrupat);
 
                 var johnSmith = new TriggerablePerson {
                                                FirstName = "John",
                                                LastName = "Smith"
                                            };
-                AddHandlers(johnSmith, context);
+                AddHandlers(johnSmith);
                 context.People.Add(johnSmith);
                 AssertNoEventsHaveFired();
 
@@ -82,7 +82,7 @@ namespace Tests {
                 context.Database.Delete();
             }
         }
-		private void AddHandlers(TriggerablePerson person, SealedContext context) {
+		private void AddHandlers(TriggerablePerson person) {
 			person.Triggers().Inserting += e => e.GetContext<SealedContext>().Things.Add(new TriggerableThing { Value = "Insert trigger fired for " + e.Entity.FirstName });
 			person.Triggers().Inserting += e => ++insertingFiredCount;
 			person.Triggers().Updating += e => ++updatingFiredCount;

@@ -13,5 +13,4 @@ namespace EntityFrameworkTriggers {
 		void OnAfterUpdate(TDbContext context);
 		void OnAfterDelete(TDbContext context);
 	}
-	internal interface ITriggers : ITriggers<DbContext> {}
 }

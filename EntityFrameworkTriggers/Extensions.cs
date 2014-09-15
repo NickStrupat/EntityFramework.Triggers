@@ -5,7 +5,6 @@ using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,7 +31,7 @@ namespace EntityFrameworkTriggers {
 			foreach (var entry in dbContext.ChangeTracker.Entries<ITriggerable>()) {
 				var entityType = entry.Entity.GetType();
 				var triggerGenericMethodInfo = getTriggerMethodInfo(entityType);
-				var triggers = (ITriggers)triggerGenericMethodInfo.Invoke(null, new[] { entry.Entity });
+				var triggers = (ITriggers<DbContext>)triggerGenericMethodInfo.Invoke(null, new[] { entry.Entity });
 				switch (entry.State) {
 					case EntityState.Added:
 						triggers.OnBeforeInsert(dbContext);
@@ -72,7 +71,7 @@ namespace EntityFrameworkTriggers {
 		private static void RaiseTheFailedEvents(this DbContext dbContext, DbEntityEntry entry, Exception exception) {
 			var entityType = entry.Entity.GetType();
 			var triggerGenericMethodInfo = getTriggerMethodInfo(entityType);
-			var triggers = (ITriggers)triggerGenericMethodInfo.Invoke(null, new[] { entry.Entity });
+			var triggers = (ITriggers<DbContext>)triggerGenericMethodInfo.Invoke(null, new[] { entry.Entity });
 			switch (entry.State) {
 				case EntityState.Added:
 					triggers.OnInsertFailed(dbContext, exception);
