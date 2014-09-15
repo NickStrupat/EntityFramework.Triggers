@@ -7,6 +7,7 @@ namespace Tests {
         [Key]
         public Int64 Id { get; protected set; }
         public String FirstName { get; set; }
+		[Required]
         public String LastName { get; set; }
     }
 
@@ -14,6 +15,7 @@ namespace Tests {
 		[Key]
 		public Int64 Id { get; protected set; }
 		public String FirstName { get; set; }
+		[Required]
 		public String LastName { get; set; }
 	}
 }

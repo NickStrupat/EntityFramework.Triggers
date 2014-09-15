@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Validation;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -68,9 +70,10 @@ namespace EntityFrameworkTriggers {
         /// <param name="objectContext">An existing ObjectContext to wrap with the new context. </param><param name="dbContextOwnsObjectContext">If set to <c>true</c> the ObjectContext is disposed when the DbContext is disposed, otherwise the caller must dispose the connection.
         ///             </param>
         public DbContextWithTriggers(ObjectContext objectContext, Boolean dbContextOwnsObjectContext) : base(objectContext, dbContextOwnsObjectContext) {}
+
         private IEnumerable<Action<TContext>> RaiseTheBeforeEvents() {
             var afterActions = new List<Action<TContext>>();
-            foreach (var entry in ChangeTracker.Entries<IEntityWithTriggers<TContext>>()) {
+            foreach (var entry in ChangeTracker.Entries<ITriggers<TContext>>()) {
                 switch (entry.State) {
                     case EntityState.Added:
                         entry.Entity.OnBeforeInsert((TContext)this);
@@ -88,26 +91,56 @@ namespace EntityFrameworkTriggers {
             }
             return afterActions;
         }
+
         private void RaiseTheAfterEvents(IEnumerable<Action<TContext>> afterActions) {
             foreach (var afterAction in afterActions)
                 afterAction((TContext)this);
         }
+
+		private void RaiseTheFailedEvents(Exception exception) {
+			var dbUpdateException = exception as DbUpdateException;
+			var dbEntityValidationException = exception as DbEntityValidationException;
+			if (dbUpdateException != null) {
+				foreach (var entry in dbUpdateException.Entries.Where(x => x.Entity is ITriggers<TContext>))
+					RaiseTheFailedEvents(entry, dbUpdateException);
+			}
+			else if (dbEntityValidationException != null) {
+				foreach (var dbEntityValidationResult in dbEntityValidationException.EntityValidationErrors.Where(x => x.Entry.Entity is ITriggers<TContext>))
+					RaiseTheFailedEvents(dbEntityValidationResult.Entry, dbEntityValidationException);
+			}
+		}
+
+	    private void RaiseTheFailedEvents(DbEntityEntry entry, Exception exception) {
+			var entity = (ITriggers<TContext>)entry.Entity;
+			switch (entry.State) {
+				case EntityState.Added:
+					entity.OnInsertFailed((TContext)this, exception);
+					break;
+				case EntityState.Modified:
+					entity.OnUpdateFailed((TContext)this, exception);
+					break;
+				case EntityState.Deleted:
+					entity.OnDeleteFailed((TContext)this, exception);
+					break;
+			}
+		}
+
         /// <summary>
         /// Saves all changes made in this context to the underlying database.
         /// </summary>
         /// <returns>
         /// The number of objects written to the underlying database. 
         /// </returns>
-        /// <exception cref="T:System.Data.Entity.Infrastructure.DbUpdateException">An error occurred sending updates to the database.</exception><exception cref="T:System.Data.Entity.Infrastructure.DbUpdateConcurrencyException">A database command did not affect the expected number of rows. This usually indicates an optimistic 
-        ///             concurrency violation; that is, a row has been changed in the database since it was queried.
-        ///             </exception><exception cref="T:System.Data.Entity.Validation.DbEntityValidationException">The save was aborted because validation of entity property values failed.
-        ///             </exception><exception cref="T:System.NotSupportedException">An attempt was made to use unsupported behavior such as executing multiple asynchronous commands concurrently
-        ///             on the same context instance.</exception><exception cref="T:System.ObjectDisposedException">The context or connection have been disposed.</exception><exception cref="T:System.InvalidOperationException">Some error occurred attempting to process entities in the context either before or after sending commands
-        ///             to the database.
-        ///             </exception>
         public override Int32 SaveChanges() {
             var afterActions = RaiseTheBeforeEvents();
-            var result = base.SaveChanges();
+			Int32 result;
+			try {
+				result = base.SaveChanges();
+			}
+			catch (Exception exception) {
+				RaiseTheFailedEvents(exception);
+				throw;
+			}
             RaiseTheAfterEvents(afterActions);
             return result;
         }
@@ -127,7 +160,14 @@ namespace EntityFrameworkTriggers {
         /// <exception cref="T:System.InvalidOperationException">Thrown if the context has been disposed.</exception>
         public override async Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
             var afterActions = RaiseTheBeforeEvents();
-            var result = await base.SaveChangesAsync(cancellationToken);
+			Int32 result;
+			try {
+				result = await base.SaveChangesAsync(cancellationToken);
+			}
+			catch (Exception exception) {
+				RaiseTheFailedEvents(exception);
+				throw;
+			}
             RaiseTheAfterEvents(afterActions);
             return result;
         }

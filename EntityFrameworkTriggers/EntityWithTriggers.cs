@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Entity.Infrastructure;
 
 namespace EntityFrameworkTriggers {
     /// <summary>Base class for entities which need events to fire before and after being added to, modified in, or removed from the store</summary>
@@ -8,12 +9,17 @@ namespace EntityFrameworkTriggers {
 		where TEntity : EntityWithTriggers<TEntity, TContext>
 		where TContext : DbContextWithTriggers<TContext> {
         /// <summary>Contains the context and the instance of the changed entity</summary>
-        public struct Entry {
+        public class Entry {
             /// <summary></summary>
 			public TContext Context { get; internal set; }
             /// <summary></summary>
 			public TEntity Entity { get; internal set; }
+	        internal Entry() {}
         }
+
+		public class FailedEntry : Entry {
+			public Exception Exception { get; internal set; }
+		}
 
         /// <summary>Raised just before this entity is added to the store</summary>
         public event Action<Entry> Inserting;
@@ -22,7 +28,16 @@ namespace EntityFrameworkTriggers {
         public event Action<Entry> Updating;
 
         /// <summary>Raised just before this entity is deleted from the store</summary>
-        public event Action<Entry> Deleting;
+		public event Action<Entry> Deleting;
+
+		/// <summary>Raised after Inserting event, but before Inserted event when an exception has occured while saving the changes to the store</summary>
+		public event Action<FailedEntry> InsertFailed;
+
+		/// <summary>Raised after Updating event, but before Updated event when an exception has occured while saving the changes to the store</summary>
+		public event Action<FailedEntry> UpdateFailed;
+
+		/// <summary>Raised after Deleting event, but before Deleted event when an exception has occured while saving the changes to the store</summary>
+		public event Action<FailedEntry> DeleteFailed;
 
         /// <summary>Raised just after this entity is added to the store</summary>
         public event Action<Entry> Inserted;
@@ -37,20 +52,20 @@ namespace EntityFrameworkTriggers {
             if (eventHandler != null)
                 eventHandler(new Entry { Context = context, Entity = (TEntity) this});
         }
-        void IEntityWithTriggers<TContext>.OnBeforeInsert(TContext context) { RaiseDbEntityEntriesChangeEvent(Inserting, context); }
-        void IEntityWithTriggers<TContext>.OnBeforeUpdate(TContext context) { RaiseDbEntityEntriesChangeEvent(Updating, context); }
-        void IEntityWithTriggers<TContext>.OnBeforeDelete(TContext context) { RaiseDbEntityEntriesChangeEvent(Deleting, context); }
-        void IEntityWithTriggers<TContext>.OnAfterInsert(TContext context) { RaiseDbEntityEntriesChangeEvent(Inserted, context); }
-        void IEntityWithTriggers<TContext>.OnAfterUpdate(TContext context) { RaiseDbEntityEntriesChangeEvent(Updated, context); }
-        void IEntityWithTriggers<TContext>.OnAfterDelete(TContext context) { RaiseDbEntityEntriesChangeEvent(Deleted, context); }
-    }
 
-    internal interface IEntityWithTriggers<in TContext> where TContext : DbContextWithTriggers<TContext> {
-        void OnBeforeInsert(TContext context);
-        void OnBeforeUpdate(TContext context);
-        void OnBeforeDelete(TContext context);
-        void OnAfterInsert(TContext context);
-        void OnAfterUpdate(TContext context);
-        void OnAfterDelete(TContext context);
+		private void RaiseDbEntityEntriesFailedEvent(Action<FailedEntry> eventHandler, TContext dbContext, Exception exception) {
+			if (eventHandler != null)
+				eventHandler(new FailedEntry { Context = dbContext, Entity = (TEntity)this, Exception = exception});
+		}
+
+        void ITriggers<TContext>.OnBeforeInsert(TContext context) { RaiseDbEntityEntriesChangeEvent(Inserting, context); }
+        void ITriggers<TContext>.OnBeforeUpdate(TContext context) { RaiseDbEntityEntriesChangeEvent(Updating, context); }
+		void ITriggers<TContext>.OnBeforeDelete(TContext context) { RaiseDbEntityEntriesChangeEvent(Deleting, context); }
+		void ITriggers<TContext>.OnInsertFailed(TContext dbContext, Exception exception) { RaiseDbEntityEntriesFailedEvent(InsertFailed, dbContext, exception); }
+		void ITriggers<TContext>.OnUpdateFailed(TContext dbContext, Exception exception) { RaiseDbEntityEntriesFailedEvent(UpdateFailed, dbContext, exception); }
+		void ITriggers<TContext>.OnDeleteFailed(TContext dbContext, Exception exception) { RaiseDbEntityEntriesFailedEvent(DeleteFailed, dbContext, exception); }
+        void ITriggers<TContext>.OnAfterInsert(TContext context) { RaiseDbEntityEntriesChangeEvent(Inserted, context); }
+        void ITriggers<TContext>.OnAfterUpdate(TContext context) { RaiseDbEntityEntriesChangeEvent(Updated, context); }
+        void ITriggers<TContext>.OnAfterDelete(TContext context) { RaiseDbEntityEntriesChangeEvent(Deleted, context); }
     }
 }
