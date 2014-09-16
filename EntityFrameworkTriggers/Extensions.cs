@@ -11,8 +11,7 @@ using System.Threading.Tasks;
 namespace EntityFrameworkTriggers {
 	public static class Extensions {
 		public static Triggers<TTriggerable> Triggers<TTriggerable>(this TTriggerable triggerable)
-			where TTriggerable : class, ITriggerable<TTriggerable>, new()
-		{
+			where TTriggerable : class, ITriggerable<TTriggerable>, new() {
 			return TriggersWeak<TTriggerable>.ConditionalWeakTable.GetValue(triggerable, key => new Triggers<TTriggerable> { Triggerable = triggerable });
 		}
 
@@ -50,7 +49,7 @@ namespace EntityFrameworkTriggers {
 			return afterActions;
 		}
 
-		private static void RaiseTheAfterEvents(IEnumerable<Action<DbContext>> afterActions, DbContext dbContext) {
+		private static void RaiseTheAfterEvents(this DbContext dbContext, IEnumerable<Action<DbContext>> afterActions) {
 			foreach (var afterAction in afterActions)
 				afterAction(dbContext);
 		}
@@ -86,17 +85,16 @@ namespace EntityFrameworkTriggers {
 		}
 
 		public static Int32 SaveChangesWithTriggers(this DbContext dbContext) {
-			var afterActions = dbContext.RaiseTheBeforeEvents();
-			Int32 result;
 			try {
-				result = dbContext.SaveChanges();
+				var afterActions = dbContext.RaiseTheBeforeEvents();
+				var result = dbContext.SaveChanges();
+				dbContext.RaiseTheAfterEvents(afterActions);
+				return result;
 			}
 			catch (Exception exception) {
 				dbContext.RaiseTheFailedEvents(exception);
 				throw;
 			}
-			RaiseTheAfterEvents(afterActions, dbContext);
-			return result;
 		}
 
 		public static Task<Int32> SaveChangesWithTriggersAsync<TDbContext>(this TDbContext dbContext) where TDbContext : DbContext {
@@ -104,17 +102,16 @@ namespace EntityFrameworkTriggers {
 		}
 
 		public static async Task<Int32> SaveChangesWithTriggersAsync<TDbContext>(this TDbContext dbContext, CancellationToken cancellationToken) where TDbContext : DbContext {
-			var afterActions = dbContext.RaiseTheBeforeEvents();
-			Int32 result;
 			try {
-				result = await dbContext.SaveChangesAsync(cancellationToken);
+				var afterActions = dbContext.RaiseTheBeforeEvents();
+				var result = await dbContext.SaveChangesAsync(cancellationToken);
+				dbContext.RaiseTheAfterEvents(afterActions);
+				return result;
 			}
 			catch (Exception exception) {
 				dbContext.RaiseTheFailedEvents(exception);
 				throw;
 			}
-			RaiseTheAfterEvents(afterActions, dbContext);
-			return result;
 		}
 	}
 }
