@@ -9,10 +9,6 @@ NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFramew
 
 <strong>To use with closed inheritance hierarchies, such as ASP.NET Identity's `IdentityDbContext` class, I've introduced a set of extension methods which work without having to inherit from `DbContextWithTriggers<>` and `EntityWithTriggers<>`. Usage example for this case is at the bottom.</strong>
 
-This version targets the latest .NET and Entity Framework versions.
-
-For .NET 4.0 and EF5, check out https://github.com/NickStrupat/EntityFrameworkCodeFirstTriggers (NuGet link in that repository's README)
-
 ## Usage
 
     class Program {
