@@ -84,6 +84,11 @@ namespace EntityFramework.Triggers {
 			}
 		}
 
+		/// <summary>
+		/// Save changes to the store, firing trigger events accordingly
+		/// </summary>
+		/// <param name="dbContext"></param>
+		/// <returns></returns>
 		public static Int32 SaveChangesWithTriggers(this DbContext dbContext) {
 			try {
 				var afterActions = dbContext.RaiseTheBeforeEvents();

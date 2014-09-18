@@ -70,7 +70,7 @@
     <Compile Include="UnitTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EntityFrameworkTriggers\EntityFramework.Triggers.csproj">
+    <ProjectReference Include="..\EntityFramework.Triggers\EntityFramework.Triggers.csproj">
       <Project>{67c92ff6-6d46-4eef-a94c-e6ba4c183a18}</Project>
       <Name>EntityFramework.Triggers</Name>
     </ProjectReference>
