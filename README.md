@@ -3,7 +3,7 @@ EntityFramework.Triggers
 
 Adds events to your entities; inserting, inserted, updating, updated, deleting, and deleted.
 
-NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFrameworkTriggers/
+NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFramework.Triggers/
 
 <strong>async/await supported</strong>
 
