@@ -1,6 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using EntityFrameworkTriggers;
+using EntityFramework.Triggers;
 
 namespace Tests {
     public class Person : EntityWithTriggers<Person, Context> {

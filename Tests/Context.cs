@@ -1,5 +1,5 @@
 ﻿using System.Data.Entity;
-using EntityFrameworkTriggers;
+using EntityFramework.Triggers;
 
 namespace Tests {
     public class Context : DbContextWithTriggers<Context> {

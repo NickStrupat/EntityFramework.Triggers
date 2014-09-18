@@ -1,7 +1,7 @@
 using System;
 using System.Data.Entity;
 
-namespace EntityFrameworkTriggers {
+namespace EntityFramework.Triggers {
 	internal interface ITriggers<in TDbContext> where TDbContext : DbContext {
 		void OnBeforeInsert(TDbContext context);
 		void OnBeforeUpdate(TDbContext context);

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EntityFrameworkTriggers {
+namespace EntityFramework.Triggers {
     /// <summary>Base class for entities which need events to fire before and after being added to, modified in, or removed from the store</summary>
     /// <typeparam name="TEntity">Derived entity class (see: CRTP)</typeparam>
     /// <typeparam name="TContext">Derived context class (see: CRTP)</typeparam>

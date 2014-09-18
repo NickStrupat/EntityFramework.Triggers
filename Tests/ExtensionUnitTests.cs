@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data.Entity.Validation;
 using System.Linq;
-using EntityFrameworkTriggers;
+using EntityFramework.Triggers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Tests {

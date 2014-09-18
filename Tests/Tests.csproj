@@ -70,9 +70,9 @@
     <Compile Include="UnitTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EntityFrameworkTriggers\EntityFrameworkTriggers.csproj">
+    <ProjectReference Include="..\EntityFrameworkTriggers\EntityFramework.Triggers.csproj">
       <Project>{67c92ff6-6d46-4eef-a94c-e6ba4c183a18}</Project>
-      <Name>EntityFrameworkTriggers</Name>
+      <Name>EntityFramework.Triggers</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

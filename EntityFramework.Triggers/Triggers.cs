@@ -1,7 +1,7 @@
 using System;
 using System.Data.Entity;
 
-namespace EntityFrameworkTriggers {
+namespace EntityFramework.Triggers {
 	public abstract class Triggers<TTriggerable, TDbContext> : ITriggers<TDbContext>
 		where TDbContext : DbContext
 		where TTriggerable : class, new() {

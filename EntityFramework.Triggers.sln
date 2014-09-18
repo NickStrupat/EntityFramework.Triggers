@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkTriggers", "EntityFrameworkTriggers\EntityFrameworkTriggers.csproj", "{67C92FF6-6D46-4EEF-A94C-E6BA4C183A18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Triggers", "EntityFramework.Triggers\EntityFramework.Triggers.csproj", "{67C92FF6-6D46-4EEF-A94C-E6BA4C183A18}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{5C037E05-80C2-4C0F-88FB-643948963BA7}"
 EndProject

@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EntityFrameworkTriggers {
+namespace EntityFramework.Triggers {
 	public static class Extensions {
 		public static Triggers<TTriggerable> Triggers<TTriggerable>(this TTriggerable triggerable)
 			where TTriggerable : class, ITriggerable<TTriggerable>, new() {

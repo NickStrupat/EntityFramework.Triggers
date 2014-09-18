@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EntityFrameworkTriggers {
+namespace EntityFramework.Triggers {
     /// <summary>Base class to enable 'EntityWithTriggers' events. Derive your context class from this class to have those events raised accordingly when 'SaveChanges' and 'SaveChangesAsync' are invoked</summary>
     public abstract class DbContextWithTriggers<TContext> : DbContext where TContext : DbContextWithTriggers<TContext> {
         /// <summary>
