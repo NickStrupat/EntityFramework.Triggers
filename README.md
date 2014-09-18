@@ -1,4 +1,4 @@
-EntityFrameworkTriggers
+EntityFramework.Triggers
 =======================
 
 Adds events to your entities; inserting, inserted, updating, updated, deleting, and deleted.
