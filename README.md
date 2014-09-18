@@ -7,7 +7,7 @@ NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFramew
 
 <strong>async/await supported</strong>
 
-<strong>To use with closed inheritance hierarchies, such as ASP.NET Identity's `IdentityDbContext` class, I've introduced a set of extension methods which work without having to inherit from `DbContextWithTriggers<>` and `EntityWithTriggers<>`. Usage example for this case is at the bottom.</strong>
+To use triggers in closed inheritance hierarchies, such as ASP.NET Identity's `IdentityDbContext` class, I've introduced a set of extension methods which work without having to inherit from `DbContextWithTriggers<>` and `EntityWithTriggers<>`. Usage example for this case is at the bottom.
 
 ## Usage
 
