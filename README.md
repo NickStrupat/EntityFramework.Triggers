@@ -86,6 +86,13 @@ To use triggers in closed inheritance hierarchies, such as ASP.NET Identity's `I
 		private class Context : DbContext {
 			public DbSet<Person> People { get; set; }
 			public DbSet<LogEntry> Log { get; set; }
+
+			public override Int32 SaveChanges() { return this.SaveChangesWithTriggers(base.SaveChanges);
+				return this.SaveChangesWithTriggers(base.SaveChanges);
+			}
+			public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
+				return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken);
+			}
 		}
 		private static void Main(string[] args) {
 			var task = MainAsync(args);
@@ -108,13 +115,13 @@ To use triggers in closed inheritance hierarchies, such as ASP.NET Identity's `I
 				nickStrupat.Triggers().Deleted += e => Console.WriteLine("Deleted " + e.Entity.FirstName);
 
 				context.People.Add(nickStrupat);
-				context.SaveChangesWithTriggers();
+				context.SaveChanges();
 
 				nickStrupat.FirstName = "Nicholas";
-				context.SaveChangesWithTriggers();
+				context.SaveChanges();
 
 				context.People.Remove(nickStrupat);
-				await context.SaveChangesWithTriggersAsync();
+				await context.SaveChangesAsync();
 
 				context.Database.Delete();
 			}

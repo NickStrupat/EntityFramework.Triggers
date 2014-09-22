@@ -89,12 +89,14 @@ namespace EntityFramework.Triggers {
 		/// </summary>
 		/// <param name="dbContext"></param>
 		/// <returns></returns>
-		public static Int32 SaveChangesWithTriggers(this DbContext dbContext) {
+		public static Int32 SaveChangesWithTriggers(this DbContext dbContext, Func<Int32> baseSaveChanges) {
 			try {
-				var afterActions = dbContext.RaiseTheBeforeEvents();
-				var result = dbContext.SaveChanges();
-				dbContext.RaiseTheAfterEvents(afterActions);
-				return result;
+				using (new InstanceReEntrancyGuard(dbContext, "When overriding SaveChanges(), you must pass `base.SaveChanges` to SaveChangesWithTriggers(). For example, { public override Int32 SaveChanges() { this.SaveChangesWithTriggers(base.SaveChanges); } }", () => baseSaveChanges == null)) {
+					var afterActions = dbContext.RaiseTheBeforeEvents();
+					var result = baseSaveChanges();
+					dbContext.RaiseTheAfterEvents(afterActions);
+					return result;
+				}
 			}
 			catch (Exception exception) {
 				dbContext.RaiseTheFailedEvents(exception);
@@ -102,16 +104,18 @@ namespace EntityFramework.Triggers {
 			}
 		}
 
-		public static Task<Int32> SaveChangesWithTriggersAsync<TDbContext>(this TDbContext dbContext) where TDbContext : DbContext {
-			return dbContext.SaveChangesWithTriggersAsync(CancellationToken.None);
+		public static Task<Int32> SaveChangesWithTriggersAsync<TDbContext>(this TDbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync) where TDbContext : DbContext {
+			return dbContext.SaveChangesWithTriggersAsync(baseSaveChangesAsync, CancellationToken.None);
 		}
 
-		public static async Task<Int32> SaveChangesWithTriggersAsync<TDbContext>(this TDbContext dbContext, CancellationToken cancellationToken) where TDbContext : DbContext {
+		public static async Task<Int32> SaveChangesWithTriggersAsync<TDbContext>(this TDbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken) where TDbContext : DbContext {
 			try {
-				var afterActions = dbContext.RaiseTheBeforeEvents();
-				var result = await dbContext.SaveChangesAsync(cancellationToken);
-				dbContext.RaiseTheAfterEvents(afterActions);
-				return result;
+				using (new InstanceReEntrancyGuard(dbContext, "When overriding SaveChangesAsync(), you must pass `base.SaveChangesAsync` to SaveChangesWithTriggersAsync(). For example, { public override Int32 SaveChangesAsync() { this.SaveChangesWithTriggers(base.SaveChangesAsync); } }", () => baseSaveChangesAsync == null)) {
+					var afterActions = dbContext.RaiseTheBeforeEvents();
+					var result = await baseSaveChangesAsync(cancellationToken);
+					dbContext.RaiseTheAfterEvents(afterActions);
+					return result;
+				}
 			}
 			catch (Exception exception) {
 				dbContext.RaiseTheFailedEvents(exception);

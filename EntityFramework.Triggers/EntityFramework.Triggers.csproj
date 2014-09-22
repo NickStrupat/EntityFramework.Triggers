@@ -58,6 +58,7 @@
     <Compile Include="EntityWithTriggers.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IEntityWithTriggers.cs" />
+    <Compile Include="InstanceReEntrancyGuard.cs" />
     <Compile Include="ITriggerable.cs" />
     <Compile Include="ITriggers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

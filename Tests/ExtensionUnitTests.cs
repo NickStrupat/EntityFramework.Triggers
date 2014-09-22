@@ -19,11 +19,11 @@ namespace Tests {
 		private String updateFailedThingValue;
         [TestMethod]
         public void TestSynchronous() {
-            TestEvents(context => context.SaveChangesWithTriggers());
+            TestEvents(context => context.SaveChanges());
         }
         [TestMethod]
         public void TestAsynchronous() {
-            TestEvents(context => context.SaveChangesWithTriggersAsync().Result);
+            TestEvents(context => context.SaveChangesAsync().Result);
         }
         private void TestEvents(Func<SealedContext, Int32> saveChangesAction) {
             insertingFiredCount = 0;
@@ -62,7 +62,7 @@ namespace Tests {
 
 				nickStrupat.LastName = null;
 				try {
-					context.SaveChangesWithTriggers();
+					context.SaveChanges();
 				}
 				catch (DbEntityValidationException ex) {
 					nickStrupat.LastName = "Strupat";
@@ -70,7 +70,7 @@ namespace Tests {
 				catch (Exception ex) {
 					Assert.Fail(ex.GetType().Name + " exception caught");
 				}
-				context.SaveChangesWithTriggers();
+				context.SaveChanges();
 				Assert.AreEqual(updateFailedFiredCount, 1);
 				Assert.IsTrue(context.Things.OrderByDescending(x => x.Id).First().Value == updateFailedThingValue);
 
