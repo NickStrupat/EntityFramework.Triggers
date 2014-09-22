@@ -87,7 +87,7 @@ To use triggers in closed inheritance hierarchies, such as ASP.NET Identity's `I
 			public DbSet<Person> People { get; set; }
 			public DbSet<LogEntry> Log { get; set; }
 
-			public override Int32 SaveChanges() { return this.SaveChangesWithTriggers(base.SaveChanges);
+			public override Int32 SaveChanges() {
 				return this.SaveChangesWithTriggers(base.SaveChanges);
 			}
 			public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
