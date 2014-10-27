@@ -73,19 +73,22 @@ namespace EntityFramework.Triggers {
 
         private IEnumerable<Action<TContext>> RaiseTheBeforeEvents() {
             var afterActions = new List<Action<TContext>>();
-            foreach (var entry in ChangeTracker.Entries<ITriggers<TContext>>()) {
-                switch (entry.State) {
+			foreach (var entry in ChangeTracker.Entries<ITriggers<TContext>>()) {
+				switch (entry.State) {
                     case EntityState.Added:
                         entry.Entity.OnBeforeInsert((TContext)this);
-                        afterActions.Add(entry.Entity.OnAfterInsert);
+						if (entry.State == EntityState.Added)
+							afterActions.Add(entry.Entity.OnAfterInsert);
                         break;
                     case EntityState.Deleted:
                         entry.Entity.OnBeforeDelete((TContext)this);
-                        afterActions.Add(entry.Entity.OnAfterDelete);
+						if (entry.State == EntityState.Deleted)
+							afterActions.Add(entry.Entity.OnAfterDelete);
                         break;
                     case EntityState.Modified:
                         entry.Entity.OnBeforeUpdate((TContext)this);
-                        afterActions.Add(entry.Entity.OnAfterUpdate);
+						if (entry.State == EntityState.Modified)
+							afterActions.Add(entry.Entity.OnAfterUpdate);
                         break;
                 }
             }

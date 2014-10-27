@@ -34,15 +34,18 @@ namespace EntityFramework.Triggers {
 				switch (entry.State) {
 					case EntityState.Added:
 						triggers.OnBeforeInsert(dbContext);
-						afterActions.Add(triggers.OnAfterInsert);
+						if (entry.State == EntityState.Added)
+							afterActions.Add(triggers.OnAfterInsert);
 						break;
 					case EntityState.Deleted:
 						triggers.OnBeforeDelete(dbContext);
-						afterActions.Add(triggers.OnAfterDelete);
+						if (entry.State == EntityState.Deleted)
+							afterActions.Add(triggers.OnAfterDelete);
 						break;
 					case EntityState.Modified:
 						triggers.OnBeforeUpdate(dbContext);
-						afterActions.Add(triggers.OnAfterUpdate);
+						if (entry.State == EntityState.Modified)
+							afterActions.Add(triggers.OnAfterUpdate);
 						break;
 				}
 			}

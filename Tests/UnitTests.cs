@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -41,6 +42,10 @@ namespace Tests {
                                                  LastName = "Strupat",
                                              };
                 AddHandlers(nickStrupat);
+				nickStrupat.Deleting += e => {
+					e.Entity.IsMarkedDeleted = true;
+					e.Context.Entry(e.Entity).State = EntityState.Modified;
+				};
                 context.People.Add(nickStrupat);
 
 	            var johnSmith = new Person {
@@ -84,6 +89,7 @@ namespace Tests {
         private void AddHandlers(Person person) {
             person.Inserting += e => e.Context.Things.Add(new Thing {Value = "Insert trigger fired for " + e.Entity.FirstName});
 			person.Inserting += e => ++insertingFiredCount;
+			person.Inserting += e => e.Entity.LastName = "asdf";
             person.Updating += e => ++updatingFiredCount;
             person.Deleting += e => ++deletingFiredCount;
             person.Inserted += e => ++insertedFiredCount;
@@ -102,7 +108,7 @@ namespace Tests {
             Assert.AreEqual(deletingFiredCount, 2);
             Assert.AreEqual(insertedFiredCount, 2);
             Assert.AreEqual(updatedFiredCount, 2);
-            Assert.AreEqual(deletedFiredCount, 2);
+            Assert.AreEqual(deletedFiredCount, 1);
         }
         private void AssertUpdateEventsHaveFired() {
             Assert.AreEqual(updatingFiredCount, 1);

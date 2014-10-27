@@ -8,7 +8,8 @@ namespace Tests {
         public Int64 Id { get; protected set; }
         public String FirstName { get; set; }
 		[Required]
-        public String LastName { get; set; }
+		public String LastName { get; set; }
+		public Boolean IsMarkedDeleted { get; set; }
     }
 
 	public class TriggerablePerson : ITriggerable<TriggerablePerson> {
@@ -17,5 +18,6 @@ namespace Tests {
 		public String FirstName { get; set; }
 		[Required]
 		public String LastName { get; set; }
+		public Boolean IsMarkedDeleted { get; set; }
 	}
 }

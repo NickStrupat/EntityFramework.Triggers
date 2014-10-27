@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
 using EntityFramework.Triggers;
@@ -41,7 +42,11 @@ namespace Tests {
                                                  FirstName = "Nick",
                                                  LastName = "Strupat",
                                              };
-                AddHandlers(nickStrupat);
+				AddHandlers(nickStrupat);
+				nickStrupat.Triggers().Deleting += e => {
+					e.Entity.IsMarkedDeleted = true;
+					e.Context.Entry(e.Entity).State = EntityState.Modified;
+				};
                 context.People.Add(nickStrupat);
 
                 var johnSmith = new TriggerablePerson {
@@ -103,7 +108,7 @@ namespace Tests {
             Assert.AreEqual(deletingFiredCount, 2);
             Assert.AreEqual(insertedFiredCount, 2);
             Assert.AreEqual(updatedFiredCount, 2);
-            Assert.AreEqual(deletedFiredCount, 2);
+            Assert.AreEqual(deletedFiredCount, 1);
         }
         private void AssertUpdateEventsHaveFired() {
             Assert.AreEqual(updatingFiredCount, 1);
