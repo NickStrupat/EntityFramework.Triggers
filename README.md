@@ -18,9 +18,14 @@ To use triggers in closed inheritance hierarchies, such as ASP.NET Identity's `I
 			public DateTime UpdateDateTime { get; protected set; }
 			public String FirstName { get; set; }
 			public String LastName { get; set; }
+			public Boolean IsDeleted { get; set; }
 			public Person() {
 				Inserting += entry => entry.Entity.InsertDateTime = entry.Entity.UpdateDateTime = DateTime.Now;
 				Updating += entry => entry.Entity.UpdateDateTime = DateTime.Now;
+				Deleting += entry => {
+					entry.Entity.IsDeleted = true;
+					entry.Context.Entry(entry.Entity).State = EntityState.Modified;
+				};
 			}
 		}
 		private class LogEntry {
@@ -74,9 +79,14 @@ To use triggers in closed inheritance hierarchies, such as ASP.NET Identity's `I
 			public DateTime UpdateDateTime { get; protected set; }
 			public String FirstName { get; set; }
 			public String LastName { get; set; }
+			public Boolean IsDeleted { get; set; }
 			public Person() {
 				this.Triggers().Inserting += entry => { entry.Entity.InsertDateTime = entry.Entity.UpdateDateTime = DateTime.Now; };
 				this.Triggers().Updating += entry => { entry.Entity.UpdateDateTime = DateTime.Now; };
+				this.Triggers().Deleting += entry => {
+					entry.Entity.IsDeleted = true;
+					entry.Context.Entry(entry.Entity).State = EntityState.Modified;
+				};
 			}
 		}
 		private class LogEntry {
