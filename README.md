@@ -24,7 +24,7 @@ To use triggers in closed inheritance hierarchies, such as ASP.NET Identity's `I
 				Updating += entry => entry.Entity.UpdateDateTime = DateTime.Now;
 				Deleting += entry => {
 					entry.Entity.IsDeleted = true;
-					entry.Context.Entry(entry.Entity).State = EntityState.Modified;
+					entry.Cancel(); // Cancels the deletion, but will persist changes with the same effects as EntityState.Modified
 				};
 			}
 		}
@@ -85,7 +85,7 @@ To use triggers in closed inheritance hierarchies, such as ASP.NET Identity's `I
 				this.Triggers().Updating += entry => { entry.Entity.UpdateDateTime = DateTime.Now; };
 				this.Triggers().Deleting += entry => {
 					entry.Entity.IsDeleted = true;
-					entry.Context.Entry(entry.Entity).State = EntityState.Modified;
+					entry.Cancel(); // Cancels the deletion, but will persist changes with the same effects as EntityState.Modified
 				};
 			}
 		}
