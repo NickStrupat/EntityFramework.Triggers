@@ -2,15 +2,15 @@ using System;
 using System.Data.Entity;
 
 namespace EntityFramework.Triggers {
-	internal interface ITriggers<in TDbContext> where TDbContext : DbContext {
-		void OnBeforeInsert(TDbContext context);
-		void OnBeforeUpdate(TDbContext context);
-		void OnBeforeDelete(TDbContext context);
-		void OnInsertFailed(TDbContext dbContext, Exception exception);
-		void OnUpdateFailed(TDbContext dbContext, Exception exception);
-		void OnDeleteFailed(TDbContext dbContext, Exception exception);
-		void OnAfterInsert(TDbContext context);
-		void OnAfterUpdate(TDbContext context);
-		void OnAfterDelete(TDbContext context);
+	internal interface ITriggers<TDbContext> where TDbContext : DbContext {
+		void OnBeforeInsert(ITriggerable triggerable, TDbContext context);
+		void OnBeforeUpdate(ITriggerable triggerable, TDbContext context);
+		void OnBeforeDelete(ITriggerable triggerable, TDbContext context);
+		void OnInsertFailed(ITriggerable triggerable, TDbContext dbContext, Exception exception);
+		void OnUpdateFailed(ITriggerable triggerable, TDbContext dbContext, Exception exception);
+		void OnDeleteFailed(ITriggerable triggerable, TDbContext dbContext, Exception exception);
+		void OnAfterInsert(ITriggerable triggerable, TDbContext context);
+		void OnAfterUpdate(ITriggerable triggerable, TDbContext context);
+		void OnAfterDelete(ITriggerable triggerable, TDbContext context);
 	}
 }

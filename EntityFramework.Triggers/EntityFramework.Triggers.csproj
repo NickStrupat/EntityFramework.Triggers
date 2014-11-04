@@ -57,13 +57,13 @@
     <Compile Include="DbContextWithTriggers.cs" />
     <Compile Include="EntityWithTriggers.cs" />
     <Compile Include="Extensions.cs" />
-    <Compile Include="IEntityWithTriggers.cs" />
     <Compile Include="InstanceReEntrancyGuard.cs" />
     <Compile Include="ITriggerable.cs" />
     <Compile Include="ITriggers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Triggerable.cs" />
     <Compile Include="Triggers.cs" />
-    <Compile Include="TriggersWeak.cs" />
+    <Compile Include="TriggersWeakRefs.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

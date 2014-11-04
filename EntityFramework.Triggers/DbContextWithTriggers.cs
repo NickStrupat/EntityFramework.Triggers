@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Validation;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace EntityFramework.Triggers {
     /// <summary>Base class to enable 'EntityWithTriggers' events. Derive your context class from this class to have those events raised accordingly when 'SaveChanges' and 'SaveChangesAsync' are invoked</summary>
-    public abstract class DbContextWithTriggers<TContext> : DbContext where TContext : DbContextWithTriggers<TContext> {
+	public abstract class DbContextWithTriggers<TDbContext> : DbContext where TDbContext : DbContextWithTriggers<TDbContext> {
         /// <summary>
         /// Constructs a new context instance using conventions to create the name of the database to
         ///             which a connection will be made.  The by-convention name is the full name (namespace + class name)
@@ -71,83 +68,17 @@ namespace EntityFramework.Triggers {
         ///             </param>
         protected DbContextWithTriggers(ObjectContext objectContext, Boolean dbContextOwnsObjectContext) : base(objectContext, dbContextOwnsObjectContext) {}
 
-        private IEnumerable<Action<TContext>> RaiseTheBeforeEvents() {
-            var afterActions = new List<Action<TContext>>();
-			foreach (var entry in ChangeTracker.Entries<ITriggers<TContext>>()) {
-				switch (entry.State) {
-                    case EntityState.Added:
-                        entry.Entity.OnBeforeInsert((TContext)this);
-						if (entry.State == EntityState.Added)
-							afterActions.Add(entry.Entity.OnAfterInsert);
-                        break;
-                    case EntityState.Deleted:
-                        entry.Entity.OnBeforeDelete((TContext)this);
-						if (entry.State == EntityState.Deleted)
-							afterActions.Add(entry.Entity.OnAfterDelete);
-                        break;
-                    case EntityState.Modified:
-                        entry.Entity.OnBeforeUpdate((TContext)this);
-						if (entry.State == EntityState.Modified)
-							afterActions.Add(entry.Entity.OnAfterUpdate);
-                        break;
-                }
-            }
-            return afterActions;
-        }
-
-        private void RaiseTheAfterEvents(IEnumerable<Action<TContext>> afterActions) {
-            foreach (var afterAction in afterActions)
-                afterAction((TContext)this);
-        }
-
-		private void RaiseTheFailedEvents(Exception exception) {
-			var dbUpdateException = exception as DbUpdateException;
-			var dbEntityValidationException = exception as DbEntityValidationException;
-			if (dbUpdateException != null) {
-				foreach (var entry in dbUpdateException.Entries.Where(x => x.Entity is ITriggers<TContext>))
-					RaiseTheFailedEvents(entry, dbUpdateException);
-			}
-			else if (dbEntityValidationException != null) {
-				foreach (var dbEntityValidationResult in dbEntityValidationException.EntityValidationErrors.Where(x => x.Entry.Entity is ITriggers<TContext>))
-					RaiseTheFailedEvents(dbEntityValidationResult.Entry, dbEntityValidationException);
-			}
-		}
-
-	    private void RaiseTheFailedEvents(DbEntityEntry entry, Exception exception) {
-			var entity = (ITriggers<TContext>)entry.Entity;
-			switch (entry.State) {
-				case EntityState.Added:
-					entity.OnInsertFailed((TContext)this, exception);
-					break;
-				case EntityState.Modified:
-					entity.OnUpdateFailed((TContext)this, exception);
-					break;
-				case EntityState.Deleted:
-					entity.OnDeleteFailed((TContext)this, exception);
-					break;
-			}
-		}
-
         /// <summary>
-        /// Saves all changes made in this context to the underlying database.
+        /// Saves all changes made in this context to the underlying database, while raising the events of all tracked entities which inherit from ITriggerable.
         /// </summary>
         /// <returns>
         /// The number of objects written to the underlying database. 
         /// </returns>
         public override Int32 SaveChanges() {
-	        try {
-				var afterActions = RaiseTheBeforeEvents();
-				var result = base.SaveChanges();
-				RaiseTheAfterEvents(afterActions);
-				return result;
-			}
-			catch (Exception exception) {
-				RaiseTheFailedEvents(exception);
-				throw;
-			}
+	        return ((TDbContext)this).SaveChangesWithTriggers(base.SaveChanges);
         }
         /// <summary>
-        /// Asynchronously saves all changes made in this context to the underlying database.
+		/// Asynchronously saves all changes made in this context to the underlying database, while raising the events of all tracked entities which inherit from ITriggerable.
         /// </summary>
         /// <remarks>
         /// Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
@@ -160,17 +91,8 @@ namespace EntityFramework.Triggers {
         ///             The task result contains the number of objects written to the underlying database.
         /// </returns>
         /// <exception cref="T:System.InvalidOperationException">Thrown if the context has been disposed.</exception>
-        public override async Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
-			try {
-				var afterActions = RaiseTheBeforeEvents();
-				var result = await base.SaveChangesAsync(cancellationToken);
-				RaiseTheAfterEvents(afterActions);
-				return result;
-			}
-			catch (Exception exception) {
-				RaiseTheFailedEvents(exception);
-				throw;
-			}
+        public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
+			return ((TDbContext)this).SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken);
         }
     }
 }
