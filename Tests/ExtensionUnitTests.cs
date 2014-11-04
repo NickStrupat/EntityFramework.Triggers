@@ -26,7 +26,7 @@ namespace Tests {
         public void TestAsynchronous() {
             TestEvents(context => context.SaveChangesAsync().Result);
         }
-        private void TestEvents(Func<SealedContext, Int32> saveChangesAction) {
+        private void TestEvents(Func<Context2, Int32> saveChangesAction) {
             insertingFiredCount = 0;
             updatingFiredCount = 0;
 			deletingFiredCount = 0;
@@ -37,19 +37,19 @@ namespace Tests {
             updatedFiredCount = 0;
             deletedFiredCount = 0;
 	        updateFailedThingValue = null;
-            using (var context = new SealedContext()) {
-                var nickStrupat = new TriggerablePerson {
+            using (var context = new Context2()) {
+                var nickStrupat = new Person2 {
                                                  FirstName = "Nick",
                                                  LastName = "Strupat",
                                              };
 				AddHandlers(nickStrupat);
-				nickStrupat.Triggers().Deleting += e => {
+				nickStrupat.Triggers.Deleting += e => {
 					e.Entity.IsMarkedDeleted = true;
-					e.Context.Entry(e.Entity).State = EntityState.Modified;
+					e.Cancel();
 				};
                 context.People.Add(nickStrupat);
 
-                var johnSmith = new TriggerablePerson {
+				var johnSmith = new Person2 {
                                                FirstName = "John",
                                                LastName = "Smith"
                                            };
@@ -87,20 +87,20 @@ namespace Tests {
                 context.Database.Delete();
             }
         }
-		private void AddHandlers(TriggerablePerson person) {
-			person.Triggers().Inserting += e => e.GetContext<SealedContext>().Things.Add(new TriggerableThing { Value = "Insert trigger fired for " + e.Entity.FirstName });
-			person.Triggers().Inserting += e => ++insertingFiredCount;
-			person.Triggers().Updating += e => ++updatingFiredCount;
-			person.Triggers().Deleting += e => ++deletingFiredCount;
-			person.Triggers().Inserted += e => ++insertedFiredCount;
-			person.Triggers().Updated += e => ++updatedFiredCount;
-			person.Triggers().Deleted += e => ++deletedFiredCount;
-			person.Triggers().InsertFailed += e => e.GetContext<SealedContext>().Things.Add(new TriggerableThing { Value = "Insert failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
-			person.Triggers().InsertFailed += e => ++insertFailedFiredCount;
-			person.Triggers().UpdateFailed += e => e.GetContext<SealedContext>().Things.Add(new TriggerableThing { Value = updateFailedThingValue = "Update failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
-			person.Triggers().UpdateFailed += e => ++updateFailedFiredCount;
-			person.Triggers().DeleteFailed += e => e.GetContext<SealedContext>().Things.Add(new TriggerableThing { Value = "Delete failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
-			person.Triggers().DeleteFailed += e => ++deleteFailedFiredCount;
+		private void AddHandlers(Person2 person) {
+			person.Triggers.Inserting += e => e.Context.Things.Add(new Thing { Value = "Insert trigger fired for " + e.Entity.FirstName });
+			person.Triggers.Inserting += e => ++insertingFiredCount;
+			person.Triggers.Updating += e => ++updatingFiredCount;
+			person.Triggers.Deleting += e => ++deletingFiredCount;
+			person.Triggers.Inserted += e => ++insertedFiredCount;
+			person.Triggers.Updated += e => ++updatedFiredCount;
+			person.Triggers.Deleted += e => ++deletedFiredCount;
+			person.Triggers.InsertFailed += e => e.Context.Things.Add(new Thing { Value = "Insert failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
+			person.Triggers.InsertFailed += e => ++insertFailedFiredCount;
+			person.Triggers.UpdateFailed += e => e.Context.Things.Add(new Thing { Value = updateFailedThingValue = "Update failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
+			person.Triggers.UpdateFailed += e => ++updateFailedFiredCount;
+			person.Triggers.DeleteFailed += e => e.Context.Things.Add(new Thing { Value = "Delete failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
+			person.Triggers.DeleteFailed += e => ++deleteFailedFiredCount;
         }
         private void AssertAllEventsHaveFired() {
             Assert.AreEqual(insertingFiredCount, 2);

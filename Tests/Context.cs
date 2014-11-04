@@ -10,9 +10,9 @@ namespace Tests {
         public DbSet<Thing> Things { get; set; }
     }
 
-	public class SealedContext : DbContext {
-		public DbSet<TriggerablePerson> People { get; set; }
-		public DbSet<TriggerableThing> Things { get; set; }
+	public class Context2 : DbContext {
+		public DbSet<Person2> People { get; set; }
+		public DbSet<Thing> Things { get; set; }
 
 		public override Int32 SaveChanges() {
 			return this.SaveChangesWithTriggers(base.SaveChanges);

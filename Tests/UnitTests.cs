@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -44,7 +43,7 @@ namespace Tests {
                 AddHandlers(nickStrupat);
 				nickStrupat.Deleting += e => {
 					e.Entity.IsMarkedDeleted = true;
-					e.Context.Entry(e.Entity).State = EntityState.Modified;
+					e.Cancel();
 				};
                 context.People.Add(nickStrupat);
 
