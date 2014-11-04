@@ -73,7 +73,9 @@ To use triggers in closed inheritance hierarchies, such as ASP.NET Identity's `I
 ## Extension method usage
 
 	class Program {
-		private class Person : ITriggerable<Person> {
+		private class Person : ITriggerable {
+			public Triggers<Person, Context> Triggers { get { return this.Triggers<Person, Context>(); } }
+
 			public Int64 Id { get; protected set; }
 			public DateTime InsertDateTime { get; protected set; }
 			public DateTime UpdateDateTime { get; protected set; }
@@ -81,9 +83,9 @@ To use triggers in closed inheritance hierarchies, such as ASP.NET Identity's `I
 			public String LastName { get; set; }
 			public Boolean IsDeleted { get; set; }
 			public Person() {
-				this.Triggers().Inserting += entry => { entry.Entity.InsertDateTime = entry.Entity.UpdateDateTime = DateTime.Now; };
-				this.Triggers().Updating += entry => { entry.Entity.UpdateDateTime = DateTime.Now; };
-				this.Triggers().Deleting += entry => {
+				this.Triggers.Inserting += entry => { entry.Entity.InsertDateTime = entry.Entity.UpdateDateTime = DateTime.Now; };
+				this.Triggers.Updating += entry => { entry.Entity.UpdateDateTime = DateTime.Now; };
+				this.Triggers.Deleting += entry => {
 					entry.Entity.IsDeleted = true;
 					entry.Cancel(); // Cancels the deletion, but will persist changes with the same effects as EntityState.Modified
 				};
@@ -114,15 +116,15 @@ To use triggers in closed inheritance hierarchies, such as ASP.NET Identity's `I
 					FirstName = "Nick",
 					LastName = "Strupat"
 				};
-				nickStrupat.Triggers().Inserting += e => {
-					e.GetContext<Context>().Log.Add(new LogEntry { Message = "Insert trigger fired for " + e.Entity.FirstName });
+				nickStrupat.Triggers.Inserting += e => {
+					e.Context.Log.Add(new LogEntry { Message = "Insert trigger fired for " + e.Entity.FirstName });
 					Console.WriteLine("Inserting " + e.Entity.FirstName);
 				};
-				nickStrupat.Triggers().Updating += e => Console.WriteLine("Updating " + e.Entity.FirstName);
-				nickStrupat.Triggers().Deleting += e => Console.WriteLine("Deleting " + e.Entity.FirstName);
-				nickStrupat.Triggers().Inserted += e => Console.WriteLine("Inserted " + e.Entity.FirstName);
-				nickStrupat.Triggers().Updated += e => Console.WriteLine("Updated " + e.Entity.FirstName);
-				nickStrupat.Triggers().Deleted += e => Console.WriteLine("Deleted " + e.Entity.FirstName);
+				nickStrupat.Triggers.Updating += e => Console.WriteLine("Updating " + e.Entity.FirstName);
+				nickStrupat.Triggers.Deleting += e => Console.WriteLine("Deleting " + e.Entity.FirstName);
+				nickStrupat.Triggers.Inserted += e => Console.WriteLine("Inserted " + e.Entity.FirstName);
+				nickStrupat.Triggers.Updated += e => Console.WriteLine("Updated " + e.Entity.FirstName);
+				nickStrupat.Triggers.Deleted += e => Console.WriteLine("Deleted " + e.Entity.FirstName);
 
 				context.People.Add(nickStrupat);
 				context.SaveChanges();
