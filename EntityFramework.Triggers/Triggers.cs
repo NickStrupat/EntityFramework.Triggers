@@ -1,19 +1,13 @@
 using System;
 using System.Data.Entity;
-using System.Runtime.CompilerServices;
 
 namespace EntityFramework.Triggers {
-	public class Triggers<TTriggerable, TDbContext> : ITriggers<TDbContext>
-		where TDbContext : DbContext
-		where TTriggerable : class, ITriggerable {
-
-		//internal static readonly ConditionalWeakTable<ITriggerable, ITriggers<TDbContext>> TriggersWeakRefs = new ConditionalWeakTable<ITriggerable, ITriggers<TDbContext>>(); 
-
+	public class Triggers<TTriggerable> : ITriggers where TTriggerable : class, ITriggerable {
 		/// <summary>Contains the context and the instance of the changed entity</summary>
 		public class Entry {
 			internal Entry() {}
 			public TTriggerable Entity { get; internal set; }
-			public TDbContext Context { get; internal set; }
+			public DbContext Context { get; internal set; }
 		}
 		public class FailedEntry : Entry {
 			internal FailedEntry() {}
@@ -69,14 +63,14 @@ namespace EntityFramework.Triggers {
 				eventHandler(entry);
 		}
 
-		void ITriggers<TDbContext>.OnBeforeInsert(ITriggerable triggerable, TDbContext dbContext) { RaiseDbEntityEntriesChangeEvent(Inserting, new InsertingEntry { Entity = (TTriggerable) triggerable, Context = dbContext }); }
-		void ITriggers<TDbContext>.OnBeforeUpdate(ITriggerable triggerable, TDbContext dbContext) { RaiseDbEntityEntriesChangeEvent(Updating, new UpdatingEntry { Entity = (TTriggerable) triggerable, Context = dbContext }); }
-		void ITriggers<TDbContext>.OnBeforeDelete(ITriggerable triggerable, TDbContext dbContext) { RaiseDbEntityEntriesChangeEvent(Deleting, new DeletingEntry { Entity = (TTriggerable) triggerable, Context = dbContext }); }
-		void ITriggers<TDbContext>.OnInsertFailed(ITriggerable triggerable, TDbContext dbContext, Exception exception) { RaiseDbEntityEntriesChangeEvent(InsertFailed, new FailedEntry { Entity = (TTriggerable) triggerable, Context = dbContext, Exception = exception }); }
-		void ITriggers<TDbContext>.OnUpdateFailed(ITriggerable triggerable, TDbContext dbContext, Exception exception) { RaiseDbEntityEntriesChangeEvent(UpdateFailed, new FailedEntry { Entity = (TTriggerable) triggerable, Context = dbContext, Exception = exception }); }
-		void ITriggers<TDbContext>.OnDeleteFailed(ITriggerable triggerable, TDbContext dbContext, Exception exception) { RaiseDbEntityEntriesChangeEvent(DeleteFailed, new FailedEntry { Entity = (TTriggerable) triggerable, Context = dbContext, Exception = exception }); }
-		void ITriggers<TDbContext>.OnAfterInsert(ITriggerable triggerable, TDbContext dbContext) { RaiseDbEntityEntriesChangeEvent(Inserted, new Entry { Entity = (TTriggerable) triggerable, Context = dbContext }); }
-		void ITriggers<TDbContext>.OnAfterUpdate(ITriggerable triggerable, TDbContext dbContext) { RaiseDbEntityEntriesChangeEvent(Updated, new Entry { Entity = (TTriggerable) triggerable, Context = dbContext }); }
-		void ITriggers<TDbContext>.OnAfterDelete(ITriggerable triggerable, TDbContext dbContext) { RaiseDbEntityEntriesChangeEvent(Deleted, new Entry { Entity = (TTriggerable) triggerable, Context = dbContext }); }
+		void ITriggers.OnBeforeInsert(ITriggerable triggerable, DbContext dbContext) { RaiseDbEntityEntriesChangeEvent(Inserting, new InsertingEntry { Entity = (TTriggerable) triggerable, Context = dbContext }); }
+		void ITriggers.OnBeforeUpdate(ITriggerable triggerable, DbContext dbContext) { RaiseDbEntityEntriesChangeEvent(Updating, new UpdatingEntry { Entity = (TTriggerable) triggerable, Context = dbContext }); }
+		void ITriggers.OnBeforeDelete(ITriggerable triggerable, DbContext dbContext) { RaiseDbEntityEntriesChangeEvent(Deleting, new DeletingEntry { Entity = (TTriggerable) triggerable, Context = dbContext }); }
+		void ITriggers.OnInsertFailed(ITriggerable triggerable, DbContext dbContext, Exception exception) { RaiseDbEntityEntriesChangeEvent(InsertFailed, new FailedEntry { Entity = (TTriggerable) triggerable, Context = dbContext, Exception = exception }); }
+		void ITriggers.OnUpdateFailed(ITriggerable triggerable, DbContext dbContext, Exception exception) { RaiseDbEntityEntriesChangeEvent(UpdateFailed, new FailedEntry { Entity = (TTriggerable) triggerable, Context = dbContext, Exception = exception }); }
+		void ITriggers.OnDeleteFailed(ITriggerable triggerable, DbContext dbContext, Exception exception) { RaiseDbEntityEntriesChangeEvent(DeleteFailed, new FailedEntry { Entity = (TTriggerable) triggerable, Context = dbContext, Exception = exception }); }
+		void ITriggers.OnAfterInsert(ITriggerable triggerable, DbContext dbContext) { RaiseDbEntityEntriesChangeEvent(Inserted, new Entry { Entity = (TTriggerable) triggerable, Context = dbContext }); }
+		void ITriggers.OnAfterUpdate(ITriggerable triggerable, DbContext dbContext) { RaiseDbEntityEntriesChangeEvent(Updated, new Entry { Entity = (TTriggerable) triggerable, Context = dbContext }); }
+		void ITriggers.OnAfterDelete(ITriggerable triggerable, DbContext dbContext) { RaiseDbEntityEntriesChangeEvent(Deleted, new Entry { Entity = (TTriggerable) triggerable, Context = dbContext }); }
 	}
 }

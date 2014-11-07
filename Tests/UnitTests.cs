@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Entity.Validation;
 using System.Linq;
+using EntityFramework.Triggers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Tests {
@@ -41,7 +42,7 @@ namespace Tests {
                                                  LastName = "Strupat",
                                              };
                 AddHandlers(nickStrupat);
-				nickStrupat.Deleting += e => {
+				nickStrupat.Triggers().Deleting += e => {
 					e.Entity.IsMarkedDeleted = true;
 					e.Cancel();
 				};
@@ -86,20 +87,20 @@ namespace Tests {
             }
         }
         private void AddHandlers(Person person) {
-            person.Inserting += e => e.Context.Things.Add(new Thing {Value = "Insert trigger fired for " + e.Entity.FirstName});
-			person.Inserting += e => ++insertingFiredCount;
-			person.Inserting += e => e.Entity.LastName = "asdf";
-            person.Updating += e => ++updatingFiredCount;
-            person.Deleting += e => ++deletingFiredCount;
-            person.Inserted += e => ++insertedFiredCount;
-            person.Updated += e => ++updatedFiredCount;
-            person.Deleted += e => ++deletedFiredCount;
-	        person.InsertFailed += e => e.Context.Things.Add(new Thing { Value = "Insert failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
-			person.InsertFailed += e => ++insertFailedFiredCount;
-			person.UpdateFailed += e => e.Context.Things.Add(new Thing { Value = updateFailedThingValue = "Update failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
-			person.UpdateFailed += e => ++updateFailedFiredCount;
-			person.DeleteFailed += e => e.Context.Things.Add(new Thing { Value = "Delete failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
-			person.DeleteFailed += e => ++deleteFailedFiredCount;
+			person.Triggers().Inserting += e => ((Context)e.Context).Things.Add(new Thing { Value = "Insert trigger fired for " + e.Entity.FirstName });
+			person.Triggers().Inserting += e => ++insertingFiredCount;
+			person.Triggers().Inserting += e => e.Entity.LastName = "asdf";
+            person.Triggers().Updating += e => ++updatingFiredCount;
+            person.Triggers().Deleting += e => ++deletingFiredCount;
+            person.Triggers().Inserted += e => ++insertedFiredCount;
+            person.Triggers().Updated += e => ++updatedFiredCount;
+            person.Triggers().Deleted += e => ++deletedFiredCount;
+			person.Triggers().InsertFailed += e => ((Context)e.Context).Things.Add(new Thing { Value = "Insert failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
+			person.Triggers().InsertFailed += e => ++insertFailedFiredCount;
+			person.Triggers().UpdateFailed += e => ((Context)e.Context).Things.Add(new Thing { Value = updateFailedThingValue = "Update failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
+			person.Triggers().UpdateFailed += e => ++updateFailedFiredCount;
+			person.Triggers().DeleteFailed += e => ((Context)e.Context).Things.Add(new Thing { Value = "Delete failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
+			person.Triggers().DeleteFailed += e => ++deleteFailedFiredCount;
         }
         private void AssertAllEventsHaveFired() {
             Assert.AreEqual(insertingFiredCount, 2);

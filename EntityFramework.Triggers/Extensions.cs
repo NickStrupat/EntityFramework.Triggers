@@ -4,32 +4,27 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace EntityFramework.Triggers {
 	public static class Extensions {
-		internal static ITriggers<TDbContext> Triggers<TDbContext>(this ITriggerable triggerable)
-			where TDbContext : DbContext
-		{
-			ITriggers<TDbContext> triggers;
-			TriggersWeakRefs<TDbContext>.ConditionalWeakTable.TryGetValue(triggerable, out triggers);
+		private static readonly ConditionalWeakTable<ITriggerable, ITriggers> TriggersWeakRefs = new ConditionalWeakTable<ITriggerable, ITriggers>();
+		private static ITriggers Triggers(this ITriggerable triggerable) {
+			ITriggers triggers;
+			TriggersWeakRefs.TryGetValue(triggerable, out triggers);
 			return triggers;
 		}
 
-		public static Triggers<TTriggerable, TDbContext> Triggers<TTriggerable, TDbContext>(this TTriggerable triggerable)
-			where TTriggerable : class, ITriggerable
-			where TDbContext : DbContext
-		{
-			return (Triggers<TTriggerable, TDbContext>) TriggersWeakRefs<TDbContext>.ConditionalWeakTable.GetValue(triggerable, key => new Triggers<TTriggerable, TDbContext>());
+		public static Triggers<TTriggerable> Triggers<TTriggerable>(this TTriggerable triggerable) where TTriggerable : class, ITriggerable {
+			return (Triggers<TTriggerable>) TriggersWeakRefs.GetValue(triggerable, key => new Triggers<TTriggerable>());
 		}
 
-		private static IEnumerable<Action<TDbContext>> RaiseTheBeforeEvents<TDbContext>(this TDbContext dbContext)
-			where TDbContext : DbContext
-		{
-			var afterActions = new List<Action<TDbContext>>();
+		private static IEnumerable<Action<DbContext>> RaiseTheBeforeEvents(this DbContext dbContext) {
+			var afterActions = new List<Action<DbContext>>();
 			foreach (var entry in dbContext.ChangeTracker.Entries<ITriggerable>()) {
-				var triggers = entry.Entity.Triggers<TDbContext>();
+				var triggers = entry.Entity.Triggers();
 				if (triggers == null)
 					continue;
 				switch (entry.State) {
@@ -53,12 +48,12 @@ namespace EntityFramework.Triggers {
 			return afterActions;
 		}
 
-		private static void RaiseTheAfterEvents<TDbContext>(this TDbContext dbContext, IEnumerable<Action<TDbContext>> afterActions) where TDbContext : DbContext {
+		private static void RaiseTheAfterEvents(this DbContext dbContext, IEnumerable<Action<DbContext>> afterActions) {
 			foreach (var afterAction in afterActions)
 				afterAction(dbContext);
 		}
 
-		private static void RaiseTheFailedEvents<TDbContext>(this TDbContext dbContext, Exception exception) where TDbContext : DbContext {
+		private static void RaiseTheFailedEvents(this DbContext dbContext, Exception exception) {
 			var dbUpdateException = exception as DbUpdateException;
 			var dbEntityValidationException = exception as DbEntityValidationException;
 			if (dbUpdateException != null) {
@@ -71,9 +66,9 @@ namespace EntityFramework.Triggers {
 			}
 		}
 
-		private static void RaiseTheFailedEvents<TDbContext>(this TDbContext dbContext, DbEntityEntry entry, Exception exception) where TDbContext : DbContext {
+		private static void RaiseTheFailedEvents(this DbContext dbContext, DbEntityEntry entry, Exception exception) {
 			var triggerable = (ITriggerable) entry.Entity;
-			var triggers = triggerable.Triggers<TDbContext>();
+			var triggers = triggerable.Triggers();
 			if (triggers == null)
 				return;
 			switch (entry.State) {
@@ -88,13 +83,14 @@ namespace EntityFramework.Triggers {
 					break;
 			}
 		}
-
 		/// <summary>
-		/// Save changes to the store, firing trigger events accordingly
+		/// Saves all changes made in this context to the underlying database, firing trigger events accordingly.
 		/// </summary>
 		/// <param name="dbContext"></param>
-		/// <returns></returns>
-		public static Int32 SaveChangesWithTriggers<TDbContext>(this TDbContext dbContext, Func<Int32> baseSaveChanges) where TDbContext : DbContext {
+		/// <param name="baseSaveChanges">A delegate to base.SaveChanges(). Always pass `base.SaveChanges`.</param>
+		/// <example>this.SaveChangesWithTriggers(base.SaveChanges);</example>
+		/// <returns>The number of objects written to the underlying database.</returns>
+		public static Int32 SaveChangesWithTriggers(this DbContext dbContext, Func<Int32> baseSaveChanges) {
 			try {
 				using (new InstanceReEntrancyGuard(dbContext, "When overriding SaveChanges(), you must pass `base.SaveChanges` to SaveChangesWithTriggers(). For example, { public override Int32 SaveChanges() { this.SaveChangesWithTriggers(base.SaveChanges); } }", () => baseSaveChanges == null)) {
 					var afterActions = dbContext.RaiseTheBeforeEvents();
@@ -108,12 +104,15 @@ namespace EntityFramework.Triggers {
 				throw;
 			}
 		}
-
-		public static Task<Int32> SaveChangesWithTriggersAsync<TDbContext>(this TDbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync) where TDbContext : DbContext {
-			return dbContext.SaveChangesWithTriggersAsync(baseSaveChangesAsync, CancellationToken.None);
-		}
-
-		public static async Task<Int32> SaveChangesWithTriggersAsync<TDbContext>(this TDbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken) where TDbContext : DbContext {
+		/// <summary>
+		/// Asynchronously saves all changes made in this context to the underlying database, firing trigger events accordingly.
+		/// </summary>
+		/// <param name="dbContext"></param>
+		/// <param name="baseSaveChangesAsync">A delegate to base.SaveChangesAsync(). Always pass `base.SaveChangesAsync`.</param>
+		/// <param name="cancellationToken">A <see cref="T:System.Threading.CancellationToken"/> to observe while waiting for the task to complete.</param>
+		/// <example>this.SaveChangesWithTriggersAsync(base.SaveChangesAsync);</example>
+		/// <returns>A task that represents the asynchronous save operation. The task result contains the number of objects written to the underlying database.</returns>
+		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken) {
 			try {
 				using (new InstanceReEntrancyGuard(dbContext, "When overriding SaveChangesAsync(), you must pass `base.SaveChangesAsync` to SaveChangesWithTriggersAsync(). For example, { public override Int32 SaveChangesAsync() { this.SaveChangesWithTriggers(base.SaveChangesAsync); } }", () => baseSaveChangesAsync == null)) {
 					var afterActions = dbContext.RaiseTheBeforeEvents();
