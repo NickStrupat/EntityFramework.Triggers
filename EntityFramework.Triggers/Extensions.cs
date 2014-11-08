@@ -17,6 +17,12 @@ namespace EntityFramework.Triggers {
 			return triggers;
 		}
 
+		/// <summary>
+		/// Retrieve the <see cref="T:Triggers`1{TTriggerable}"/> object that contains the trigger events for this <see cref="ITriggerable"/>
+		/// </summary>
+		/// <typeparam name="TTriggerable"></typeparam>
+		/// <param name="triggerable"></param>
+		/// <returns></returns>
 		public static Triggers<TTriggerable> Triggers<TTriggerable>(this TTriggerable triggerable) where TTriggerable : class, ITriggerable {
 			return (Triggers<TTriggerable>) TriggersWeakRefs.GetValue(triggerable, key => new Triggers<TTriggerable>());
 		}
