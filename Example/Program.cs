@@ -6,7 +6,7 @@ using EntityFramework.Triggers;
 
 namespace Example {
 	class Program {
-		private class Person : ITriggerable {
+		public class Person : ITriggerable {
 			public Int64 Id { get; protected set; }
 			public DateTime InsertDateTime { get; protected set; }
 			public DateTime UpdateDateTime { get; protected set; }
@@ -22,11 +22,11 @@ namespace Example {
 				};
 			}
 		}
-		private class LogEntry {
+		public class LogEntry {
 			public Int64 Id { get; protected set; }
 			public String Message { get; set; }
 		}
-		private class Context : DbContext {
+		public class Context : DbContext {
 			public DbSet<Person> People { get; set; }
 			public DbSet<LogEntry> Log { get; set; }
 
