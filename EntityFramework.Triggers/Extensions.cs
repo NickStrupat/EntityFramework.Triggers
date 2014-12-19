@@ -110,6 +110,7 @@ namespace EntityFramework.Triggers {
 				throw;
 			}
 		}
+#if NET45 || NET451
 		/// <summary>
 		/// Asynchronously saves all changes made in this context to the underlying database, firing trigger events accordingly.
 		/// </summary>
@@ -132,5 +133,6 @@ namespace EntityFramework.Triggers {
 				throw;
 			}
 		}
+#endif
 	}
 }
