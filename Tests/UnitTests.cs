@@ -57,6 +57,7 @@ namespace Tests {
                 AssertNoEventsHaveFired();
 
                 saveChangesAction(context);
+				Assert.IsTrue(nickStrupat.Number == 42);
                 AssertInsertEventsHaveFired();
 				Assert.IsTrue(context.Things.First().Value == "Insert trigger fired for Nick");
 

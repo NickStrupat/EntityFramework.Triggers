@@ -62,6 +62,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Entity.cs" />
     <Compile Include="Thing.cs" />
     <Compile Include="Context.cs" />
     <Compile Include="Person.cs" />
