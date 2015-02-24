@@ -9,7 +9,7 @@ NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFramew
 
 ## Usage
 
-To use triggers on your entities, you simply need to have your entities inherit from `ITriggerable`, and override `SaveChanges()` in your DbContext class to call the `SaveChangesWithTriggers(base.SaveChanges)` extension method. For async/await functionality, override `SaveChangesAsync(CancellationToken)` to call `SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken)`.
+To use triggers on your entities, you simply need to have your entities inherit from `ITriggerable`, and override `SaveChanges()` in your DbContext class **(or use DbContextWithTriggers included in this library)** to call the `SaveChangesWithTriggers(base.SaveChanges)` extension method. For async/await functionality, override `SaveChangesAsync(CancellationToken)` to call `SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken)`.
 
 	class YourContext : DbContext {
 		// Your usual properties
