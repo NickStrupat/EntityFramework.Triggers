@@ -5,6 +5,7 @@ Add triggers to your entities with insert, update, and delete events. There are 
 
 NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFramework.Triggers/
 
+[![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)
 
 <strong>async/await supported</strong>
 
