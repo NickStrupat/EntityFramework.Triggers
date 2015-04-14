@@ -4,7 +4,7 @@ EntityFramework.Triggers
 Add triggers to your entities with insert, update, and delete events. There are three events for each: before, after, and upon failure.
 
 NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFramework.Triggers/
-[![NuGet Status](http://img.shields.io/nuget/v/Fody.svg?style=flat)](https://www.nuget.org/packages/Fody/)
+[![NuGet Status](http://img.shields.io/nuget/v/Fody.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)
 
 <strong>async/await supported</strong>
 
