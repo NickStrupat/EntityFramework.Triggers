@@ -10,55 +10,48 @@ using System.Threading.Tasks;
 
 namespace EntityFramework.Triggers {
 	public static class Extensions {
-		private static readonly ConditionalWeakTable<ITriggerable, List<ITriggers>> TriggersWeakRefs = new ConditionalWeakTable<ITriggerable, List<ITriggers>>();
-		private static List<ITriggers> Triggers(this ITriggerable triggerable) {
-			List<ITriggers> triggers;
-			TriggersWeakRefs.TryGetValue(triggerable, out triggers);
-			return triggers;
-		}
-
 		/// <summary>
 		/// Retrieve the <see cref="T:Triggers`1{TTriggerable}"/> object that contains the trigger events for this <see cref="ITriggerable"/>
 		/// </summary>
 		/// <typeparam name="TTriggerable"></typeparam>
 		/// <param name="triggerable"></param>
 		/// <returns></returns>
-		public static Triggers<TTriggerable> Triggers<TTriggerable>(this TTriggerable triggerable) where TTriggerable : class, ITriggerable {
-			var triggersList = TriggersWeakRefs.GetValue(triggerable, key => new List<ITriggers>());
-			var triggers = triggersList.SingleOrDefault(x => x is Triggers<TTriggerable>);
-			if (triggers == null) {
-				triggers = new Triggers<TTriggerable>();
-				triggersList.Add(triggers);
-			}
-			return (Triggers<TTriggerable>) triggers;
+		public static ITriggers<TTriggerable> Triggers<TTriggerable>(this TTriggerable triggerable) where TTriggerable : class, ITriggerable {
+            var triggers = TriggersWeakRefs.GetValue(triggerable, EntityFramework.Triggers.Triggers.Create);
+		    return (ITriggers<TTriggerable>) triggers;
+		}
+
+		private static readonly ConditionalWeakTable<ITriggerable, ITriggers> TriggersWeakRefs = new ConditionalWeakTable<ITriggerable, ITriggers>();
+
+		private static ITriggers Triggers(this ITriggerable triggerable) {
+			ITriggers triggers;
+			TriggersWeakRefs.TryGetValue(triggerable, out triggers);
+			return triggers;
 		}
 
 		private static IEnumerable<Action<DbContext>> RaiseTheBeforeEvents(this DbContext dbContext) {
 			var afterActions = new List<Action<DbContext>>();
 			foreach (var entry in dbContext.ChangeTracker.Entries<ITriggerable>()) {
-				var triggersList = entry.Entity.Triggers();
-				if (triggersList == null)
-					continue;
-				foreach (var triggers in triggersList) {
-					var entry1 = entry;
-					var triggers1 = triggers;
-					switch (entry.State) {
-						case EntityState.Added:
-							triggers.OnBeforeInsert(entry.Entity, dbContext);
-							if (entry.State == EntityState.Added)
-								afterActions.Add(context => triggers1.OnAfterInsert(entry1.Entity, context));
-							break;
-						case EntityState.Deleted:
-							triggers.OnBeforeDelete(entry.Entity, dbContext);
-							if (entry.State == EntityState.Deleted)
-								afterActions.Add(context => triggers1.OnAfterDelete(entry1.Entity, context));
-							break;
-						case EntityState.Modified:
-							triggers.OnBeforeUpdate(entry.Entity, dbContext);
-							if (entry.State == EntityState.Modified)
-								afterActions.Add(context => triggers1.OnAfterUpdate(entry1.Entity, context));
-							break;
-					}
+				var triggers = entry.Entity.Triggers();
+				if (triggers == null)
+                    continue;
+                var entry1 = entry;
+			    switch (entry.State) {
+					case EntityState.Added:
+						triggers.OnBeforeInsert(entry.Entity, dbContext);
+						if (entry.State == EntityState.Added)
+						    afterActions.Add(context => triggers.OnAfterInsert(entry1.Entity, context));
+			            break;
+					case EntityState.Deleted:
+						triggers.OnBeforeDelete(entry.Entity, dbContext);
+						if (entry.State == EntityState.Deleted)
+                            afterActions.Add(context => triggers.OnAfterDelete(entry1.Entity, context));
+						break;
+					case EntityState.Modified:
+						triggers.OnBeforeUpdate(entry.Entity, dbContext);
+						if (entry.State == EntityState.Modified)
+                            afterActions.Add(context => triggers.OnAfterUpdate(entry1.Entity, context));
+						break;
 				}
 			}
 			return afterActions;
@@ -84,21 +77,19 @@ namespace EntityFramework.Triggers {
 
 		private static void RaiseTheFailedEvents(this DbContext dbContext, DbEntityEntry entry, Exception exception) {
 			var triggerable = (ITriggerable) entry.Entity;
-			var triggersList = triggerable.Triggers();
-			if (triggersList == null)
+			var triggers = triggerable.Triggers();
+			if (triggers == null)
 				return;
-			foreach (var triggers in triggersList) {
-				switch (entry.State) {
-					case EntityState.Added:
-						triggers.OnInsertFailed(triggerable, dbContext, exception);
-						break;
-					case EntityState.Modified:
-						triggers.OnUpdateFailed(triggerable, dbContext, exception);
-						break;
-					case EntityState.Deleted:
-						triggers.OnDeleteFailed(triggerable, dbContext, exception);
-						break;
-				}
+			switch (entry.State) {
+				case EntityState.Added:
+					triggers.OnInsertFailed(triggerable, dbContext, exception);
+					break;
+				case EntityState.Modified:
+					triggers.OnUpdateFailed(triggerable, dbContext, exception);
+					break;
+				case EntityState.Deleted:
+					triggers.OnDeleteFailed(triggerable, dbContext, exception);
+					break;
 			}
 		}
 		/// <summary>
@@ -122,7 +113,7 @@ namespace EntityFramework.Triggers {
 				throw;
 			}
 		}
-#if NET45 || NET451
+#if !NET40
 		/// <summary>
 		/// Asynchronously saves all changes made in this context to the underlying database, firing trigger events accordingly.
 		/// </summary>

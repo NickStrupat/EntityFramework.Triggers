@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Entity.Validation;
 using System.Linq;
+using System.Threading.Tasks;
 using EntityFramework.Triggers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -21,10 +22,16 @@ namespace Tests {
         public void TestSynchronous() {
             TestEvents(context => context.SaveChanges());
         }
+#if !NET40
         [TestMethod]
         public void TestAsynchronous() {
-            TestEvents(context => context.SaveChangesAsync().Result);
+            TestEvents(context => {
+                           var task = context.SaveChangesAsync();
+                           Task.WaitAll(task);
+                           return task.Result;
+                       });
         }
+#endif
         private void TestEvents(Func<Context, Int32> saveChangesAction) {
             insertingFiredCount = 0;
             updatingFiredCount = 0;
