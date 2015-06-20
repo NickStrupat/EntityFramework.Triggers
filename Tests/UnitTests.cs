@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,15 +22,13 @@ namespace Tests {
         [TestMethod]
         public void TestSynchronous() {
             TestEvents(context => context.SaveChanges());
+            TestOrder(context => context.SaveChanges());
         }
 #if !NET40
         [TestMethod]
         public void TestAsynchronous() {
-            TestEvents(context => {
-                           var task = context.SaveChangesAsync();
-                           Task.WaitAll(task);
-                           return task.Result;
-                       });
+            TestEvents(context => context.SaveChangesAsync().Result);
+            TestOrder(context => context.SaveChangesAsync().Result);
         }
 #endif
         private void TestEvents(Func<Context, Int32> saveChangesAction) {
@@ -139,6 +138,22 @@ namespace Tests {
             Assert.AreEqual(insertedFiredCount, 0);
             Assert.AreEqual(updatedFiredCount, 0);
             Assert.AreEqual(deletedFiredCount, 0);
+        }
+
+        private void TestOrder(Func<Context, Int32> saveChangesAction) {
+            var list = new List<Int32>();
+            using (var context = new Context()) {
+                var janeDoe = new Person {
+                    FirstName = "Jane",
+                    LastName = "Doe",
+                };
+                janeDoe.Triggers().Inserted += e => list.Add(0);
+                ((EntityWithInsertTracking)janeDoe).Triggers().Inserted += e => list.Add(1);
+                ((EntityWithTracking)janeDoe).Triggers().Inserted += e => list.Add(2);
+                context.People.Add(janeDoe);
+                saveChangesAction(context);
+            }
+            Assert.IsTrue(list.SequenceEqual(new [] {0, 1, 2}));
         }
     }
 }
