@@ -58,7 +58,6 @@
     <Compile Include="DbContextWithTriggers.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IEntry.cs" />
-    <Compile Include="InstanceReEntrancyGuard.cs" />
     <Compile Include="ITriggerable.cs" />
     <Compile Include="ITriggers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

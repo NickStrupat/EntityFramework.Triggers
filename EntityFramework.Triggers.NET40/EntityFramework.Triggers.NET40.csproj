@@ -60,9 +60,6 @@
     <Compile Include="..\EntityFramework.Triggers\IEntry.cs">
       <Link>IEntry.cs</Link>
     </Compile>
-    <Compile Include="..\EntityFramework.Triggers\InstanceReEntrancyGuard.cs">
-      <Link>InstanceReEntrancyGuard.cs</Link>
-    </Compile>
     <Compile Include="..\EntityFramework.Triggers\ITriggerable.cs">
       <Link>ITriggerable.cs</Link>
     </Compile>
