@@ -39,10 +39,10 @@ namespace Example {
 			public DbSet<LogEntry> Log { get; set; }
 
 			public override Int32 SaveChanges() {
-				return this.SaveChangesWithTriggers(base.SaveChanges);
+				return this.SaveChangesWithTriggers();
 			}
 			public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
-				return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken);
+				return this.SaveChangesWithTriggersAsync(cancellationToken);
 			}
 		}
 	    internal sealed class Configuration : DbMigrationsConfiguration<Context> {
