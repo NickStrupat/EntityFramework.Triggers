@@ -113,7 +113,7 @@ namespace EntityFramework.Triggers {
         /// <param name="baseSaveChanges">A delegate to base.SaveChanges(). Always pass `base.SaveChanges`.</param>
         /// <example>this.SaveChangesWithTriggers(base.SaveChanges);</example>
         /// <returns>The number of objects written to the underlying database.</returns>
-        [Obsolete("base.SaveChanges is no longer needed.")]
+        [Obsolete("baseSaveChanges is no longer needed.")]
         public static Int32 SaveChangesWithTriggers(this DbContext dbContext, Func<Int32> baseSaveChanges) {
             return dbContext.SaveChangesWithTriggers();
         }
@@ -160,7 +160,7 @@ namespace EntityFramework.Triggers {
         /// <param name="cancellationToken">A <see cref="T:System.Threading.CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <example>this.SaveChangesWithTriggersAsync(base.SaveChangesAsync);</example>
         /// <returns>A task that represents the asynchronous save operation. The task result contains the number of objects written to the underlying database.</returns>
-        [Obsolete]
+        [Obsolete("baseSaveChangesAsync is no longer needed.")]
         public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken) {
             return dbContext.SaveChangesAsync(cancellationToken);
         }
