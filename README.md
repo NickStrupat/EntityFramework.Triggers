@@ -11,16 +11,16 @@ NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFramew
 
 ## Usage
 
-To use triggers on your entities, you simply need to have your entities inherit from `ITriggerable`, and override `SaveChanges()` in your DbContext class **(or use DbContextWithTriggers included in this library)** to call the `SaveChangesWithTriggers(base.SaveChanges)` extension method. For async/await functionality, override `SaveChangesAsync(CancellationToken)` to call `SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken)`.
+To use triggers on your entities, you simply need to have your entities inherit from `ITriggerable`, and override `SaveChanges()` in your DbContext class **(or use DbContextWithTriggers included in this library)** to call the `SaveChangesWithTriggers()` extension method. For async/await functionality, override `SaveChangesAsync(CancellationToken)` to call `SaveChangesWithTriggersAsync(cancellationToken)`. Alternatively, you can call `SaveChangesWithTriggers()` directly instead of `SaveChanges()`, although that means breaking the usual nterface provided by `DbContext`.
 
 	class YourContext : DbContext {
 		// Your usual properties
 
 		public override Int32 SaveChanges() {
-			return this.SaveChangesWithTriggers(base.SaveChanges);
+			return this.SaveChangesWithTriggers();
 		}
 		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
-			return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken);
+			return this.SaveChangesWithTriggersAsync(cancellationToken);
 		}
 	}
 
@@ -59,10 +59,10 @@ To use triggers on your entities, you simply need to have your entities inherit 
 				public DbSet<LogEntry> Log { get; set; }
 
 				public override Int32 SaveChanges() {
-					return this.SaveChangesWithTriggers(base.SaveChanges);
+					return this.SaveChangesWithTriggers();
 				}
 				public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
-					return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken);
+					return this.SaveChangesWithTriggersAsync(cancellationToken);
 				}
 			}
 			private static void Main(string[] args) {
