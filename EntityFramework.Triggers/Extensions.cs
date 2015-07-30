@@ -117,7 +117,6 @@ namespace EntityFramework.Triggers {
         public static Int32 SaveChangesWithTriggers(this DbContext dbContext, Func<Int32> baseSaveChanges) {
             return dbContext.SaveChangesWithTriggers();
         }
-
         /// <summary>
         /// Saves all changes made in this context to the underlying database, firing trigger events accordingly.
         /// </summary>
@@ -125,6 +124,8 @@ namespace EntityFramework.Triggers {
         /// <example>this.SaveChangesWithTriggers(base.SaveChanges);</example>
         /// <returns>The number of objects written to the underlying database.</returns>
         public static Int32 SaveChangesWithTriggers(this DbContext dbContext) {
+            if (dbContext == null)
+                throw new ArgumentNullException("dbContext");
             try {
                 var afterActions = dbContext.RaiseTheBeforeEvents();
                 var result = dbContextBaseSaveChangesFunc.Value(dbContext);
@@ -136,7 +137,6 @@ namespace EntityFramework.Triggers {
                 throw;
             }
         }
-
 #if !NET40
         private delegate Task<Int32> SaveChangesAsyncDelegateType(DbContext dbContext, CancellationToken cancellationToken);
 
@@ -162,6 +162,8 @@ namespace EntityFramework.Triggers {
         /// <returns>A task that represents the asynchronous save operation. The task result contains the number of objects written to the underlying database.</returns>
         [Obsolete("baseSaveChangesAsync is no longer needed.")]
         public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken) {
+            if (dbContext == null)
+                throw new ArgumentNullException("dbContext");
             return dbContext.SaveChangesAsync(cancellationToken);
         }
 
@@ -173,6 +175,8 @@ namespace EntityFramework.Triggers {
         /// <example>this.SaveChangesWithTriggersAsync();</example>
         /// <returns>A task that represents the asynchronous save operation. The task result contains the number of objects written to the underlying database.</returns>
         public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, CancellationToken cancellationToken) {
+            if (dbContext == null)
+                throw new ArgumentNullException("dbContext");
             try {
                 var afterActions = dbContext.RaiseTheBeforeEvents();
                 var result = await dbContextBaseSaveChangesAsyncFunc.Value(dbContext, cancellationToken);
