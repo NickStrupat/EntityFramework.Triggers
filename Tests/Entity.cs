@@ -3,15 +3,15 @@ using EntityFramework.Triggers;
 
 namespace Tests {
 	public abstract class EntityWithInsertTracking : ITriggerable {
-		public DateTime Inserted { get; protected set; }
-		public Int32 Number { get; protected set; }
+		public DateTime Inserted { get; private set; }
+		public Int32 Number { get; private set; }
 		protected EntityWithInsertTracking() {
 			this.Triggers().Inserting += e => e.Entity.Inserted = DateTime.UtcNow;
 			this.Triggers().Inserting += e => e.Entity.Number = 42;
 		}
 	}
 	public abstract class EntityWithTracking : EntityWithInsertTracking {
-		public DateTime Updated { get; protected set; }
+		public DateTime Updated { get; private set; }
 		protected EntityWithTracking() {
 			this.Triggers().Inserting += e => e.Entity.Updated = DateTime.UtcNow;
 			this.Triggers().Updating += e => e.Entity.Updated = DateTime.UtcNow;

@@ -54,6 +54,9 @@
     <Compile Include="..\EntityFramework.Triggers\DbContextWithTriggers.cs">
       <Link>DbContextWithTriggers.cs</Link>
     </Compile>
+    <Compile Include="..\EntityFramework.Triggers\ExtensionHelpers.cs">
+      <Link>ExtensionHelpers.cs</Link>
+    </Compile>
     <Compile Include="..\EntityFramework.Triggers\Extensions.cs">
       <Link>Extensions.cs</Link>
     </Compile>

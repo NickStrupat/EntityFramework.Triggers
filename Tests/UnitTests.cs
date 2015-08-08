@@ -43,6 +43,7 @@ namespace Tests {
 			deletedFiredCount = 0;
 			updateFailedThingValue = null;
             using (var context = new Context()) {
+                var people = context.People.ToList();
                 var nickStrupat = new Person {
                                                  FirstName = "Nick",
                                                  LastName = "Strupat",

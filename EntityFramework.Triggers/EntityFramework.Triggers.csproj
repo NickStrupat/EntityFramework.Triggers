@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbContextWithTriggers.cs" />
+    <Compile Include="ExtensionHelpers.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IEntry.cs" />
     <Compile Include="ITriggerable.cs" />

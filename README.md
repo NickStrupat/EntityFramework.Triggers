@@ -11,7 +11,7 @@ NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFramew
 
 ## Usage
 
-To use triggers on your entities, you simply need to have your entities inherit from `ITriggerable`, and override `SaveChanges()` in your DbContext class **(or use DbContextWithTriggers included in this library)** to call the `SaveChangesWithTriggers()` extension method. For async/await functionality, override `SaveChangesAsync(CancellationToken)` to call `SaveChangesWithTriggersAsync(cancellationToken)`. Alternatively, you can call `SaveChangesWithTriggers()` directly instead of `SaveChanges()`, although that means breaking away from the usual interface provided by `DbContext`.
+To use triggers on your entities, you simply need to have your entities inherit from `ITriggerable`, and override `SaveChanges()` in your DbContext class to call the `SaveChangesWithTriggers()` extension method **(or inherit from DbContextWithTriggers included in this library)**. For async/await functionality, override `SaveChangesAsync(CancellationToken)` to call `SaveChangesWithTriggersAsync(cancellationToken)`. Alternatively, you can call `SaveChangesWithTriggers()` directly instead of `SaveChanges()`, although that means breaking away from the usual interface provided by `DbContext`.
 
 	class YourContext : DbContext {
 		// Your usual properties
@@ -35,9 +35,9 @@ To use triggers on your entities, you simply need to have your entities inherit 
 	namespace Example {
 		class Program {
 			private class Person : ITriggerable {
-				public Int64 Id { get; protected set; }
-				public DateTime InsertDateTime { get; protected set; }
-				public DateTime UpdateDateTime { get; protected set; }
+				public Int64 Id { get; private set; }
+				public DateTime InsertDateTime { get; private set; }
+				public DateTime UpdateDateTime { get; private set; }
 				public String FirstName { get; set; }
 				public String LastName { get; set; }
 				public Boolean IsDeleted { get; set; }
@@ -50,10 +50,12 @@ To use triggers on your entities, you simply need to have your entities inherit 
 					};
 				}
 			}
+			
 			private class LogEntry {
-				public Int64 Id { get; protected set; }
+				public Int64 Id { get; private set; }
 				public String Message { get; set; }
 			}
+			
 			private class Context : DbContext {
 				public DbSet<Person> People { get; set; }
 				public DbSet<LogEntry> Log { get; set; }
@@ -65,10 +67,12 @@ To use triggers on your entities, you simply need to have your entities inherit 
 					return this.SaveChangesWithTriggersAsync(cancellationToken);
 				}
 			}
+			
 			private static void Main(string[] args) {
 				var task = MainAsync(args);
 				Task.WaitAll(task);
 			}
+			
 			private static async Task MainAsync(string[] args) {
 				using (var context = new Context()) {
 					var nickStrupat = new Person {
