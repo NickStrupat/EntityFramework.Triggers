@@ -59,8 +59,9 @@ namespace EntityFramework.Triggers {
         }
 
         private static void RaiseEventHandlers<TIEntry>(List<Action<TIEntry>> eventHandlers, TIEntry entry) {
-            foreach (var eventHandler in eventHandlers)
-                eventHandler(entry);
+            lock (eventHandlers)
+                foreach (var eventHandler in eventHandlers)
+                    eventHandler(entry);
         }
         #endregion
         #region Event implementations
