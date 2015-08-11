@@ -82,11 +82,12 @@ namespace EntityFramework.Triggers {
 
         private delegate Int32 SaveChangesDelegateType(DbContext dbContext);
 
-        private static readonly ConcurrentDictionary<Type, SaveChangesDelegateType> baseSaveChangesDelegateCache = new ConcurrentDictionary<Type, SaveChangesDelegateType>();
+        private static class BaseSaveChangesDelegateCache<TDbContext> where TDbContext : DbContext {
+            public static readonly SaveChangesDelegateType SaveChanges = CreateBaseSaveChangesDelegate(typeof (TDbContext));
+        }
 
-        public static Int32 BaseSaveChanges(this DbContext dbContext) {
-            var baseSaveChangesDelegate = baseSaveChangesDelegateCache.GetOrAdd(dbContext.GetType(), CreateBaseSaveChangesDelegate);
-            return baseSaveChangesDelegate(dbContext);
+        public static Int32 BaseSaveChanges<TDbContext>(this TDbContext dbContext) where TDbContext : DbContext {
+            return BaseSaveChangesDelegateCache<TDbContext>.SaveChanges(dbContext);
         }
 
         private static SaveChangesDelegateType CreateBaseSaveChangesDelegate(Type dbContextType) {
@@ -101,11 +102,12 @@ namespace EntityFramework.Triggers {
 #if !NET40
         private delegate Task<Int32> SaveChangesAsyncDelegateType(DbContext dbContext, CancellationToken cancellationToken);
 
-        private static readonly ConcurrentDictionary<Type, SaveChangesAsyncDelegateType> baseSaveChangesAsyncDelegateCache = new ConcurrentDictionary<Type, SaveChangesAsyncDelegateType>();
+        private static class BaseSaveChangesAsyncDelegateCache<TDbContext> where TDbContext : DbContext {
+            public static readonly SaveChangesAsyncDelegateType SaveChangesAsync = CreateBaseSaveChangesAsyncDelegate(typeof(TDbContext));
+        }
 
-        public static Task<Int32> BaseSaveChangesAsync(this DbContext dbContext, CancellationToken cancellationToken) {
-            var baseSaveChangesAsyncDelegate = baseSaveChangesAsyncDelegateCache.GetOrAdd(dbContext.GetType(), CreateBaseSaveChangesAsyncDelegate);
-            return baseSaveChangesAsyncDelegate(dbContext, cancellationToken);
+        public static Task<Int32> BaseSaveChangesAsync<TDbContext> (this TDbContext dbContext, CancellationToken cancellationToken) where TDbContext : DbContext {
+            return BaseSaveChangesAsyncDelegateCache<TDbContext>.SaveChangesAsync(dbContext, cancellationToken);
         }
 
         private static SaveChangesAsyncDelegateType CreateBaseSaveChangesAsyncDelegate(Type dbContextType) {

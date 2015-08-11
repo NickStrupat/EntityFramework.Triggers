@@ -24,7 +24,7 @@ namespace EntityFramework.Triggers {
         /// <param name="dbContext"></param>
         /// <example>this.SaveChangesWithTriggers();</example>
         /// <returns>The number of objects written to the underlying database.</returns>
-        public static Int32 SaveChangesWithTriggers(this DbContext dbContext) {
+        public static Int32 SaveChangesWithTriggers<TDbContext>(this TDbContext dbContext) where TDbContext : DbContext {
             if (dbContext == null)
                 throw new ArgumentNullException(nameof(dbContext));
             try {
@@ -51,7 +51,7 @@ namespace EntityFramework.Triggers {
         /// <param name="cancellationToken">A <see cref="T:System.Threading.CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <example>this.SaveChangesWithTriggersAsync();</example>
         /// <returns>A task that represents the asynchronous save operation. The task result contains the number of objects written to the underlying database.</returns>
-        public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, CancellationToken cancellationToken) {
+        public static async Task<Int32> SaveChangesWithTriggersAsync<TDbContext>(this TDbContext dbContext, CancellationToken cancellationToken) where TDbContext : DbContext {
             if (dbContext == null)
                 throw new ArgumentNullException(nameof(dbContext));
             try {
