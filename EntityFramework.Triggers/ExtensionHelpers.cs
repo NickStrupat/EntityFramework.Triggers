@@ -84,19 +84,19 @@ namespace EntityFramework.Triggers {
 
         private static class BaseSaveChangesDelegateCache<TDbContext> where TDbContext : DbContext {
             public static readonly SaveChangesDelegateType SaveChanges = CreateBaseSaveChangesDelegate(typeof (TDbContext));
+
+            private static SaveChangesDelegateType CreateBaseSaveChangesDelegate(Type dbContextType) {
+                var dynamicMethod = new DynamicMethod("DbContextBaseSaveChanges", typeof(Int32), new[] { typeof(DbContext) }, typeof(Extensions).Module);
+                var ilGenerator = dynamicMethod.GetILGenerator();
+                ilGenerator.Emit(OpCodes.Ldarg_0);
+                ilGenerator.Emit(OpCodes.Call, dbContextType.BaseType.GetMethod(nameof(DbContext.SaveChanges)));
+                ilGenerator.Emit(OpCodes.Ret);
+                return (SaveChangesDelegateType)dynamicMethod.CreateDelegate(typeof(SaveChangesDelegateType));
+            }
         }
 
         public static Int32 BaseSaveChanges<TDbContext>(this TDbContext dbContext) where TDbContext : DbContext {
             return BaseSaveChangesDelegateCache<TDbContext>.SaveChanges(dbContext);
-        }
-
-        private static SaveChangesDelegateType CreateBaseSaveChangesDelegate(Type dbContextType) {
-            var dynamicMethod = new DynamicMethod("DbContextBaseSaveChanges", typeof(Int32), new[] { typeof(DbContext) }, typeof(Extensions).Module);
-            var ilGenerator = dynamicMethod.GetILGenerator();
-            ilGenerator.Emit(OpCodes.Ldarg_0);
-            ilGenerator.Emit(OpCodes.Call, dbContextType.BaseType.GetMethod(nameof(DbContext.SaveChanges)));
-            ilGenerator.Emit(OpCodes.Ret);
-            return (SaveChangesDelegateType)dynamicMethod.CreateDelegate(typeof(SaveChangesDelegateType));
         }
 
 #if !NET40
@@ -104,20 +104,20 @@ namespace EntityFramework.Triggers {
 
         private static class BaseSaveChangesAsyncDelegateCache<TDbContext> where TDbContext : DbContext {
             public static readonly SaveChangesAsyncDelegateType SaveChangesAsync = CreateBaseSaveChangesAsyncDelegate(typeof(TDbContext));
+
+            private static SaveChangesAsyncDelegateType CreateBaseSaveChangesAsyncDelegate(Type dbContextType) {
+                var dynamicMethod = new DynamicMethod("DbContextBaseSaveChangesAsync", typeof(Task<Int32>), new[] { typeof(DbContext), typeof(CancellationToken) }, typeof(Extensions).Module);
+                var ilGenerator = dynamicMethod.GetILGenerator();
+                ilGenerator.Emit(OpCodes.Ldarg_0);
+                ilGenerator.Emit(OpCodes.Ldarg_1);
+                ilGenerator.Emit(OpCodes.Call, dbContextType.BaseType.GetMethod(nameof(DbContext.SaveChangesAsync), new[] { typeof(CancellationToken) }));
+                ilGenerator.Emit(OpCodes.Ret);
+                return (SaveChangesAsyncDelegateType)dynamicMethod.CreateDelegate(typeof(SaveChangesAsyncDelegateType));
+            }
         }
 
         public static Task<Int32> BaseSaveChangesAsync<TDbContext> (this TDbContext dbContext, CancellationToken cancellationToken) where TDbContext : DbContext {
             return BaseSaveChangesAsyncDelegateCache<TDbContext>.SaveChangesAsync(dbContext, cancellationToken);
-        }
-
-        private static SaveChangesAsyncDelegateType CreateBaseSaveChangesAsyncDelegate(Type dbContextType) {
-            var dynamicMethod = new DynamicMethod("DbContextBaseSaveChangesAsync", typeof(Task<Int32>), new[] { typeof(DbContext), typeof(CancellationToken) }, typeof(Extensions).Module);
-            var ilGenerator = dynamicMethod.GetILGenerator();
-            ilGenerator.Emit(OpCodes.Ldarg_0);
-            ilGenerator.Emit(OpCodes.Ldarg_1);
-            ilGenerator.Emit(OpCodes.Call, dbContextType.BaseType.GetMethod(nameof(DbContext.SaveChangesAsync), new[] { typeof(CancellationToken) }));
-            ilGenerator.Emit(OpCodes.Ret);
-            return (SaveChangesAsyncDelegateType)dynamicMethod.CreateDelegate(typeof(SaveChangesAsyncDelegateType));
         }
 #endif
     }
