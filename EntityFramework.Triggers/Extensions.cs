@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace EntityFramework.Triggers {
-    public static class Extensions {
+    public static class Extensions {        
         /// <summary>
         /// Retrieve the <see cref="T:Triggers`1{TTriggerable}"/> object that contains the trigger events for this <see cref="ITriggerable"/>
         /// </summary>
@@ -29,8 +29,7 @@ namespace EntityFramework.Triggers {
                 throw new ArgumentNullException(nameof(dbContext));
             try {
                 var afterActions = dbContext.RaiseTheBeforeEvents();
-                var baseSaveChanges = ExtensionHelpers.GetBaseSaveChangesFunc(dbContext.GetType());
-                var result = baseSaveChanges(dbContext);
+                var result = dbContext.BaseSaveChanges();
                 dbContext.RaiseTheAfterEvents(afterActions);
                 return result;
             }
@@ -57,8 +56,7 @@ namespace EntityFramework.Triggers {
                 throw new ArgumentNullException(nameof(dbContext));
             try {
                 var afterActions = dbContext.RaiseTheBeforeEvents();
-                var baseSaveChangesAsync = ExtensionHelpers.GetBaseSaveChangesAsyncFunc(dbContext.GetType());
-                var result = await baseSaveChangesAsync(dbContext, cancellationToken);
+                var result = await dbContext.BaseSaveChangesAsync(cancellationToken);
                 dbContext.RaiseTheAfterEvents(afterActions);
                 return result;
             }

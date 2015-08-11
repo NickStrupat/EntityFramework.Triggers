@@ -80,11 +80,14 @@ namespace EntityFramework.Triggers {
             }
         }
 
-        public delegate Int32 SaveChangesDelegateType(DbContext dbContext);
+        private delegate Int32 SaveChangesDelegateType(DbContext dbContext);
 
         private static readonly ConcurrentDictionary<Type, SaveChangesDelegateType> baseSaveChangesDelegateCache = new ConcurrentDictionary<Type, SaveChangesDelegateType>();
 
-        public static SaveChangesDelegateType GetBaseSaveChangesFunc(Type dbContextType) => baseSaveChangesDelegateCache.GetOrAdd(dbContextType, CreateBaseSaveChangesDelegate);
+        public static Int32 BaseSaveChanges(this DbContext dbContext) {
+            var baseSaveChangesDelegate = baseSaveChangesDelegateCache.GetOrAdd(dbContext.GetType(), CreateBaseSaveChangesDelegate);
+            return baseSaveChangesDelegate(dbContext);
+        }
 
         private static SaveChangesDelegateType CreateBaseSaveChangesDelegate(Type dbContextType) {
             var dynamicMethod = new DynamicMethod("DbContextBaseSaveChanges", typeof(Int32), new[] { typeof(DbContext) }, typeof(Extensions).Module);
@@ -96,11 +99,14 @@ namespace EntityFramework.Triggers {
         }
 
 #if !NET40
-        public delegate Task<Int32> SaveChangesAsyncDelegateType(DbContext dbContext, CancellationToken cancellationToken);
+        private delegate Task<Int32> SaveChangesAsyncDelegateType(DbContext dbContext, CancellationToken cancellationToken);
 
         private static readonly ConcurrentDictionary<Type, SaveChangesAsyncDelegateType> baseSaveChangesAsyncDelegateCache = new ConcurrentDictionary<Type, SaveChangesAsyncDelegateType>();
 
-        public static SaveChangesAsyncDelegateType GetBaseSaveChangesAsyncFunc(Type dbContextType) => baseSaveChangesAsyncDelegateCache.GetOrAdd(dbContextType, CreateBaseSaveChangesAsyncDelegate);
+        public static Task<Int32> BaseSaveChangesAsync(this DbContext dbContext, CancellationToken cancellationToken) {
+            var baseSaveChangesAsyncDelegate = baseSaveChangesAsyncDelegateCache.GetOrAdd(dbContext.GetType(), CreateBaseSaveChangesAsyncDelegate);
+            return baseSaveChangesAsyncDelegate(dbContext, cancellationToken);
+        }
 
         private static SaveChangesAsyncDelegateType CreateBaseSaveChangesAsyncDelegate(Type dbContextType) {
             var dynamicMethod = new DynamicMethod("DbContextBaseSaveChangesAsync", typeof(Task<Int32>), new[] { typeof(DbContext), typeof(CancellationToken) }, typeof(Extensions).Module);
