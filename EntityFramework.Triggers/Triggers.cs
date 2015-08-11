@@ -13,8 +13,8 @@ namespace EntityFramework.Triggers {
             return triggersConstructor();
         }
 
-        private static Func<ITriggers> TriggersConstructorFactory(Type x) {
-            return Expression.Lambda<Func<ITriggers>>(Expression.New(typeof (Triggers<>).MakeGenericType(x))).Compile();
+        private static Func<ITriggers> TriggersConstructorFactory(Type triggerableType) {
+            return Expression.Lambda<Func<ITriggers>>(Expression.New(typeof (Triggers<>).MakeGenericType(triggerableType))).Compile();
         }
     }
 
