@@ -51,6 +51,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\EntityFramework.Triggers\AfterActions.cs">
+      <Link>AfterActions.cs</Link>
+    </Compile>
     <Compile Include="..\EntityFramework.Triggers\DbContextWithTriggers.cs">
       <Link>DbContextWithTriggers.cs</Link>
     </Compile>
@@ -71,6 +74,9 @@
     </Compile>
     <Compile Include="..\EntityFramework.Triggers\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFramework.Triggers\StaticTriggers.cs">
+      <Link>StaticTriggers.cs</Link>
     </Compile>
     <Compile Include="..\EntityFramework.Triggers\Triggers.cs">
       <Link>Triggers.cs</Link>

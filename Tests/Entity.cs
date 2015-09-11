@@ -5,9 +5,9 @@ namespace Tests {
 	public abstract class EntityWithInsertTracking : ITriggerable {
 		public DateTime Inserted { get; private set; }
 		public Int32 Number { get; private set; }
-		protected EntityWithInsertTracking() {
-			this.Triggers().Inserting += e => e.Entity.Inserted = DateTime.UtcNow;
-			this.Triggers().Inserting += e => e.Entity.Number = 42;
+		static EntityWithInsertTracking() {
+			Triggers<EntityWithInsertTracking>.Inserting += e => e.Entity.Inserted = DateTime.UtcNow;
+			Triggers<EntityWithInsertTracking>.Inserting += e => e.Entity.Number = 42;
 		}
 	}
 	public abstract class EntityWithTracking : EntityWithInsertTracking {
