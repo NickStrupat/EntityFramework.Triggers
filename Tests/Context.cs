@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Entity;
+using System.Data.Entity.Migrations;
 using System.Threading;
 using System.Threading.Tasks;
 using EntityFramework.Triggers;
@@ -16,7 +17,16 @@ namespace Tests {
 //#endif
     }
 
-    public class Context : InternalContext {
+	internal sealed class Configuration : DbMigrationsConfiguration<Context> {
+		public Configuration() {
+			AutomaticMigrationsEnabled = true;
+			AutomaticMigrationDataLossAllowed = true;
+		}
+	}
+
+	public class Context : DbContext {
+		public Context() : base("Triggers.Tests") {}
+
 		public DbSet<Person> People { get; set; }
 		public DbSet<Thing> Things { get; set; }
 
