@@ -31,7 +31,9 @@ To use triggers on your entities, simply have your entities inherit `ITriggerabl
 		public DbSet<Person> People { get; set; }
 	}
 
-As you may have guessed, what we're doing above is enabling automatic insert and update stamps for any entity that inherits `Trackable`. It's just as easy to set up soft deletes (the Deleting, Updating, and Inserting events are cancellable from within a handler, logging, auditing, and more! You can also add handlers for single instances of an entity, or go with an 
+As you may have guessed, what we're doing above is enabling automatic insert and update stamps for any entity that inherits `Trackable`. It's just as easy to set up soft deletes (the Deleting, Updating, and Inserting events are cancellable from within a handler, logging, auditing, and more! You can also add handlers for single instances of an entity with `person.Triggers().Inserting...`. Handlers you add to an indiviual object will only be called on that object. The handler reference is removed after your entity is GC'd.
+
+**Check out https://www.nuget.org/packages/EntityFramework.Rx/ for my "Reactive Extension" wrappers for even more **POWER**!
 
 If you can't easily change what your DbContext inherits from (ASP.NET Identity users, for example) you can override `SaveChanges()` in your DbContext class to call the `SaveChangesWithTriggers()` extension method. For async/await functionality, override `SaveChangesAsync(CancellationToken)` to call `SaveChangesWithTriggersAsync(cancellationToken)`. Alternatively, you can call `SaveChangesWithTriggers()` directly instead of `SaveChanges()`, although that means breaking away from the usual interface provided by `DbContext`.
 
