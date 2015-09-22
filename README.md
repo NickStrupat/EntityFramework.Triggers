@@ -11,7 +11,29 @@ NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFramew
 
 ## Usage
 
-To use triggers on your entities, you simply need to have your entities inherit from `ITriggerable`, and override `SaveChanges()` in your DbContext class to call the `SaveChangesWithTriggers()` extension method **(or inherit from DbContextWithTriggers included in this library)**. For async/await functionality, override `SaveChangesAsync(CancellationToken)` to call `SaveChangesWithTriggersAsync(cancellationToken)`. Alternatively, you can call `SaveChangesWithTriggers()` directly instead of `SaveChanges()`, although that means breaking away from the usual interface provided by `DbContext`.
+To use triggers on your entities, simply have your entities inherit `ITriggerable`, and your DbContext inherit from DbContextWithTriggers. If your DbContext inheritance chain is unchangeable, see below the example code.
+
+	public abstract class Trackable : ITriggerable {
+		public DateTime Inserted { get; private set; }
+		public DateTime Updated { get; private set; }
+
+		static Trackable() {
+			Triggers<Trackable>.Inserting += entry => entry.Entity.Inserted = entry.Entity.Updated = DateTime.Now;
+			Triggers<Trackable>.Updating += entry => entry.Entity.Updated = DateTime.Now;
+		}
+	}
+
+	public class Person : Trackable {
+		public Int64 Id { get; protected set; }
+		public String Name { get; set; }
+	}
+	public class Context : DbContextWithTriggers {
+		public DbSet<Person> People { get; set; }
+	}
+
+As you may have guessed, what we're doing above is enabling automatic insert and update stamps for any entity that inherits `Trackable`. It's just as easy to set up soft deletes (the Deleting, Updating, and Inserting events are cancellable from within a handler, logging, auditing, and more! You can also add handlers for single instances of an entity, or go with an 
+
+If you can't easily change what your DbContext inherits from (ASP.NET Identity users, for example) you can override `SaveChanges()` in your DbContext class to call the `SaveChangesWithTriggers()` extension method. For async/await functionality, override `SaveChangesAsync(CancellationToken)` to call `SaveChangesWithTriggersAsync(cancellationToken)`. Alternatively, you can call `SaveChangesWithTriggers()` directly instead of `SaveChanges()`, although that means breaking away from the usual interface provided by `DbContext`.
 
 	class YourContext : DbContext {
 		// Your usual properties
@@ -24,7 +46,9 @@ To use triggers on your entities, you simply need to have your entities inherit 
 		}
 	}
 
-## Example
+**`SaveChangesWithTriggers()` and `SaveChangesWithTriggersAsync()` will call base.SaveChanges internally.**
+
+## Longer example
 
 	using System;
 	using System.Data.Entity;
