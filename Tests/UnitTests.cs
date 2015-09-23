@@ -156,5 +156,22 @@ namespace Tests {
             }
             Assert.IsTrue(list.SequenceEqual(new [] {0, 1, 2}));
         }
+
+	    [TestMethod]
+	    public void InstanceAndStaticEventTest() {
+		    var instanceFiredCount = 0;
+		    var staticFiredCount = 0;
+			var nick = new Person { FirstName = "Nick", LastName = "Strupat" };
+			var john = new Person { FirstName = "John", LastName = "Smith" };
+			nick.Triggers().Inserting += entry => instanceFiredCount++;
+		    Triggers<Person>.Inserting += entry => staticFiredCount++;
+		    using (var context = new Context()) {
+			    context.People.Add(nick);
+			    context.People.Add(john);
+				context.SaveChanges();
+		    }
+			Assert.AreEqual(1, instanceFiredCount);
+			Assert.AreEqual(2, staticFiredCount);
+	    }
     }
 }
