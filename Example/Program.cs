@@ -44,6 +44,10 @@ namespace Example {
 			public override Task<Int32> SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
 				return this.SaveChangesWithTriggersAsync(acceptAllChangesOnSuccess, cancellationToken);
 			}
+			protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+				optionsBuilder.UseSqlServer(@"Server=(localdb)\MSSQLLocalDB;Database=Example.Context;integrated security=True;");
+				base.OnConfiguring(optionsBuilder);
+			}
 		}
 		//internal sealed class Configuration : DbMigrationsConfiguration<Context> {
 		//	public Configuration() {
@@ -56,6 +60,7 @@ namespace Example {
 		}
 		private static async Task MainAsync(string[] args) {
 			using (var context = new Context()) {
+				context.Database.EnsureCreated();
 				var log = context.Log.ToList();
 				var nickStrupat = new Person {
 					FirstName = "Nick",
@@ -79,6 +84,7 @@ namespace Example {
 
 				context.People.Remove(nickStrupat);
 				await context.SaveChangesAsync();
+				context.Database.EnsureDeleted();
 			}
 		}
 	}
