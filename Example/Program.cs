@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Data.Entity;
-using System.Data.Entity.Migrations;
+using Microsoft.Data.Entity;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,12 +8,12 @@ using EntityFramework.Triggers;
 namespace Example {
 	class Program {
 		public abstract class Trackable : ITriggerable {
-			public DateTime InsertDateTime { get; protected set; }
-			public DateTime UpdateDateTime { get; protected set; }
+			public DateTime Inserted { get; private set; }
+			public DateTime Updated { get; private set; }
 
-			protected Trackable() {
-				this.Triggers().Inserting += entry => { entry.Entity.InsertDateTime = entry.Entity.UpdateDateTime = DateTime.Now; };
-				this.Triggers().Updating += entry => { entry.Entity.UpdateDateTime = DateTime.Now; };
+			static Trackable() {
+				Triggers<Trackable>.Inserting += entry => entry.Entity.Inserted = entry.Entity.Updated = DateTime.Now;
+				Triggers<Trackable>.Updating += entry => entry.Entity.Updated = DateTime.Now;
 			}
 		}
 
@@ -39,18 +38,18 @@ namespace Example {
 			public DbSet<Person> People { get; set; }
 			public DbSet<LogEntry> Log { get; set; }
 
-			public override Int32 SaveChanges() {
-				return this.SaveChangesWithTriggers();
+			public override Int32 SaveChanges(Boolean acceptAllChangesOnSuccess) {
+				return this.SaveChangesWithTriggers(acceptAllChangesOnSuccess);
 			}
-			public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
-				return this.SaveChangesWithTriggersAsync(cancellationToken);
-			}
-		}
-		internal sealed class Configuration : DbMigrationsConfiguration<Context> {
-			public Configuration() {
-				AutomaticMigrationsEnabled = true;
+			public override Task<Int32> SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
+				return this.SaveChangesWithTriggersAsync(acceptAllChangesOnSuccess, cancellationToken);
 			}
 		}
+		//internal sealed class Configuration : DbMigrationsConfiguration<Context> {
+		//	public Configuration() {
+		//		AutomaticMigrationsEnabled = true;
+		//	}
+		//}
 		private static void Main(string[] args) {
 			var task = MainAsync(args);
 			Task.WaitAll(task);

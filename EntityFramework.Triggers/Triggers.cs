@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq.Expressions;
+
+using Microsoft.Data.Entity;
 
 namespace EntityFramework.Triggers {
 	internal static class Triggers {

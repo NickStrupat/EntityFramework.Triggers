@@ -1,5 +1,5 @@
 using System;
-using System.Data.Entity;
+using Microsoft.Data.Entity;
 
 namespace EntityFramework.Triggers {
 	public interface ITriggers<out TTriggerable> where TTriggerable : class, ITriggerable {

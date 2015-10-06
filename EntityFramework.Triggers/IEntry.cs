@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Data.Entity;
+using Microsoft.Data.Entity;
 
 namespace EntityFramework.Triggers {
 	/// <summary>Contains the context and the instance of the changed entity</summary>

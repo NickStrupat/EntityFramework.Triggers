@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Validation;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.Data.Entity;
+using Microsoft.Data.Entity.ChangeTracking;
+using Microsoft.Data.Entity.ChangeTracking.Internal;
 
 namespace EntityFramework.Triggers {
 	internal static class ExtensionHelpers {
@@ -41,7 +42,7 @@ namespace EntityFramework.Triggers {
 			return afterActions;
 		}
 
-		private static Action<DbContext> RaiseTheBeforeEvent(this DbContext dbContext, DbEntityEntry<ITriggerable> entry, ITriggers triggers) {
+		private static Action<DbContext> RaiseTheBeforeEvent(this DbContext dbContext, EntityEntry<ITriggerable> entry, ITriggers triggers) {
 			switch (entry.State) {
 				case EntityState.Added:
 					triggers.OnBeforeInsert(entry.Entity, dbContext);
@@ -76,16 +77,9 @@ namespace EntityFramework.Triggers {
 				(entry.Entity as ITriggerable)?.Triggers()?.RaiseTheFailedEvents(dbContext, entry, dbUpdateException);
 		}
 
-		public static void RaiseTheFailedEvents(this DbContext dbContext, DbEntityValidationException dbEntityValidationException) {
-			foreach (var dbEntityValidationResult in dbEntityValidationException.EntityValidationErrors)
-				(dbEntityValidationResult.Entry.Entity as ITriggerable)?.StaticTriggers()?.RaiseTheFailedEvents(dbContext, dbEntityValidationResult.Entry, dbEntityValidationException);
-			foreach (var dbEntityValidationResult in dbEntityValidationException.EntityValidationErrors)
-				(dbEntityValidationResult.Entry.Entity as ITriggerable)?.Triggers()?.RaiseTheFailedEvents(dbContext, dbEntityValidationResult.Entry, dbEntityValidationException);
-		}
-
-		private static void RaiseTheFailedEvents(this ITriggers triggers, DbContext dbContext, DbEntityEntry entry, Exception exception) {
+		private static void RaiseTheFailedEvents(this ITriggers triggers, DbContext dbContext, InternalEntityEntry entry, Exception exception) {
 			var triggerable = (ITriggerable) entry.Entity;
-			switch (entry.State) {
+			switch (entry.EntityState) {
 				case EntityState.Added:
 					triggers.OnInsertFailed(triggerable, dbContext, exception);
 					break;
@@ -98,44 +92,46 @@ namespace EntityFramework.Triggers {
 			}
 		}
 
-		private delegate Int32 SaveChangesDelegateType(DbContext dbContext);
+		private delegate Int32 SaveChangesDelegateType(DbContext dbContext, Boolean acceptAllChangesOnSuccess);
 
 		private static class BaseSaveChangesDelegateCache<TDbContext> where TDbContext : DbContext {
 			public static readonly SaveChangesDelegateType SaveChanges = CreateBaseSaveChangesDelegate(typeof(TDbContext));
 
 			private static SaveChangesDelegateType CreateBaseSaveChangesDelegate(Type dbContextType) {
-				var dynamicMethod = new DynamicMethod("DbContextBaseSaveChanges", typeof(Int32), new[] { typeof(DbContext) }, typeof(Extensions).Module);
+				var dynamicMethod = new DynamicMethod("DbContextBaseSaveChanges", typeof(Int32), new[] { typeof(DbContext), typeof(Boolean) }, typeof(Extensions).Module);
 				var ilGenerator = dynamicMethod.GetILGenerator();
 				ilGenerator.Emit(OpCodes.Ldarg_0);
-				ilGenerator.Emit(OpCodes.Call, dbContextType.BaseType.GetMethod(nameof(DbContext.SaveChanges)));
+				ilGenerator.Emit(OpCodes.Ldarg_1);
+				ilGenerator.Emit(OpCodes.Call, dbContextType.BaseType.GetMethod(nameof(DbContext.SaveChanges), new[] { typeof(Boolean) }));
 				ilGenerator.Emit(OpCodes.Ret);
 				return (SaveChangesDelegateType) dynamicMethod.CreateDelegate(typeof(SaveChangesDelegateType));
 			}
 		}
 
-		public static Int32 BaseSaveChanges<TDbContext>(this TDbContext dbContext) where TDbContext : DbContext {
-			return BaseSaveChangesDelegateCache<TDbContext>.SaveChanges(dbContext);
+		public static Int32 BaseSaveChanges<TDbContext>(this TDbContext dbContext, Boolean acceptAllChangesOnSuccess) where TDbContext : DbContext {
+			return BaseSaveChangesDelegateCache<TDbContext>.SaveChanges(dbContext, acceptAllChangesOnSuccess);
 		}
 
 #if !NET40
-		private delegate Task<Int32> SaveChangesAsyncDelegateType(DbContext dbContext, CancellationToken cancellationToken);
+		private delegate Task<Int32> SaveChangesAsyncDelegateType(DbContext dbContext, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken);
 
 		private static class BaseSaveChangesAsyncDelegateCache<TDbContext> where TDbContext : DbContext {
 			public static readonly SaveChangesAsyncDelegateType SaveChangesAsync = CreateBaseSaveChangesAsyncDelegate(typeof(TDbContext));
 
 			private static SaveChangesAsyncDelegateType CreateBaseSaveChangesAsyncDelegate(Type dbContextType) {
-				var dynamicMethod = new DynamicMethod("DbContextBaseSaveChangesAsync", typeof(Task<Int32>), new[] { typeof(DbContext), typeof(CancellationToken) }, typeof(Extensions).Module);
+				var dynamicMethod = new DynamicMethod("DbContextBaseSaveChangesAsync", typeof(Task<Int32>), new[] { typeof(DbContext), typeof(Boolean), typeof(CancellationToken) }, typeof(Extensions).Module);
 				var ilGenerator = dynamicMethod.GetILGenerator();
 				ilGenerator.Emit(OpCodes.Ldarg_0);
 				ilGenerator.Emit(OpCodes.Ldarg_1);
-				ilGenerator.Emit(OpCodes.Call, dbContextType.BaseType.GetMethod(nameof(DbContext.SaveChangesAsync), new[] { typeof(CancellationToken) }));
+				ilGenerator.Emit(OpCodes.Ldarg_2);
+				ilGenerator.Emit(OpCodes.Call, dbContextType.BaseType.GetMethod(nameof(DbContext.SaveChangesAsync), new[] { typeof(Boolean), typeof(CancellationToken) }));
 				ilGenerator.Emit(OpCodes.Ret);
 				return (SaveChangesAsyncDelegateType) dynamicMethod.CreateDelegate(typeof(SaveChangesAsyncDelegateType));
 			}
 		}
 
-		public static Task<Int32> BaseSaveChangesAsync<TDbContext>(this TDbContext dbContext, CancellationToken cancellationToken) where TDbContext : DbContext {
-			return BaseSaveChangesAsyncDelegateCache<TDbContext>.SaveChangesAsync(dbContext, cancellationToken);
+		public static Task<Int32> BaseSaveChangesAsync<TDbContext>(this TDbContext dbContext, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken) where TDbContext : DbContext {
+			return BaseSaveChangesAsyncDelegateCache<TDbContext>.SaveChangesAsync(dbContext, acceptAllChangesOnSuccess, cancellationToken);
 		}
 #endif
 	}

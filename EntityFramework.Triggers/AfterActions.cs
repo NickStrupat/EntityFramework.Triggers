@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
+
+using Microsoft.Data.Entity;
 
 namespace EntityFramework.Triggers {
 	internal struct AfterActions {

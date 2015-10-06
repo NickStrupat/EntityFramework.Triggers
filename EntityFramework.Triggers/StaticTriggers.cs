@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data.Entity;
+using Microsoft.Data.Entity;
 using System.Linq;
 
 namespace EntityFramework.Triggers {
