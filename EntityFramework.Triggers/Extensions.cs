@@ -33,14 +33,20 @@ namespace EntityFramework.Triggers {
 				dbContext.RaiseTheAfterEvents(afterActions);
 				return result;
 			}
-			catch (DbUpdateException dbUpdateException) {
-				dbContext.RaiseTheFailedEvents(dbUpdateException);
-				throw;
+			catch (DbUpdateException dbUpdateException) when (ExceptionFilterAction(() => dbContext.RaiseTheFailedEvents(dbUpdateException))) {
+				throw new InvalidOperationException(CaughtExceptionMessage, dbUpdateException);
 			}
 			catch (DbEntityValidationException dbEntityValidationException) {
 				dbContext.RaiseTheFailedEvents(dbEntityValidationException);
 				throw;
 			}
+		}
+
+		private const String CaughtExceptionMessage = "An exception was caught which instead should have been observed in the exception catch filter.";
+
+		private static Boolean ExceptionFilterAction(Action action) {
+			action();
+			return false;
 		}
 
 #if !NET40
@@ -60,9 +66,8 @@ namespace EntityFramework.Triggers {
 				dbContext.RaiseTheAfterEvents(afterActions);
 				return result;
 			}
-			catch (DbUpdateException dbUpdateException) {
-				dbContext.RaiseTheFailedEvents(dbUpdateException);
-				throw;
+			catch (DbUpdateException dbUpdateException) when (ExceptionFilterAction(() => dbContext.RaiseTheFailedEvents(dbUpdateException))) {
+				throw new InvalidOperationException(CaughtExceptionMessage, dbUpdateException);
 			}
 			catch (DbEntityValidationException dbEntityValidationException) {
 				dbContext.RaiseTheFailedEvents(dbEntityValidationException);
