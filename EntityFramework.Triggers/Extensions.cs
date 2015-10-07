@@ -36,9 +36,8 @@ namespace EntityFramework.Triggers {
 			catch (DbUpdateException dbUpdateException) when (ExceptionFilterAction(() => dbContext.RaiseTheFailedEvents(dbUpdateException))) {
 				throw new InvalidOperationException(CaughtExceptionMessage, dbUpdateException);
 			}
-			catch (DbEntityValidationException dbEntityValidationException) {
-				dbContext.RaiseTheFailedEvents(dbEntityValidationException);
-				throw;
+			catch (DbEntityValidationException dbEntityValidationException) when (ExceptionFilterAction(() => dbContext.RaiseTheFailedEvents(dbEntityValidationException))) {
+				throw new InvalidOperationException(CaughtExceptionMessage, dbEntityValidationException);
 			}
 		}
 
@@ -69,9 +68,8 @@ namespace EntityFramework.Triggers {
 			catch (DbUpdateException dbUpdateException) when (ExceptionFilterAction(() => dbContext.RaiseTheFailedEvents(dbUpdateException))) {
 				throw new InvalidOperationException(CaughtExceptionMessage, dbUpdateException);
 			}
-			catch (DbEntityValidationException dbEntityValidationException) {
-				dbContext.RaiseTheFailedEvents(dbEntityValidationException);
-				throw;
+			catch (DbEntityValidationException dbEntityValidationException) when (ExceptionFilterAction(() => dbContext.RaiseTheFailedEvents(dbEntityValidationException))) {
+				throw new InvalidOperationException(CaughtExceptionMessage, dbEntityValidationException);
 			}
 		}
 #endif
