@@ -1,8 +1,13 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace EntityFramework.Triggers {
 	internal static class Triggers {
@@ -18,13 +23,98 @@ namespace EntityFramework.Triggers {
 		}
 	}
 
+	internal static class DbPropertyValuesWrapper<TTriggerable> where TTriggerable : class, ITriggerable
+	{
+		private static readonly Func<DbPropertyValues, TTriggerable> Factory = GetFactory();
+
+		private static Func<DbPropertyValues, TTriggerable> GetFactory()
+		{
+			var generatedName = typeof (TTriggerable).Name + "__DbPropertyValuesWrapper";
+            var assemblyName = new AssemblyName(generatedName + "Assembly");
+			var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
+			var moduleBuilder = assemblyBuilder.DefineDynamicModule(generatedName + "Module");
+			var typeBuilder = moduleBuilder.DefineType(
+				generatedName,
+				//typeof(TTriggerable).Attributes,
+				TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.AutoClass | TypeAttributes.AnsiClass | TypeAttributes.ExplicitLayout,
+				typeof(TTriggerable)
+			);
+
+			var properties = typeof (TTriggerable).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+			                                      .Where(x => !typeof(IEnumerable).IsAssignableFrom(x.PropertyType))
+			                                      .ToArray();
+			//var virtualProperties = new List<PropertyInfo>();
+			//foreach (var p in properties)
+			//	if (IsOverridable(p))
+			//		virtualProperties.Add(p);
+			var virtualProperties = properties.Where(IsOverridable).ToArray();
+			if (properties.Length != virtualProperties.Count())
+				throw new Exception();
+
+			var fieldBuilder = typeBuilder.DefineField("dbpv", typeof (DbPropertyValues), FieldAttributes.Private | FieldAttributes.InitOnly);
+
+			var constructorParameterTypes = new[] {typeof (DbPropertyValues)};
+			var baseConstructor = typeof(TTriggerable).GetConstructor(/*BindingFlags.Instance, null, CallingConventions.HasThis,*/ Type.EmptyTypes/*, null*/);
+            var constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, constructorParameterTypes);
+			var ilGenerator = constructorBuilder.GetILGenerator();
+			ilGenerator.Emit(OpCodes.Ldarg_0);
+			ilGenerator.Emit(OpCodes.Call, baseConstructor);
+			ilGenerator.Emit(OpCodes.Ldarg_0);
+			ilGenerator.Emit(OpCodes.Ldarg_1);
+			ilGenerator.Emit(OpCodes.Stfld, fieldBuilder);
+			ilGenerator.Emit(OpCodes.Ret);
+
+			foreach (var property in virtualProperties) {
+				GetProperty(typeBuilder, property, fieldBuilder);
+			}
+			
+			return Expression.Lambda<Func<DbPropertyValues, TTriggerable>>(Expression.New(typeBuilder.CreateType().GetConstructor(constructorParameterTypes))).Compile();
+		}
+
+		private static void GetProperty(TypeBuilder typeBuilder, PropertyInfo property, FieldInfo dbPropertyValuesFieldInfo)
+		{
+			var propertyBuilder = typeBuilder.DefineProperty(property.Name, property.Attributes, property.PropertyType, null);
+			var getter = property.GetGetMethod();
+			var getterBuilder = typeBuilder.DefineMethod(getter.Name, getter.Attributes);
+			var ilGenerator = getterBuilder.GetILGenerator();
+			ilGenerator.Emit(OpCodes.Ldarg_0);
+			ilGenerator.Emit(OpCodes.Ldfld, dbPropertyValuesFieldInfo);
+			ilGenerator.Emit(OpCodes.Ldstr, property.Name);
+			ilGenerator.Emit(OpCodes.Callvirt, typeof(DbPropertyValues).GetMethod(nameof(DbPropertyValues.GetValue)).MakeGenericMethod(property.PropertyType));
+			ilGenerator.Emit(OpCodes.Ret);
+
+			var setter = property.GetSetMethod(nonPublic:true);
+			var setterBuilder = typeBuilder.DefineMethod(setter.Name, setter.Attributes);
+			ilGenerator = setterBuilder.GetILGenerator();
+			ilGenerator.Emit(OpCodes.Ret);
+		}
+
+		private static bool IsOverridable(PropertyInfo propertyInfo)
+		{
+			var getter = propertyInfo.GetGetMethod();
+			return getter.IsVirtual || getter.IsAbstract;
+		}
+
+		public static TTriggerable Create(DbPropertyValues originalValues) { return GetFactory()(originalValues); } 
+	}
+
 	public sealed class Triggers<TTriggerable> : ITriggers<TTriggerable>, ITriggers where TTriggerable : class, ITriggerable {
 		internal Triggers() { }
 
 		#region Entry implementations
 		internal class Entry : IEntry<TTriggerable> {
+			//[Obsolete("Please use the `Current` property. This property will be deprecated in the future.")]
 			public TTriggerable Entity { get; internal set; }
 			public DbContext Context { get; internal set; }
+
+			private readonly Object syncRoot = new Object();
+			private TTriggerable original;
+			public TTriggerable Original {
+				get {
+					lock (syncRoot)
+						return original ?? (original = DbPropertyValuesWrapper<TTriggerable>.Create(Context.Entry(Entity).OriginalValues));
+				}
+			}
 		}
 		internal class FailedEntry : Entry, IFailedEntry<TTriggerable> {
 			public Exception Exception { get; internal set; }

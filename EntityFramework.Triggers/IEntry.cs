@@ -5,6 +5,7 @@ namespace EntityFramework.Triggers {
 	/// <summary>Contains the context and the instance of the changed entity</summary>
 	public interface IEntry<out TTriggerable> where TTriggerable : class, ITriggerable {
 		TTriggerable Entity { get; }
+		TTriggerable Original { get; }
 		DbContext Context { get; }
 	}
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Threading;
@@ -9,8 +10,8 @@ using EntityFramework.Triggers;
 namespace Example {
 	class Program {
 		public abstract class Trackable : ITriggerable {
-			public DateTime InsertDateTime { get; protected set; }
-			public DateTime UpdateDateTime { get; protected set; }
+			public virtual DateTime InsertDateTime { get; protected set; }
+			public virtual DateTime UpdateDateTime { get; protected set; }
 
 			protected Trackable() {
 				this.Triggers().Inserting += entry => { entry.Entity.InsertDateTime = entry.Entity.UpdateDateTime = DateTime.Now; };
@@ -18,11 +19,27 @@ namespace Example {
 			}
 		}
 
+		public class WhatPerson : Person
+		{
+			private DbPropertyValues dbpv;
+
+			public WhatPerson(DbPropertyValues dbpv)
+			{
+				this.dbpv = dbpv;
+			}
+
+			public override string FirstName
+			{
+				get { return dbpv.GetValue<String>(nameof(FirstName)); }
+				set { /*base.FirstName = value;*/ }
+			}
+		}
+
 		public class Person : Trackable {
-			public Int64 Id { get; protected set; }
-			public String FirstName { get; set; }
-			public String LastName { get; set; }
-			public Boolean IsDeleted { get; set; }
+			public virtual Int64 Id { get; protected set; }
+			public virtual String FirstName { get; set; }
+			public virtual String LastName { get; set; }
+			public virtual Boolean IsDeleted { get; set; }
 
 			static Person() {
 				Triggers<Person>.Deleting += entry => {
@@ -32,12 +49,12 @@ namespace Example {
 			}
 		}
 		public class LogEntry {
-			public Int64 Id { get; protected set; }
-			public String Message { get; set; }
+			public virtual Int64 Id { get; protected set; }
+			public virtual String Message { get; set; }
 		}
 		public class Context : DbContext {
-			public DbSet<Person> People { get; set; }
-			public DbSet<LogEntry> Log { get; set; }
+			public virtual DbSet<Person> People { get; set; }
+			public virtual DbSet<LogEntry> Log { get; set; }
 
 			public override Int32 SaveChanges() {
 				return this.SaveChangesWithTriggers();
@@ -52,10 +69,10 @@ namespace Example {
 			}
 		}
 		private static void Main(string[] args) {
-			var task = MainAsync(args);
-			Task.WaitAll(task);
-		}
-		private static async Task MainAsync(string[] args) {
+		//	var task = MainAsync(args);
+		//	Task.WaitAll(task);
+		//}
+		//private static async Task MainAsync(string[] args) {
 			using (var context = new Context()) {
 				var log = context.Log.ToList();
 				var nickStrupat = new Person {
@@ -66,7 +83,7 @@ namespace Example {
 					((Context)e.Context).Log.Add(new LogEntry { Message = "Insert trigger fired for " + e.Entity.FirstName });
 					Console.WriteLine("Inserting " + e.Entity.FirstName);
 				};
-				nickStrupat.Triggers().Updating += e => Console.WriteLine("Updating " + e.Entity.FirstName);
+				nickStrupat.Triggers().Updating += e => Console.WriteLine("Updating " + e.Original.FirstName);
 				nickStrupat.Triggers().Deleting += e => Console.WriteLine("Deleting " + e.Entity.FirstName);
 				nickStrupat.Triggers().Inserted += e => Console.WriteLine("Inserted " + e.Entity.FirstName);
 				nickStrupat.Triggers().Updated += e => Console.WriteLine("Updated " + e.Entity.FirstName);
@@ -79,7 +96,8 @@ namespace Example {
 				context.SaveChanges();
 
 				context.People.Remove(nickStrupat);
-				await context.SaveChangesAsync();
+				//await context.SaveChangesAsync();
+				context.SaveChanges();
 			}
 		}
 	}
