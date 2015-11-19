@@ -75,17 +75,19 @@ namespace Tests {
 
 				nickStrupat.LastName = null;
 				try {
+				    context.People.Add(nickStrupat);
 					context.SaveChanges();
 				}
 				catch (DbUpdateException ex) {
+				    context.People.Remove(nickStrupat);
 					nickStrupat.LastName = "Strupat";
 				}
 				catch (Exception ex) {
 					Assert.Fail(ex.GetType().Name + " exception caught");
 				}
 				context.SaveChanges();
-				//Assert.AreEqual(1, updateFailedFiredCount);
-				//Assert.IsTrue(context.Things.OrderByDescending(x => x.Id).First().Value == updateFailedThingValue);
+				Assert.AreEqual(1, updateFailedFiredCount);
+				Assert.IsTrue(context.Things.OrderByDescending(x => x.Id).First().Value == updateFailedThingValue);
 
                 context.People.Remove(nickStrupat);
                 context.People.Remove(johnSmith);
