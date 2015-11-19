@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using EntityFramework.Triggers;
 
 namespace Example {
-	class Program {
+	public class Program {
 		public abstract class Trackable : ITriggerable {
 			public virtual DateTime InsertDateTime { get; protected set; }
 			public virtual DateTime UpdateDateTime { get; protected set; }

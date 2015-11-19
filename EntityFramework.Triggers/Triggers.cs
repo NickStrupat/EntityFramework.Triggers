@@ -36,18 +36,18 @@ namespace EntityFramework.Triggers {
 			var typeBuilder = moduleBuilder.DefineType(
 				generatedName,
 				//typeof(TTriggerable).Attributes,
-				TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.AutoClass | TypeAttributes.AnsiClass | TypeAttributes.ExplicitLayout,
+				TypeAttributes.Public | TypeAttributes.Class,
 				typeof(TTriggerable)
 			);
 
 			var properties = typeof (TTriggerable).GetProperties(BindingFlags.Public | BindingFlags.Instance)
 			                                      .Where(x => !typeof(IEnumerable).IsAssignableFrom(x.PropertyType))
 			                                      .ToArray();
-			//var virtualProperties = new List<PropertyInfo>();
-			//foreach (var p in properties)
-			//	if (IsOverridable(p))
-			//		virtualProperties.Add(p);
-			var virtualProperties = properties.Where(IsOverridable).ToArray();
+			var virtualProperties = new List<PropertyInfo>();
+			foreach (var p in properties)
+				if (IsOverridable(p))
+					virtualProperties.Add(p);
+			//var virtualProperties = properties.Where(IsOverridable).ToArray();
 			if (properties.Length != virtualProperties.Count())
 				throw new Exception();
 
@@ -67,8 +67,11 @@ namespace EntityFramework.Triggers {
 			foreach (var property in virtualProperties) {
 				GetProperty(typeBuilder, property, fieldBuilder);
 			}
-			
-			return Expression.Lambda<Func<DbPropertyValues, TTriggerable>>(Expression.New(typeBuilder.CreateType().GetConstructor(constructorParameterTypes))).Compile();
+
+			var type = typeBuilder.CreateType();
+			var constructor = type.GetConstructor(constructorParameterTypes);
+			var parameter = Expression.Parameter(typeof (DbPropertyValues));
+			return Expression.Lambda<Func<DbPropertyValues, TTriggerable>>(Expression.New(constructor, parameter), parameter).Compile();
 		}
 
 		private static void GetProperty(TypeBuilder typeBuilder, PropertyInfo property, FieldInfo dbPropertyValuesFieldInfo)
