@@ -60,6 +60,7 @@ namespace Example {
 		}
 		private static async Task MainAsync(string[] args) {
 			using (var context = new Context()) {
+				context.Database.EnsureDeleted();
 				context.Database.EnsureCreated();
 				var log = context.Log.ToList();
 				var nickStrupat = new Person {
