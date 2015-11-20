@@ -19,23 +19,6 @@ namespace Example {
 			}
 		}
 
-		public class WhatPerson : Person
-		{
-			private DbPropertyValues dbpv;
-
-			public WhatPerson(DbPropertyValues dbpv)
-			{
-				this.dbpv = dbpv;
-			}
-
-			public override String FirstName
-			{
-				get { return (String) dbpv[nameof(FirstName)]; }
-				set { /*base.FirstName = value;*/ }
-			}
-			public override Int64 Id => (Int64) dbpv[nameof(Id)];
-		}
-
 		public class Person : Trackable {
 			public virtual Int64 Id { get; protected set; }
 			public virtual String FirstName { get; set; }
@@ -97,8 +80,6 @@ namespace Example {
 
 				nickStrupat.FirstName = "Nicholas";
 				context.SaveChanges();
-				var what = context.Entry(nickStrupat).OriginalValues;
-				var whatp = new WhatPerson(what);
 				context.People.Remove(nickStrupat);
 				//await context.SaveChangesAsync();
 				context.SaveChanges();

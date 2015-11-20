@@ -73,6 +73,13 @@ namespace EntityFramework.Triggers {
 			ilGenerator.Emit(OpCodes.Ldstr, property.Name);
 			ilGenerator.Emit(OpCodes.Call, typeof(DbPropertyValues).GetMethod(nameof(DbPropertyValues.GetValue)).MakeGenericMethod(property.PropertyType));
 			ilGenerator.Emit(OpCodes.Ret);
+
+			var setter = property.GetSetMethod(nonPublic:true);
+			var setterBuilder = typeBuilder.DefineMethod(setter.Name, getAndSetAttributes, null, new[] {property.PropertyType});
+			ilGenerator = setterBuilder.GetILGenerator();
+			ilGenerator.Emit(OpCodes.Ldstr, "Properties cannot be set on a proxy object of `OriginalValues`");
+			ilGenerator.Emit(OpCodes.Newobj, typeof(NotImplementedException).GetConstructor(new [] {typeof(String)}));
+			ilGenerator.Emit(OpCodes.Throw);
 		}
 
 		private static Boolean IsOverridable(PropertyInfo propertyInfo)
