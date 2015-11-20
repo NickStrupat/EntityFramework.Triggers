@@ -28,11 +28,12 @@ namespace Example {
 				this.dbpv = dbpv;
 			}
 
-			public override string FirstName
+			public override String FirstName
 			{
-				get { return dbpv.GetValue<String>(nameof(FirstName)); }
+				get { return (String) dbpv[nameof(FirstName)]; }
 				set { /*base.FirstName = value;*/ }
 			}
+			public override Int64 Id => (Int64) dbpv[nameof(Id)];
 		}
 
 		public class Person : Trackable {
@@ -74,6 +75,8 @@ namespace Example {
 		//}
 		//private static async Task MainAsync(string[] args) {
 			using (var context = new Context()) {
+				context.Database.Delete();
+				context.Database.Create();
 				var log = context.Log.ToList();
 				var nickStrupat = new Person {
 					FirstName = "Nick",
@@ -83,10 +86,10 @@ namespace Example {
 					((Context)e.Context).Log.Add(new LogEntry { Message = "Insert trigger fired for " + e.Entity.FirstName });
 					Console.WriteLine("Inserting " + e.Entity.FirstName);
 				};
-				nickStrupat.Triggers().Updating += e => Console.WriteLine("Updating " + e.Original.FirstName);
+				nickStrupat.Triggers().Updating += e => Console.WriteLine("Updating " + e.Entity.FirstName);
 				nickStrupat.Triggers().Deleting += e => Console.WriteLine("Deleting " + e.Entity.FirstName);
 				nickStrupat.Triggers().Inserted += e => Console.WriteLine("Inserted " + e.Entity.FirstName);
-				nickStrupat.Triggers().Updated += e => Console.WriteLine("Updated " + e.Entity.FirstName);
+				nickStrupat.Triggers().Updated += e => Console.WriteLine("Updated " + e.Original.FirstName);
 				nickStrupat.Triggers().Deleted += e => Console.WriteLine("Deleted " + e.Entity.FirstName);
 
 				context.People.Add(nickStrupat);
@@ -94,7 +97,8 @@ namespace Example {
 
 				nickStrupat.FirstName = "Nicholas";
 				context.SaveChanges();
-
+				var what = context.Entry(nickStrupat).OriginalValues;
+				var whatp = new WhatPerson(what);
 				context.People.Remove(nickStrupat);
 				//await context.SaveChangesAsync();
 				context.SaveChanges();

@@ -33,29 +33,18 @@ namespace EntityFramework.Triggers {
             var assemblyName = new AssemblyName(generatedName + "Assembly");
 			var assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
 			var moduleBuilder = assemblyBuilder.DefineDynamicModule(generatedName + "Module");
-			var typeBuilder = moduleBuilder.DefineType(
-				generatedName,
-				//typeof(TTriggerable).Attributes,
-				TypeAttributes.Public | TypeAttributes.Class,
-				typeof(TTriggerable)
-			);
+			var typeBuilder = moduleBuilder.DefineType(generatedName, TypeAttributes.Public | TypeAttributes.Class, typeof(TTriggerable));
 
-			var properties = typeof (TTriggerable).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-			                                      .Where(x => !typeof(IEnumerable).IsAssignableFrom(x.PropertyType))
-			                                      .ToArray();
-			var virtualProperties = new List<PropertyInfo>();
-			foreach (var p in properties)
-				if (IsOverridable(p))
-					virtualProperties.Add(p);
-			//var virtualProperties = properties.Where(IsOverridable).ToArray();
+			var properties = typeof (TTriggerable).GetProperties(BindingFlags.Public | BindingFlags.Instance).ToArray();
+			var virtualProperties = properties.Where(IsOverridable).ToArray();
 			if (properties.Length != virtualProperties.Count())
-				throw new Exception();
+				throw new Exception("Proxy entity object is only supported when all properties are virtual.");
 
-			var fieldBuilder = typeBuilder.DefineField("dbpv", typeof (DbPropertyValues), FieldAttributes.Private | FieldAttributes.InitOnly);
+			var fieldBuilder = typeBuilder.DefineField("dbPropertyValues", typeof (DbPropertyValues), FieldAttributes.Private | FieldAttributes.InitOnly);
 
 			var constructorParameterTypes = new[] {typeof (DbPropertyValues)};
-			var baseConstructor = typeof(TTriggerable).GetConstructor(/*BindingFlags.Instance, null, CallingConventions.HasThis,*/ Type.EmptyTypes/*, null*/);
-            var constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, constructorParameterTypes);
+			var baseConstructor = typeof(TTriggerable).GetConstructor(Type.EmptyTypes);
+            var constructorBuilder = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, constructorParameterTypes);
 			var ilGenerator = constructorBuilder.GetILGenerator();
 			ilGenerator.Emit(OpCodes.Ldarg_0);
 			ilGenerator.Emit(OpCodes.Call, baseConstructor);
@@ -74,31 +63,25 @@ namespace EntityFramework.Triggers {
 			return Expression.Lambda<Func<DbPropertyValues, TTriggerable>>(Expression.New(constructor, parameter), parameter).Compile();
 		}
 
-		private static void GetProperty(TypeBuilder typeBuilder, PropertyInfo property, FieldInfo dbPropertyValuesFieldInfo)
-		{
-			var propertyBuilder = typeBuilder.DefineProperty(property.Name, property.Attributes, property.PropertyType, null);
+		private static void GetProperty(TypeBuilder typeBuilder, PropertyInfo property, FieldInfo dbPropertyValuesFieldInfo) {
 			var getter = property.GetGetMethod();
-			var getterBuilder = typeBuilder.DefineMethod(getter.Name, getter.Attributes);
+			var getAndSetAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.Virtual;
+            var getterBuilder = typeBuilder.DefineMethod(getter.Name, getAndSetAttributes, property.PropertyType, null);
 			var ilGenerator = getterBuilder.GetILGenerator();
 			ilGenerator.Emit(OpCodes.Ldarg_0);
 			ilGenerator.Emit(OpCodes.Ldfld, dbPropertyValuesFieldInfo);
 			ilGenerator.Emit(OpCodes.Ldstr, property.Name);
-			ilGenerator.Emit(OpCodes.Callvirt, typeof(DbPropertyValues).GetMethod(nameof(DbPropertyValues.GetValue)).MakeGenericMethod(property.PropertyType));
-			ilGenerator.Emit(OpCodes.Ret);
-
-			var setter = property.GetSetMethod(nonPublic:true);
-			var setterBuilder = typeBuilder.DefineMethod(setter.Name, setter.Attributes);
-			ilGenerator = setterBuilder.GetILGenerator();
+			ilGenerator.Emit(OpCodes.Call, typeof(DbPropertyValues).GetMethod(nameof(DbPropertyValues.GetValue)).MakeGenericMethod(property.PropertyType));
 			ilGenerator.Emit(OpCodes.Ret);
 		}
 
-		private static bool IsOverridable(PropertyInfo propertyInfo)
+		private static Boolean IsOverridable(PropertyInfo propertyInfo)
 		{
 			var getter = propertyInfo.GetGetMethod();
 			return getter.IsVirtual || getter.IsAbstract;
 		}
 
-		public static TTriggerable Create(DbPropertyValues originalValues) { return GetFactory()(originalValues); } 
+		public static TTriggerable Create(DbPropertyValues originalValues) { return Factory(originalValues); } 
 	}
 
 	public sealed class Triggers<TTriggerable> : ITriggers<TTriggerable>, ITriggers where TTriggerable : class, ITriggerable {
@@ -109,7 +92,9 @@ namespace EntityFramework.Triggers {
 			//[Obsolete("Please use the `Current` property. This property will be deprecated in the future.")]
 			public TTriggerable Entity { get; internal set; }
 			public DbContext Context { get; internal set; }
+		}
 
+		internal class AfterChangeEntry : Entry, IAfterChangeEntry<TTriggerable> {
 			private readonly Object syncRoot = new Object();
 			private TTriggerable original;
 			public TTriggerable Original {
@@ -118,6 +103,7 @@ namespace EntityFramework.Triggers {
 						return original ?? (original = DbPropertyValuesWrapper<TTriggerable>.Create(Context.Entry(Entity).OriginalValues));
 				}
 			}
+			
 		}
 		internal class FailedEntry : Entry, IFailedEntry<TTriggerable> {
 			public Exception Exception { get; internal set; }
@@ -158,8 +144,8 @@ namespace EntityFramework.Triggers {
 		private readonly List<Action<IFailedEntry<TTriggerable>>> updateFailed = new List<Action<IFailedEntry<TTriggerable>>>();
 		private readonly List<Action<IFailedEntry<TTriggerable>>> deleteFailed = new List<Action<IFailedEntry<TTriggerable>>>();
 		private readonly List<Action<IEntry<TTriggerable>>> inserted = new List<Action<IEntry<TTriggerable>>>();
-		private readonly List<Action<IEntry<TTriggerable>>> updated = new List<Action<IEntry<TTriggerable>>>();
-		private readonly List<Action<IEntry<TTriggerable>>> deleted = new List<Action<IEntry<TTriggerable>>>();
+		private readonly List<Action<IAfterChangeEntry<TTriggerable>>> updated = new List<Action<IAfterChangeEntry<TTriggerable>>>();
+		private readonly List<Action<IAfterChangeEntry<TTriggerable>>> deleted = new List<Action<IAfterChangeEntry<TTriggerable>>>();
 
 		event Action<IBeforeEntry<TTriggerable>> ITriggers<TTriggerable>.Inserting { add { Add(inserting, value); } remove { Remove(inserting, value); } }
 		event Action<IBeforeEntry<TTriggerable>> ITriggers<TTriggerable>.Updating { add { Add(updating, value); } remove { Remove(updating, value); } }
@@ -168,8 +154,8 @@ namespace EntityFramework.Triggers {
 		event Action<IFailedEntry<TTriggerable>> ITriggers<TTriggerable>.UpdateFailed { add { Add(updateFailed, value); } remove { Remove(updateFailed, value); } }
 		event Action<IFailedEntry<TTriggerable>> ITriggers<TTriggerable>.DeleteFailed { add { Add(deleteFailed, value); } remove { Remove(deleteFailed, value); } }
 		event Action<IEntry<TTriggerable>> ITriggers<TTriggerable>.Inserted { add { Add(inserted, value); } remove { Remove(inserted, value); } }
-		event Action<IEntry<TTriggerable>> ITriggers<TTriggerable>.Updated { add { Add(updated, value); } remove { Remove(updated, value); } }
-		event Action<IEntry<TTriggerable>> ITriggers<TTriggerable>.Deleted { add { Add(deleted, value); } remove { Remove(deleted, value); } }
+		event Action<IAfterChangeEntry<TTriggerable>> ITriggers<TTriggerable>.Updated { add { Add(updated, value); } remove { Remove(updated, value); } }
+		event Action<IAfterChangeEntry<TTriggerable>> ITriggers<TTriggerable>.Deleted { add { Add(deleted, value); } remove { Remove(deleted, value); } }
 
 		void ITriggers.OnBeforeInsert(ITriggerable t, DbContext dbc) => Raise(inserting, new InsertingEntry { Entity = (TTriggerable) t, Context = dbc });
 		void ITriggers.OnBeforeUpdate(ITriggerable t, DbContext dbc) => Raise(updating, new UpdatingEntry { Entity = (TTriggerable) t, Context = dbc });
@@ -178,8 +164,8 @@ namespace EntityFramework.Triggers {
 		void ITriggers.OnUpdateFailed(ITriggerable t, DbContext dbc, Exception ex) => Raise(updateFailed, new FailedEntry { Entity = (TTriggerable) t, Context = dbc, Exception = ex });
 		void ITriggers.OnDeleteFailed(ITriggerable t, DbContext dbc, Exception ex) => Raise(deleteFailed, new FailedEntry { Entity = (TTriggerable) t, Context = dbc, Exception = ex });
 		void ITriggers.OnAfterInsert(ITriggerable t, DbContext dbc) => Raise(inserted, new Entry { Entity = (TTriggerable) t, Context = dbc });
-		void ITriggers.OnAfterUpdate(ITriggerable t, DbContext dbc) => Raise(updated, new Entry { Entity = (TTriggerable) t, Context = dbc });
-		void ITriggers.OnAfterDelete(ITriggerable t, DbContext dbc) => Raise(deleted, new Entry { Entity = (TTriggerable) t, Context = dbc });
+		void ITriggers.OnAfterUpdate(ITriggerable t, DbContext dbc) => Raise(updated, new AfterChangeEntry { Entity = (TTriggerable) t, Context = dbc });
+		void ITriggers.OnAfterDelete(ITriggerable t, DbContext dbc) => Raise(deleted, new AfterChangeEntry { Entity = (TTriggerable) t, Context = dbc });
 		#endregion
 		#region Static events
 		private static readonly List<Action<IBeforeEntry<TTriggerable>>> staticInserting = new List<Action<IBeforeEntry<TTriggerable>>>();
@@ -189,8 +175,8 @@ namespace EntityFramework.Triggers {
 		private static readonly List<Action<IFailedEntry<TTriggerable>>> staticUpdateFailed = new List<Action<IFailedEntry<TTriggerable>>>();
 		private static readonly List<Action<IFailedEntry<TTriggerable>>> staticDeleteFailed = new List<Action<IFailedEntry<TTriggerable>>>();
 		private static readonly List<Action<IEntry<TTriggerable>>> staticInserted = new List<Action<IEntry<TTriggerable>>>();
-		private static readonly List<Action<IEntry<TTriggerable>>> staticUpdated = new List<Action<IEntry<TTriggerable>>>();
-		private static readonly List<Action<IEntry<TTriggerable>>> staticDeleted = new List<Action<IEntry<TTriggerable>>>();
+		private static readonly List<Action<IAfterChangeEntry<TTriggerable>>> staticUpdated = new List<Action<IAfterChangeEntry<TTriggerable>>>();
+		private static readonly List<Action<IAfterChangeEntry<TTriggerable>>> staticDeleted = new List<Action<IAfterChangeEntry<TTriggerable>>>();
 
 		public static event Action<IBeforeEntry<TTriggerable>> Inserting { add { Add(staticInserting, value); } remove { Remove(staticInserting, value); } }
 		public static event Action<IBeforeEntry<TTriggerable>> Updating { add { Add(staticUpdating, value); } remove { Remove(staticUpdating, value); } }
@@ -199,8 +185,8 @@ namespace EntityFramework.Triggers {
 		public static event Action<IFailedEntry<TTriggerable>> UpdateFailed { add { Add(staticUpdateFailed, value); } remove { Remove(staticUpdateFailed, value); } }
 		public static event Action<IFailedEntry<TTriggerable>> DeleteFailed { add { Add(staticDeleteFailed, value); } remove { Remove(staticDeleteFailed, value); } }
 		public static event Action<IEntry<TTriggerable>> Inserted { add { Add(staticInserted, value); } remove { Remove(staticInserted, value); } }
-		public static event Action<IEntry<TTriggerable>> Updated { add { Add(staticUpdated, value); } remove { Remove(staticUpdated, value); } }
-		public static event Action<IEntry<TTriggerable>> Deleted { add { Add(staticDeleted, value); } remove { Remove(staticDeleted, value); } }
+		public static event Action<IAfterChangeEntry<TTriggerable>> Updated { add { Add(staticUpdated, value); } remove { Remove(staticUpdated, value); } }
+		public static event Action<IAfterChangeEntry<TTriggerable>> Deleted { add { Add(staticDeleted, value); } remove { Remove(staticDeleted, value); } }
 
 		internal static void OnBeforeInsertStatic(ITriggerable t, DbContext dbc) => Raise(staticInserting, new InsertingEntry { Entity = (TTriggerable) t, Context = dbc });
 		internal static void OnBeforeUpdateStatic(ITriggerable t, DbContext dbc) => Raise(staticUpdating, new UpdatingEntry { Entity = (TTriggerable) t, Context = dbc });
@@ -209,8 +195,8 @@ namespace EntityFramework.Triggers {
 		internal static void OnUpdateFailedStatic(ITriggerable t, DbContext dbc, Exception ex) => Raise(staticUpdateFailed, new FailedEntry { Entity = (TTriggerable) t, Context = dbc, Exception = ex });
 		internal static void OnDeleteFailedStatic(ITriggerable t, DbContext dbc, Exception ex) => Raise(staticDeleteFailed, new FailedEntry { Entity = (TTriggerable) t, Context = dbc, Exception = ex });
 		internal static void OnAfterInsertStatic(ITriggerable t, DbContext dbc) => Raise(staticInserted, new Entry { Entity = (TTriggerable) t, Context = dbc });
-		internal static void OnAfterUpdateStatic(ITriggerable t, DbContext dbc) => Raise(staticUpdated, new Entry { Entity = (TTriggerable) t, Context = dbc });
-		internal static void OnAfterDeleteStatic(ITriggerable t, DbContext dbc) => Raise(staticDeleted, new Entry { Entity = (TTriggerable) t, Context = dbc });
+		internal static void OnAfterUpdateStatic(ITriggerable t, DbContext dbc) => Raise(staticUpdated, new AfterChangeEntry { Entity = (TTriggerable) t, Context = dbc });
+		internal static void OnAfterDeleteStatic(ITriggerable t, DbContext dbc) => Raise(staticDeleted, new AfterChangeEntry { Entity = (TTriggerable) t, Context = dbc });
 		#endregion
 	}
 }

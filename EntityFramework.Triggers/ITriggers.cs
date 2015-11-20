@@ -25,10 +25,10 @@ namespace EntityFramework.Triggers {
 		event Action<IEntry<TTriggerable>> Inserted;
 
 		/// <summary>Raised just after this entity is updated in the store</summary>
-		event Action<IEntry<TTriggerable>> Updated;
+		event Action<IAfterChangeEntry<TTriggerable>> Updated;
 
 		/// <summary>Raised just after this entity is deleted from the store</summary>
-		event Action<IEntry<TTriggerable>> Deleted;
+		event Action<IAfterChangeEntry<TTriggerable>> Deleted;
 	}
 
 	internal interface ITriggers {
