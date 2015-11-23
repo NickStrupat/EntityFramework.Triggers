@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="AfterActions.cs" />
     <Compile Include="DbContextWithTriggers.cs" />
+    <Compile Include="DbPropertyValuesWrapper.cs" />
     <Compile Include="ExtensionHelpers.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="IEntry.cs" />
