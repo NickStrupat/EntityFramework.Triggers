@@ -7,22 +7,22 @@ namespace EntityFramework.Triggers {
 		event Action<IBeforeEntry<TTriggerable>> Inserting;
 
 		/// <summary>Raised just before this entity is updated in the store</summary>
-		event Action<IBeforeEntry<TTriggerable>> Updating;
+		event Action<IBeforeChangeEntry<TTriggerable>> Updating;
 
 		/// <summary>Raised just before this entity is deleted from the store</summary>
-		event Action<IBeforeEntry<TTriggerable>> Deleting;
+		event Action<IBeforeChangeEntry<TTriggerable>> Deleting;
 
 		/// <summary>Raised after Inserting event, but before Inserted event when an exception has occured while saving the changes to the store</summary>
 		event Action<IFailedEntry<TTriggerable>> InsertFailed;
 
 		/// <summary>Raised after Updating event, but before Updated event when an exception has occured while saving the changes to the store</summary>
-		event Action<IFailedEntry<TTriggerable>> UpdateFailed;
+		event Action<IChangeFailedEntry<TTriggerable>> UpdateFailed;
 
 		/// <summary>Raised after Deleting event, but before Deleted event when an exception has occured while saving the changes to the store</summary>
-		event Action<IFailedEntry<TTriggerable>> DeleteFailed;
+		event Action<IChangeFailedEntry<TTriggerable>> DeleteFailed;
 
 		/// <summary>Raised just after this entity is added to the store</summary>
-		event Action<IEntry<TTriggerable>> Inserted;
+		event Action<IAfterEntry<TTriggerable>> Inserted;
 
 		/// <summary>Raised just after this entity is updated in the store</summary>
 		event Action<IAfterChangeEntry<TTriggerable>> Updated;

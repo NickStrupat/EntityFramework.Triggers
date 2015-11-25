@@ -8,10 +8,6 @@ namespace EntityFramework.Triggers {
 		DbContext Context { get; }
 	}
 
-	public interface IAfterChangeEntry<out TTriggerable> : IEntry<TTriggerable> where TTriggerable : class, ITriggerable {
-		TTriggerable Original { get; }
-	}
-
 	public interface IBeforeEntry<out TTriggerable> : IEntry<TTriggerable> where TTriggerable : class, ITriggerable {
 		void Cancel();
 	}
@@ -19,4 +15,17 @@ namespace EntityFramework.Triggers {
 	public interface IFailedEntry<out TTriggerable> : IEntry<TTriggerable> where TTriggerable : class, ITriggerable {
 		Exception Exception { get; }
 	}
+
+	public interface IAfterEntry<out TTriggerable> : IEntry<TTriggerable> where TTriggerable : class, ITriggerable {}
+
+
+
+	public interface IChangeEntry<out TTriggerable> : IEntry<TTriggerable> where TTriggerable : class, ITriggerable {
+		/// <summary>A typed wrapper around DbEntityEntry.OriginalValues</summary>
+		TTriggerable Original { get; }
+	}
+
+	public interface IBeforeChangeEntry<out TTriggerable> : IChangeEntry<TTriggerable>, IBeforeEntry<TTriggerable> where TTriggerable : class, ITriggerable {}
+	public interface IChangeFailedEntry<out TTriggerable> : IChangeEntry<TTriggerable>, IFailedEntry<TTriggerable> where TTriggerable : class, ITriggerable {}
+	public interface IAfterChangeEntry<out TTriggerable> : IChangeEntry<TTriggerable>, IEntry<TTriggerable> where TTriggerable : class, ITriggerable {}
 }
