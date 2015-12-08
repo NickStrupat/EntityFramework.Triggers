@@ -18,6 +18,11 @@ namespace EntityFramework.Triggers {
 			return (ITriggers<TTriggerable>) triggers;
 		}
 
+		public static ITriggers<TTriggerable, TDbContext> Triggers<TTriggerable, TDbContext>(this TTriggerable triggerable) where TTriggerable : class, ITriggerable where TDbContext : DbContext {
+			var triggers = triggerable.Triggers();
+			return new Triggers<TTriggerable, TDbContext>((Triggers<TTriggerable>) triggers);
+		}
+
 		/// <summary>
 		/// Saves all changes made in this context to the underlying database, firing trigger events accordingly.
 		/// </summary>

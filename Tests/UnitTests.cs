@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,7 +44,11 @@ namespace Tests {
 			deletedFiredCount = 0;
 			updateFailedThingValue = null;
             using (var context = new Context()) {
-                var people = context.People.ToList();
+	            if (context.Database.Exists()) {
+		            context.Database.Delete();
+					context.Database.Create();
+	            }
+	            var people = context.People.ToList();
                 var nickStrupat = new Person {
                                                  FirstName = "Nick",
                                                  LastName = "Strupat",
@@ -172,6 +177,31 @@ namespace Tests {
 		    }
 			Assert.AreEqual(1, instanceFiredCount);
 			Assert.AreEqual(2, staticFiredCount);
-	    }
-    }
+		}
+
+		class OtherContext : DbContext { }
+
+		[TestMethod]
+		public void StaticContextEventTest() {
+			var instanceFiredCount = 0;
+			var staticFiredCount = 0;
+			var nick = new Person { FirstName = "Nick", LastName = "Strupat" };
+			var john = new Person { FirstName = "John", LastName = "Smith" };
+			nick.Triggers().Inserting += entry => instanceFiredCount++;
+			nick.Triggers<Person, Context>().Inserting += entry => instanceFiredCount++;
+			nick.Triggers<Person, OtherContext>().Inserting += entry => instanceFiredCount++;
+			Triggers<Person, Context>.Inserting += entry => {
+			                                           entry.Context.Things.Add(new Thing { Value = "Hat" });
+			                                           staticFiredCount++;
+			                                       };
+			Triggers<Person, OtherContext>.Inserting += entry => staticFiredCount++;
+			using (var context = new Context()) {
+				context.People.Add(nick);
+				context.People.Add(john);
+				context.SaveChanges();
+			}
+			Assert.AreEqual(2, instanceFiredCount);
+			Assert.AreEqual(2, staticFiredCount);
+		}
+	}
 }
