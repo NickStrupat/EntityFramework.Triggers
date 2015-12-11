@@ -2,6 +2,7 @@
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,9 +19,13 @@ namespace EntityFramework.Triggers {
 			return (ITriggers<TTriggerable>) triggers;
 		}
 
+		private static readonly ConditionalWeakTable<ITriggerable, ITriggers> TypedContextTriggersWeakRefs = new ConditionalWeakTable<ITriggerable, ITriggers>();
+
 		public static ITriggers<TTriggerable, TDbContext> Triggers<TTriggerable, TDbContext>(this TTriggerable triggerable) where TTriggerable : class, ITriggerable where TDbContext : DbContext {
-			var triggers = triggerable.Triggers();
-			return new Triggers<TTriggerable, TDbContext>((Triggers<TTriggerable>) triggers);
+			var triggers = TypedContextTriggersWeakRefs.GetValue(triggerable, EntityFramework.Triggers.Triggers.Create<TDbContext	);
+			return (ITriggers<TTriggerable, TDbContext>) triggers;
+			//var triggers = triggerable.Triggers();
+			//return new Triggers<TTriggerable, TDbContext>((Triggers<TTriggerable>) triggers);
 		}
 
 		/// <summary>

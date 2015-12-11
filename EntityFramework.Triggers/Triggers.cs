@@ -16,6 +16,15 @@ namespace EntityFramework.Triggers {
 		private static Func<ITriggers> TriggersConstructorFactory(Type triggerableType) {
 			return Expression.Lambda<Func<ITriggers>>(Expression.New(typeof(Triggers<>).MakeGenericType(triggerableType))).Compile();
 		}
+
+		public static ITriggers Create<TDbContext>(ITriggerable triggerable) {
+			var triggersConstructor = triggersConstructorCache.GetOrAdd(triggerable.GetType(), TriggersConstructorFactory<TDbContext>);
+			return triggersConstructor();
+		}
+
+		private static Func<ITriggers> TriggersConstructorFactory<TDbContext>(Type triggerableType) {
+			return Expression.Lambda<Func<ITriggers>>(Expression.New(typeof(Triggers<,>).MakeGenericType(triggerableType, typeof(TDbContext)), Expression.Parameter	())).Compile();
+		}
 	}
 
 	public sealed class Triggers<TTriggerable> : ITriggers<TTriggerable>, ITriggers where TTriggerable : class, ITriggerable {
@@ -32,7 +41,7 @@ namespace EntityFramework.Triggers {
 				eventHandlers.Remove(value);
 		}
 
-		internal static void Raise<TIEntry>(List<Action<TIEntry>> eventHandlers, TIEntry entry) {
+		private static void Raise<TIEntry>(List<Action<TIEntry>> eventHandlers, TIEntry entry) {
 			lock (eventHandlers)
 				foreach (var eventHandler in eventHandlers)
 					eventHandler(entry);
@@ -154,12 +163,10 @@ namespace EntityFramework.Triggers {
 
 			public Action<T2> Outer { get; }
 			public Action<T1> Inner { get; }
-
-			public static List<Wrapper<T1, T2>> Wrappers { get; } = new List<Wrapper<T1, T2>>();
 		}
 
 		#region Event helpers
-		private static void Add<T1, T2>(List<Action<T1>> eventHandlers, Action<T2> value, Func<T1, T2> factory) where T1 : class, IEntry<TTriggerable> where T2 : class {
+		private static void Add<T1, T2>(List<Wrapper<T1, T2>> wrappers, List<Action<T1>> eventHandlers, Action<T2> value, Func<T1, T2> factory) where T1 : class, IEntry<TTriggerable> where T2 : class {
 			if (value == null)
 				return;
 			lock (eventHandlers) {
@@ -170,21 +177,21 @@ namespace EntityFramework.Triggers {
 					value(factory(x));
 				};
 				eventHandlers.Add(wrapper);
-				Wrapper<T1, T2>.Wrappers.Add(new Wrapper<T1, T2>(value, wrapper));
+				wrappers.Add(new Wrapper<T1, T2>(value, wrapper));
 			}
 		}
 
-		private static void Remove<T1, T2>(List<Action<T1>> eventHandlers, Action<T2> value) where T1 : class where T2 : class {
+		private static void Remove<T1, T2>(List<Wrapper<T1, T2>> wrappers, List<Action<T1>> eventHandlers, Action<T2> value) where T1 : class where T2 : class {
 			if (value == null)
 				return;
 			lock (eventHandlers) {
-				var index = Wrapper<T1, T2>.Wrappers.FindLastIndex(x => x.Outer == value);
+				var index = wrappers.FindLastIndex(x => x.Outer == value);
 				if (index < 0)
 					return;
-				var wrapper = Wrapper<T1, T2>.Wrappers[index];
-				Wrapper<T1, T2>.Wrappers.RemoveAt(index);
+				var wrapper = wrappers[index];
+				wrappers.RemoveAt(index);
 				index = eventHandlers.LastIndexOf(wrapper.Inner);
-				Wrapper<T1, T2>.Wrappers.RemoveAt(index);
+				eventHandlers.RemoveAt(index);
 			}
 		}
 		#endregion
@@ -248,15 +255,25 @@ namespace EntityFramework.Triggers {
 		}
 		#endregion
 		#region Instance events
-		event Action<IBeforeEntry      <TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.Inserting    { add { Add(triggers.inserting   , value, InsertingEntry   .Create); } remove { Remove(triggers.inserting   , value); } }
-		event Action<IBeforeChangeEntry<TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.Updating     { add { Add(triggers.updating    , value, UpdatingEntry    .Create); } remove { Remove(triggers.updating    , value); } }
-		event Action<IBeforeChangeEntry<TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.Deleting     { add { Add(triggers.deleting    , value, DeletingEntry    .Create); } remove { Remove(triggers.deleting    , value); } }
-		event Action<IFailedEntry      <TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.InsertFailed { add { Add(triggers.insertFailed, value, FailedEntry      .Create); } remove { Remove(triggers.insertFailed, value); } }
-		event Action<IChangeFailedEntry<TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.UpdateFailed { add { Add(triggers.updateFailed, value, ChangeFailedEntry.Create); } remove { Remove(triggers.updateFailed, value); } }
-		event Action<IChangeFailedEntry<TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.DeleteFailed { add { Add(triggers.deleteFailed, value, ChangeFailedEntry.Create); } remove { Remove(triggers.deleteFailed, value); } }
-		event Action<IAfterEntry       <TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.Inserted     { add { Add(triggers.inserted    , value, AfterEntry       .Create); } remove { Remove(triggers.inserted    , value); } }
-		event Action<IAfterChangeEntry <TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.Updated      { add { Add(triggers.updated     , value, AfterChangeEntry .Create); } remove { Remove(triggers.updated     , value); } }
-		event Action<IAfterChangeEntry <TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.Deleted      { add { Add(triggers.deleted     , value, AfterChangeEntry .Create); } remove { Remove(triggers.deleted     , value); } }
+		private readonly List<Wrapper<IBeforeEntry      <TTriggerable>, IBeforeEntry      <TTriggerable, TDbContext>>> insertingWrappers    = new List<Wrapper<IBeforeEntry      <TTriggerable>, IBeforeEntry      <TTriggerable, TDbContext>>>();
+		private readonly List<Wrapper<IBeforeChangeEntry<TTriggerable>, IBeforeChangeEntry<TTriggerable, TDbContext>>> updatingWrappers     = new List<Wrapper<IBeforeChangeEntry<TTriggerable>, IBeforeChangeEntry<TTriggerable, TDbContext>>>();
+		private readonly List<Wrapper<IBeforeChangeEntry<TTriggerable>, IBeforeChangeEntry<TTriggerable, TDbContext>>> deletingWrappers     = new List<Wrapper<IBeforeChangeEntry<TTriggerable>, IBeforeChangeEntry<TTriggerable, TDbContext>>>();
+		private readonly List<Wrapper<IFailedEntry      <TTriggerable>, IFailedEntry      <TTriggerable, TDbContext>>> insertFailedWrappers = new List<Wrapper<IFailedEntry      <TTriggerable>, IFailedEntry      <TTriggerable, TDbContext>>>();
+		private readonly List<Wrapper<IChangeFailedEntry<TTriggerable>, IChangeFailedEntry<TTriggerable, TDbContext>>> updateFailedWrappers = new List<Wrapper<IChangeFailedEntry<TTriggerable>, IChangeFailedEntry<TTriggerable, TDbContext>>>();
+		private readonly List<Wrapper<IChangeFailedEntry<TTriggerable>, IChangeFailedEntry<TTriggerable, TDbContext>>> deleteFailedWrappers = new List<Wrapper<IChangeFailedEntry<TTriggerable>, IChangeFailedEntry<TTriggerable, TDbContext>>>();
+		private readonly List<Wrapper<IAfterEntry       <TTriggerable>, IAfterEntry       <TTriggerable, TDbContext>>> insertedWrappers     = new List<Wrapper<IAfterEntry       <TTriggerable>, IAfterEntry       <TTriggerable, TDbContext>>>();
+		private readonly List<Wrapper<IAfterChangeEntry <TTriggerable>, IAfterChangeEntry <TTriggerable, TDbContext>>> updatedWrappers      = new List<Wrapper<IAfterChangeEntry <TTriggerable>, IAfterChangeEntry <TTriggerable, TDbContext>>>();
+		private readonly List<Wrapper<IAfterChangeEntry <TTriggerable>, IAfterChangeEntry <TTriggerable, TDbContext>>> deletedWrappers      = new List<Wrapper<IAfterChangeEntry <TTriggerable>, IAfterChangeEntry <TTriggerable, TDbContext>>>();
+
+		event Action<IBeforeEntry      <TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.Inserting    { add { Add(insertingWrappers   , triggers.inserting   , value, InsertingEntry   .Create); } remove { Remove(insertingWrappers   , triggers.inserting   , value); } }
+		event Action<IBeforeChangeEntry<TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.Updating     { add { Add(updatingWrappers    , triggers.updating    , value, UpdatingEntry    .Create); } remove { Remove(updatingWrappers    , triggers.updating    , value); } }
+		event Action<IBeforeChangeEntry<TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.Deleting     { add { Add(deletingWrappers    , triggers.deleting    , value, DeletingEntry    .Create); } remove { Remove(deletingWrappers    , triggers.deleting    , value); } }
+		event Action<IFailedEntry      <TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.InsertFailed { add { Add(insertFailedWrappers, triggers.insertFailed, value, FailedEntry      .Create); } remove { Remove(insertFailedWrappers, triggers.insertFailed, value); } }
+		event Action<IChangeFailedEntry<TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.UpdateFailed { add { Add(updateFailedWrappers, triggers.updateFailed, value, ChangeFailedEntry.Create); } remove { Remove(updateFailedWrappers, triggers.updateFailed, value); } }
+		event Action<IChangeFailedEntry<TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.DeleteFailed { add { Add(deleteFailedWrappers, triggers.deleteFailed, value, ChangeFailedEntry.Create); } remove { Remove(deleteFailedWrappers, triggers.deleteFailed, value); } }
+		event Action<IAfterEntry       <TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.Inserted     { add { Add(insertedWrappers    , triggers.inserted    , value, AfterEntry       .Create); } remove { Remove(insertedWrappers    , triggers.inserted    , value); } }
+		event Action<IAfterChangeEntry <TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.Updated      { add { Add(updatedWrappers     , triggers.updated     , value, AfterChangeEntry .Create); } remove { Remove(updatedWrappers     , triggers.updated     , value); } }
+		event Action<IAfterChangeEntry <TTriggerable, TDbContext>> ITriggers<TTriggerable, TDbContext>.Deleted      { add { Add(deletedWrappers     , triggers.deleted     , value, AfterChangeEntry .Create); } remove { Remove(deletedWrappers     , triggers.deleted     , value); } }
 
 		void ITriggers.OnBeforeInsert(ITriggerable t, DbContext dbc)               => ((ITriggers) triggers).OnBeforeInsert(t, dbc);
 		void ITriggers.OnBeforeUpdate(ITriggerable t, DbContext dbc)               => ((ITriggers) triggers).OnBeforeUpdate(t, dbc);
@@ -269,15 +286,25 @@ namespace EntityFramework.Triggers {
 		void ITriggers.OnAfterDelete (ITriggerable t, DbContext dbc)               => ((ITriggers) triggers).OnAfterDelete (t, dbc);
 		#endregion
 		#region Static events
-		public static event Action<IBeforeEntry      <TTriggerable, TDbContext>> Inserting    { add { Add(Triggers<TTriggerable>.staticInserting   , value, InsertingEntry   .Create); } remove { Remove(Triggers<TTriggerable>.staticInserting   , value); } }
-		public static event Action<IBeforeChangeEntry<TTriggerable, TDbContext>> Updating     { add { Add(Triggers<TTriggerable>.staticUpdating    , value, UpdatingEntry    .Create); } remove { Remove(Triggers<TTriggerable>.staticUpdating    , value); } }
-		public static event Action<IBeforeChangeEntry<TTriggerable, TDbContext>> Deleting     { add { Add(Triggers<TTriggerable>.staticDeleting    , value, DeletingEntry    .Create); } remove { Remove(Triggers<TTriggerable>.staticDeleting    , value); } }
-		public static event Action<IFailedEntry      <TTriggerable, TDbContext>> InsertFailed { add { Add(Triggers<TTriggerable>.staticInsertFailed, value, FailedEntry      .Create); } remove { Remove(Triggers<TTriggerable>.staticInsertFailed, value); } }
-		public static event Action<IChangeFailedEntry<TTriggerable, TDbContext>> UpdateFailed { add { Add(Triggers<TTriggerable>.staticUpdateFailed, value, ChangeFailedEntry.Create); } remove { Remove(Triggers<TTriggerable>.staticUpdateFailed, value); } }
-		public static event Action<IChangeFailedEntry<TTriggerable, TDbContext>> DeleteFailed { add { Add(Triggers<TTriggerable>.staticDeleteFailed, value, ChangeFailedEntry.Create); } remove { Remove(Triggers<TTriggerable>.staticDeleteFailed, value); } }
-		public static event Action<IAfterEntry       <TTriggerable, TDbContext>> Inserted     { add { Add(Triggers<TTriggerable>.staticInserted    , value, AfterEntry       .Create); } remove { Remove(Triggers<TTriggerable>.staticInserted    , value); } }
-		public static event Action<IAfterChangeEntry <TTriggerable, TDbContext>> Updated      { add { Add(Triggers<TTriggerable>.staticUpdated     , value, AfterChangeEntry .Create); } remove { Remove(Triggers<TTriggerable>.staticUpdated     , value); } }
-		public static event Action<IAfterChangeEntry <TTriggerable, TDbContext>> Deleted      { add { Add(Triggers<TTriggerable>.staticDeleted     , value, AfterChangeEntry .Create); } remove { Remove(Triggers<TTriggerable>.staticDeleted     , value); } }
+		private static readonly List<Wrapper<IBeforeEntry      <TTriggerable>, IBeforeEntry      <TTriggerable, TDbContext>>> staticInsertingWrappers    = new List<Wrapper<IBeforeEntry      <TTriggerable>, IBeforeEntry      <TTriggerable, TDbContext>>>();
+		private static readonly List<Wrapper<IBeforeChangeEntry<TTriggerable>, IBeforeChangeEntry<TTriggerable, TDbContext>>> staticUpdatingWrappers     = new List<Wrapper<IBeforeChangeEntry<TTriggerable>, IBeforeChangeEntry<TTriggerable, TDbContext>>>();
+		private static readonly List<Wrapper<IBeforeChangeEntry<TTriggerable>, IBeforeChangeEntry<TTriggerable, TDbContext>>> staticDeletingWrappers     = new List<Wrapper<IBeforeChangeEntry<TTriggerable>, IBeforeChangeEntry<TTriggerable, TDbContext>>>();
+		private static readonly List<Wrapper<IFailedEntry      <TTriggerable>, IFailedEntry      <TTriggerable, TDbContext>>> staticInsertFailedWrappers = new List<Wrapper<IFailedEntry      <TTriggerable>, IFailedEntry      <TTriggerable, TDbContext>>>();
+		private static readonly List<Wrapper<IChangeFailedEntry<TTriggerable>, IChangeFailedEntry<TTriggerable, TDbContext>>> staticUpdateFailedWrappers = new List<Wrapper<IChangeFailedEntry<TTriggerable>, IChangeFailedEntry<TTriggerable, TDbContext>>>();
+		private static readonly List<Wrapper<IChangeFailedEntry<TTriggerable>, IChangeFailedEntry<TTriggerable, TDbContext>>> staticDeleteFailedWrappers = new List<Wrapper<IChangeFailedEntry<TTriggerable>, IChangeFailedEntry<TTriggerable, TDbContext>>>();
+		private static readonly List<Wrapper<IAfterEntry       <TTriggerable>, IAfterEntry       <TTriggerable, TDbContext>>> staticInsertedWrappers     = new List<Wrapper<IAfterEntry       <TTriggerable>, IAfterEntry       <TTriggerable, TDbContext>>>();
+		private static readonly List<Wrapper<IAfterChangeEntry <TTriggerable>, IAfterChangeEntry <TTriggerable, TDbContext>>> staticUpdatedWrappers      = new List<Wrapper<IAfterChangeEntry <TTriggerable>, IAfterChangeEntry <TTriggerable, TDbContext>>>();
+		private static readonly List<Wrapper<IAfterChangeEntry <TTriggerable>, IAfterChangeEntry <TTriggerable, TDbContext>>> staticDeletedWrappers      = new List<Wrapper<IAfterChangeEntry <TTriggerable>, IAfterChangeEntry <TTriggerable, TDbContext>>>();
+
+		public static event Action<IBeforeEntry      <TTriggerable, TDbContext>> Inserting    { add { Add(staticInsertingWrappers   , Triggers<TTriggerable>.staticInserting   , value, InsertingEntry   .Create); } remove { Remove(staticInsertingWrappers   , Triggers<TTriggerable>.staticInserting   , value); } }
+		public static event Action<IBeforeChangeEntry<TTriggerable, TDbContext>> Updating     { add { Add(staticUpdatingWrappers    , Triggers<TTriggerable>.staticUpdating    , value, UpdatingEntry    .Create); } remove { Remove(staticUpdatingWrappers    , Triggers<TTriggerable>.staticUpdating    , value); } }
+		public static event Action<IBeforeChangeEntry<TTriggerable, TDbContext>> Deleting     { add { Add(staticDeletingWrappers    , Triggers<TTriggerable>.staticDeleting    , value, DeletingEntry    .Create); } remove { Remove(staticDeletingWrappers    , Triggers<TTriggerable>.staticDeleting    , value); } }
+		public static event Action<IFailedEntry      <TTriggerable, TDbContext>> InsertFailed { add { Add(staticInsertFailedWrappers, Triggers<TTriggerable>.staticInsertFailed, value, FailedEntry      .Create); } remove { Remove(staticInsertFailedWrappers, Triggers<TTriggerable>.staticInsertFailed, value); } }
+		public static event Action<IChangeFailedEntry<TTriggerable, TDbContext>> UpdateFailed { add { Add(staticUpdateFailedWrappers, Triggers<TTriggerable>.staticUpdateFailed, value, ChangeFailedEntry.Create); } remove { Remove(staticUpdateFailedWrappers, Triggers<TTriggerable>.staticUpdateFailed, value); } }
+		public static event Action<IChangeFailedEntry<TTriggerable, TDbContext>> DeleteFailed { add { Add(staticDeleteFailedWrappers, Triggers<TTriggerable>.staticDeleteFailed, value, ChangeFailedEntry.Create); } remove { Remove(staticDeleteFailedWrappers, Triggers<TTriggerable>.staticDeleteFailed, value); } }
+		public static event Action<IAfterEntry       <TTriggerable, TDbContext>> Inserted     { add { Add(staticInsertedWrappers    , Triggers<TTriggerable>.staticInserted    , value, AfterEntry       .Create); } remove { Remove(staticInsertedWrappers    , Triggers<TTriggerable>.staticInserted    , value); } }
+		public static event Action<IAfterChangeEntry <TTriggerable, TDbContext>> Updated      { add { Add(staticUpdatedWrappers     , Triggers<TTriggerable>.staticUpdated     , value, AfterChangeEntry .Create); } remove { Remove(staticUpdatedWrappers     , Triggers<TTriggerable>.staticUpdated     , value); } }
+		public static event Action<IAfterChangeEntry <TTriggerable, TDbContext>> Deleted      { add { Add(staticDeletedWrappers     , Triggers<TTriggerable>.staticDeleted     , value, AfterChangeEntry .Create); } remove { Remove(staticDeletedWrappers     , Triggers<TTriggerable>.staticDeleted     , value); } }
 		#endregion
 	}
 }

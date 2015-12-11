@@ -20,7 +20,8 @@ namespace Tests {
         private Int32 updatedFiredCount;
         private Int32 deletedFiredCount;
 	    private String updateFailedThingValue;
-        [TestMethod]
+
+	    [TestMethod]
         public void TestSynchronous() {
             TestEvents(context => context.SaveChanges());
             TestOrder(context => context.SaveChanges());
@@ -182,11 +183,19 @@ namespace Tests {
 		class OtherContext : DbContext { }
 
 		[TestMethod]
-		public void StaticContextEventTest() {
+		public void TypedContextEventTest() {
 			var instanceFiredCount = 0;
 			var staticFiredCount = 0;
 			var nick = new Person { FirstName = "Nick", LastName = "Strupat" };
 			var john = new Person { FirstName = "John", LastName = "Smith" };
+
+			nick.Triggers<Person, Context>().Inserting += OnInserting;
+			nick.Triggers<Person, Context>().Inserting += OnInserting;
+			nick.Triggers<Person, Context>().Inserting += OnInserting;
+			nick.Triggers<Person, Context>().Inserting += OnInserting;
+			nick.Triggers<Person, Context>().Inserting -= OnInserting;
+			nick.Triggers<Person, Context>().Inserting -= OnInserting;
+
 			nick.Triggers().Inserting += entry => instanceFiredCount++;
 			nick.Triggers<Person, Context>().Inserting += entry => instanceFiredCount++;
 			nick.Triggers<Person, OtherContext>().Inserting += entry => instanceFiredCount++;
@@ -202,6 +211,17 @@ namespace Tests {
 			}
 			Assert.AreEqual(2, instanceFiredCount);
 			Assert.AreEqual(2, staticFiredCount);
+			Assert.AreEqual(2, onInsertingCount);
 		}
+
+		private Int32 onInsertingCount;
+		private void OnInserting(IBeforeEntry<Person, Context> beforeEntry) => onInsertingCount++;
+
+		private String hello;
+	    private void OnInsertingH(IBeforeEntry<Person> beforeEntry) => hello += "H";
+		private void OnInsertingE(IBeforeEntry<Person> beforeEntry) => hello += "E";
+		private void OnInsertingL(IBeforeEntry<Person> beforeEntry) => hello += "L";
+		private void OnInsertingO(IBeforeEntry<Person> beforeEntry) => hello += "O";
+
 	}
 }
