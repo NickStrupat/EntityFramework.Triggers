@@ -204,24 +204,37 @@ namespace Tests {
 			                                           staticFiredCount++;
 			                                       };
 			Triggers<Person, OtherContext>.Inserting += entry => staticFiredCount++;
+
+			var actions = new Action<IBeforeEntry<Person, Context>>[] {
+				OnInsertingO, OnInsertingH, OnInsertingE, OnInsertingH, OnInsertingL, OnInsertingE, OnInsertingL, OnInsertingO, OnInsertingL
+			};
+			foreach (var action in actions)
+				nick.Triggers<Person, Context>().Inserting += action;
+
+			foreach (var action in new Action<IBeforeEntry<Person, Context>>[] { OnInsertingE, OnInsertingH, OnInsertingL, OnInsertingO, OnInsertingO })
+				nick.Triggers<Person, Context>().Inserting -= action;
+			nick.Triggers<Person, Context>().Inserting += OnInsertingO;
+			
 			using (var context = new Context()) {
 				context.People.Add(nick);
 				context.People.Add(john);
 				context.SaveChanges();
 			}
+
 			Assert.AreEqual(2, instanceFiredCount);
 			Assert.AreEqual(2, staticFiredCount);
 			Assert.AreEqual(2, onInsertingCount);
+			Assert.AreEqual("HELLO", hello);
 		}
 
 		private Int32 onInsertingCount;
 		private void OnInserting(IBeforeEntry<Person, Context> beforeEntry) => onInsertingCount++;
 
 		private String hello;
-	    private void OnInsertingH(IBeforeEntry<Person> beforeEntry) => hello += "H";
-		private void OnInsertingE(IBeforeEntry<Person> beforeEntry) => hello += "E";
-		private void OnInsertingL(IBeforeEntry<Person> beforeEntry) => hello += "L";
-		private void OnInsertingO(IBeforeEntry<Person> beforeEntry) => hello += "O";
+	    private void OnInsertingH(IBeforeEntry<Person, Context> beforeEntry) => hello += "H";
+		private void OnInsertingE(IBeforeEntry<Person, Context> beforeEntry) => hello += "E";
+		private void OnInsertingL(IBeforeEntry<Person, Context> beforeEntry) => hello += "L";
+		private void OnInsertingO(IBeforeEntry<Person, Context> beforeEntry) => hello += "O";
 
 	}
 }

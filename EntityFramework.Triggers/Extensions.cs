@@ -19,13 +19,13 @@ namespace EntityFramework.Triggers {
 			return (ITriggers<TTriggerable>) triggers;
 		}
 
-		private static readonly ConditionalWeakTable<ITriggerable, ITriggers> TypedContextTriggersWeakRefs = new ConditionalWeakTable<ITriggerable, ITriggers>();
+		internal static class Typed<TDbContext> where TDbContext : DbContext {
+			public static readonly ConditionalWeakTable<ITriggerable, ITriggers> TriggersWeakRefs = new ConditionalWeakTable<ITriggerable, ITriggers>();
+		}
 
 		public static ITriggers<TTriggerable, TDbContext> Triggers<TTriggerable, TDbContext>(this TTriggerable triggerable) where TTriggerable : class, ITriggerable where TDbContext : DbContext {
-			var triggers = TypedContextTriggersWeakRefs.GetValue(triggerable, EntityFramework.Triggers.Triggers.Create<TDbContext	);
+			var triggers = Typed<TDbContext>.TriggersWeakRefs.GetValue(triggerable, EntityFramework.Triggers.Triggers.Create<TDbContext>);
 			return (ITriggers<TTriggerable, TDbContext>) triggers;
-			//var triggers = triggerable.Triggers();
-			//return new Triggers<TTriggerable, TDbContext>((Triggers<TTriggerable>) triggers);
 		}
 
 		/// <summary>

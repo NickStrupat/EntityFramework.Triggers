@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace EntityFramework.Triggers {
 	internal static class Triggers {
@@ -17,13 +18,21 @@ namespace EntityFramework.Triggers {
 			return Expression.Lambda<Func<ITriggers>>(Expression.New(typeof(Triggers<>).MakeGenericType(triggerableType))).Compile();
 		}
 
-		public static ITriggers Create<TDbContext>(ITriggerable triggerable) {
-			var triggersConstructor = triggersConstructorCache.GetOrAdd(triggerable.GetType(), TriggersConstructorFactory<TDbContext>);
-			return triggersConstructor();
+		private static class Typed<TDbContext> {
+			public static readonly ConcurrentDictionary<Type, Func<ITriggers, ITriggers>> triggersConstructorCache = new ConcurrentDictionary<Type, Func<ITriggers, ITriggers>>();
 		}
 
-		private static Func<ITriggers> TriggersConstructorFactory<TDbContext>(Type triggerableType) {
-			return Expression.Lambda<Func<ITriggers>>(Expression.New(typeof(Triggers<,>).MakeGenericType(triggerableType, typeof(TDbContext)), Expression.Parameter	())).Compile();
+		public static ITriggers Create<TDbContext>(ITriggerable triggerable) {
+			var triggersConstructor = Typed<TDbContext>.triggersConstructorCache.GetOrAdd(triggerable.GetType(), TriggersConstructorFactory<TDbContext>);
+			var triggers = triggerable.Triggers();
+			return triggersConstructor((ITriggers) triggers);
+		}
+
+		private static Func<ITriggers, ITriggers> TriggersConstructorFactory<TDbContext>(Type triggerableType) {
+			var parameter = Expression.Parameter(typeof (ITriggers));
+			var genericTriggersType = typeof(Triggers<,>).MakeGenericType(triggerableType, typeof(TDbContext));
+			var constructorInfo = genericTriggersType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(ITriggers) }, null);
+			return Expression.Lambda<Func<ITriggers, ITriggers>>(Expression.New(constructorInfo, parameter), parameter).Compile();
 		}
 	}
 
@@ -151,8 +160,9 @@ namespace EntityFramework.Triggers {
 
 	public sealed class Triggers<TTriggerable, TDbContext> : ITriggers<TTriggerable, TDbContext>, ITriggers where TDbContext : DbContext where TTriggerable : class, ITriggerable {
 		private readonly Triggers<TTriggerable> triggers;
-		internal Triggers(Triggers<TTriggerable> triggers) {
-			this.triggers = triggers;
+		internal Triggers(ITriggers triggers) {
+			//this.triggers = triggers;
+			this.triggers = (Triggers<TTriggerable>) triggers;
 		}
 
 		private class Wrapper<T1, T2> {
