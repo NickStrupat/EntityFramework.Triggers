@@ -5,6 +5,8 @@ using System.Data.Entity;
 using System.Linq.Expressions;
 using System.Reflection;
 
+using EntityFramework.TypedOriginalValues;
+
 namespace EntityFramework.Triggers {
 	internal static class Triggers {
 		private static readonly ConcurrentDictionary<Type, Func<ITriggers>> triggersConstructorCache = new ConcurrentDictionary<Type, Func<ITriggers>>();
@@ -68,7 +70,7 @@ namespace EntityFramework.Triggers {
 			private readonly Lazy<TTriggerable> original;
 			public TTriggerable Original => original.Value;
 			protected ChangeEntry() {
-				original = new Lazy<TTriggerable>(() => DbPropertyValuesWrapper<TTriggerable>.Create(Context.Entry(Entity).OriginalValues));
+				original = new Lazy<TTriggerable>(() => Context.GetOriginalValues(Entity));
 			}
 		}
 
@@ -222,7 +224,7 @@ namespace EntityFramework.Triggers {
 
 		private abstract class ChangeEntry : Entry, IChangeEntry<TTriggerable, TDbContext> {
 			protected ChangeEntry(IEntry<TTriggerable, DbContext> entry) : base(entry) {
-				original = new Lazy<TTriggerable>(() => DbPropertyValuesWrapper<TTriggerable>.Create(Context.Entry(Entity).OriginalValues));
+				original = new Lazy<TTriggerable>(() => Context.GetOriginalValues(Entity));
 			}
 
 			private readonly Lazy<TTriggerable> original;
@@ -231,19 +233,19 @@ namespace EntityFramework.Triggers {
 
 		private class AfterChangeEntry : ChangeEntry, IAfterChangeEntry<TTriggerable, TDbContext> {
 			private AfterChangeEntry(IEntry<TTriggerable, DbContext> entry) : base(entry) {}
-			public static IAfterChangeEntry<TTriggerable, TDbContext> Create(IAfterChangeEntry<TTriggerable> arg) => new AfterChangeEntry(arg);
+			public static IAfterChangeEntry<TTriggerable, TDbContext> Create(IAfterChangeEntry<TTriggerable> entry) => new AfterChangeEntry(entry);
 		}
 
 		private class FailedEntry : Entry, IFailedEntry<TTriggerable, TDbContext> {
-			private FailedEntry(IEntry<TTriggerable, DbContext> entry) : base(entry) {}
-			public Exception Exception { get; internal set; }
-			public static IFailedEntry<TTriggerable, TDbContext> Create(IFailedEntry<TTriggerable> arg) => new FailedEntry(arg);
+			private FailedEntry(IFailedEntry<TTriggerable, DbContext> entry) : base(entry) { Exception = entry.Exception; }
+			public Exception Exception { get; }
+			public static IFailedEntry<TTriggerable, TDbContext> Create(IFailedEntry<TTriggerable> entry) => new FailedEntry(entry);
 		}
 
 		private class ChangeFailedEntry : ChangeEntry, IChangeFailedEntry<TTriggerable, TDbContext> {
-			private ChangeFailedEntry(IEntry<TTriggerable, DbContext> entry) : base(entry) {}
-			public Exception Exception { get; internal set; }
-			public static IChangeFailedEntry<TTriggerable, TDbContext> Create(IChangeFailedEntry<TTriggerable> arg) => new ChangeFailedEntry(arg);
+			private ChangeFailedEntry(IChangeFailedEntry<TTriggerable> entry) : base(entry) { Exception = entry.Exception; }
+			public Exception Exception { get; }
+			public static IChangeFailedEntry<TTriggerable, TDbContext> Create(IChangeFailedEntry<TTriggerable> entry) => new ChangeFailedEntry(entry);
 		}
 
 		private class InsertingEntry : Entry, IBeforeEntry<TTriggerable, TDbContext> {

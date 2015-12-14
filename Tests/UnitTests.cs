@@ -236,5 +236,22 @@ namespace Tests {
 		private void OnInsertingL(IBeforeEntry<Person, Context> beforeEntry) => hello += "L";
 		private void OnInsertingO(IBeforeEntry<Person, Context> beforeEntry) => hello += "O";
 
+		[TestMethod]
+	    public void OriginalValuesTest() {
+			Person og = null;
+			Triggers<Person, Context>.Updating += entry => og = entry.Original;
+			using (var context = new Context()) {
+				if (context.Database.Delete())
+					context.Database.Create();
+				var nick = new Person { FirstName = "Nick", LastName = "Strupat" };
+				context.People.Add(nick);
+				context.SaveChanges();
+				nick.FirstName = "Ned";
+				nick.LastName = "Sputnik";
+				context.SaveChanges();
+				Assert.AreEqual("Nick", og.FirstName);
+				Assert.AreEqual("Strupat", og.LastName);
+			}
+		}
 	}
 }
