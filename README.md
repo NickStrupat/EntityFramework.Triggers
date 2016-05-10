@@ -31,7 +31,7 @@ To use triggers on your entities, simply have your entities inherit `ITriggerabl
 		public DbSet<Person> People { get; set; }
 	}
 
-As you may have guessed, what we're doing above is enabling automatic insert and update stamps for any entity that inherits `Trackable`. Events are raised from the base class/interfaces, up to the events specified on the entity class being used. It's just as easy to set up soft deletes (the Deleting, Updating, and Inserting events are cancellable from within a handler, logging, auditing, and more! You can also add handlers for single instances of an entity with `person.Triggers().Inserting...`. Handlers you add to an indiviual object will only be called on that object. The handler reference is removed after your entity is GC'd.
+As you may have guessed, what we're doing above is enabling automatic insert and update stamps for any entity that inherits `Trackable`. Events are raised from the base class/interfaces, up to the events specified on the entity class being used. It's just as easy to set up soft deletes (the Deleting, Updating, and Inserting events are cancellable from within a handler, logging, auditing, and more!). You can also add handlers for single instances of an entity with `person.Triggers().Inserting...`. Handlers you add to an indiviual object will only be called on that object. The handler reference is removed after your entity is GC'd.
 
 Check out https://github.com/NickStrupat/EntityFramework.Rx for my "Reactive Extension" wrappers for even more POWER!
 
