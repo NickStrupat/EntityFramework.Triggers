@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq.Expressions;
 using System.Reflection;
 
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
+using EntityFrameworkCore.TypedOriginalValues;
+#else
+using System.Data.Entity;
 using EntityFramework.TypedOriginalValues;
+#endif
 
 namespace EntityFramework.Triggers {
 	internal static class Triggers {
@@ -70,7 +75,7 @@ namespace EntityFramework.Triggers {
 			private readonly Lazy<TTriggerable> original;
 			public TTriggerable Original => original.Value;
 			protected ChangeEntry() {
-				original = new Lazy<TTriggerable>(() => Context.GetOriginalValues(Entity));
+				original = new Lazy<TTriggerable>(() => Context.GetOriginal(Entity));
 			}
 		}
 
@@ -224,7 +229,7 @@ namespace EntityFramework.Triggers {
 
 		private abstract class ChangeEntry : Entry, IChangeEntry<TTriggerable, TDbContext> {
 			protected ChangeEntry(IEntry<TTriggerable, DbContext> entry) : base(entry) {
-				original = new Lazy<TTriggerable>(() => Context.GetOriginalValues(Entity));
+				original = new Lazy<TTriggerable>(() => Context.GetOriginal(Entity));
 			}
 
 			private readonly Lazy<TTriggerable> original;

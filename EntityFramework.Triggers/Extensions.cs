@@ -1,10 +1,15 @@
 ﻿using System;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Validation;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Validation;
+#endif
 
 namespace EntityFramework.Triggers {
 	public static class Extensions {
@@ -46,9 +51,11 @@ namespace EntityFramework.Triggers {
 			catch (DbUpdateException dbUpdateException) when (ExceptionFilterAction(() => dbContext.RaiseTheFailedEvents(dbUpdateException))) {
 				throw new InvalidOperationException(CaughtExceptionMessage, dbUpdateException);
 			}
+#if !EF_CORE
 			catch (DbEntityValidationException dbEntityValidationException) when (ExceptionFilterAction(() => dbContext.RaiseTheFailedEvents(dbEntityValidationException))) {
 				throw new InvalidOperationException(CaughtExceptionMessage, dbEntityValidationException);
 			}
+#endif
 		}
 
 		private const String CaughtExceptionMessage = "An exception was caught which instead should have been observed in the exception catch filter.";
@@ -78,9 +85,11 @@ namespace EntityFramework.Triggers {
 			catch (DbUpdateException dbUpdateException) when (ExceptionFilterAction(() => dbContext.RaiseTheFailedEvents(dbUpdateException))) {
 				throw new InvalidOperationException(CaughtExceptionMessage, dbUpdateException);
 			}
+#if !EF_CORE
 			catch (DbEntityValidationException dbEntityValidationException) when (ExceptionFilterAction(() => dbContext.RaiseTheFailedEvents(dbEntityValidationException))) {
 				throw new InvalidOperationException(CaughtExceptionMessage, dbEntityValidationException);
 			}
+#endif
 		}
 #endif
 	}

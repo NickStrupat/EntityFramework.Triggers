@@ -1,5 +1,10 @@
 using System;
+
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 
 namespace EntityFramework.Triggers {
 	public interface ITriggers<out TTriggerable> where TTriggerable : class, ITriggerable {

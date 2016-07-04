@@ -1,13 +1,19 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Validation;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Validation;
+#endif
 
 namespace EntityFramework.Triggers {
 	internal static class ExtensionHelpers {
@@ -41,7 +47,11 @@ namespace EntityFramework.Triggers {
 			return afterActions;
 		}
 
+#if EF_CORE
+		private static Action<DbContext> RaiseTheBeforeEvent(this DbContext dbContext, EntityEntry<ITriggerable> entry, ITriggers triggers) {
+#else
 		private static Action<DbContext> RaiseTheBeforeEvent(this DbContext dbContext, DbEntityEntry<ITriggerable> entry, ITriggers triggers) {
+#endif
 			switch (entry.State) {
 				case EntityState.Added:
 					triggers.OnBeforeInsert(entry.Entity, dbContext);
@@ -76,14 +86,20 @@ namespace EntityFramework.Triggers {
 				(entry.Entity as ITriggerable)?.Triggers()?.RaiseTheFailedEvents(dbContext, entry, dbUpdateException);
 		}
 
+#if !EF_CORE
 		public static void RaiseTheFailedEvents(this DbContext dbContext, DbEntityValidationException dbEntityValidationException) {
 			foreach (var dbEntityValidationResult in dbEntityValidationException.EntityValidationErrors)
 				(dbEntityValidationResult.Entry.Entity as ITriggerable)?.StaticTriggers()?.RaiseTheFailedEvents(dbContext, dbEntityValidationResult.Entry, dbEntityValidationException);
 			foreach (var dbEntityValidationResult in dbEntityValidationException.EntityValidationErrors)
 				(dbEntityValidationResult.Entry.Entity as ITriggerable)?.Triggers()?.RaiseTheFailedEvents(dbContext, dbEntityValidationResult.Entry, dbEntityValidationException);
 		}
+#endif
 
+#if EF_CORE
+		private static void RaiseTheFailedEvents(this ITriggers triggers, DbContext dbContext, EntityEntry entry, Exception exception) {
+#else
 		private static void RaiseTheFailedEvents(this ITriggers triggers, DbContext dbContext, DbEntityEntry entry, Exception exception) {
+#endif
 			var triggerable = (ITriggerable) entry.Entity;
 			switch (entry.State) {
 				case EntityState.Added:

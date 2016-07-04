@@ -1,5 +1,10 @@
 ﻿using System;
+
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
+#else
 using System.Data.Entity;
+#endif
 
 namespace EntityFramework.Triggers {
 	#region IEntry<TTriggerable, TDbContext>

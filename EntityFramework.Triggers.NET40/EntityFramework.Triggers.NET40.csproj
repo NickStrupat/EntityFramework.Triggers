@@ -42,7 +42,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework.TypedOriginalValues, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.TypedOriginalValues.0.3.1\lib\net40\EntityFramework.TypedOriginalValues.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.TypedOriginalValues.0.4.2-prerelease\lib\net40\EntityFramework.TypedOriginalValues.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -60,9 +60,6 @@
     </Compile>
     <Compile Include="..\EntityFramework.Triggers\DbContextWithTriggers.cs">
       <Link>DbContextWithTriggers.cs</Link>
-    </Compile>
-    <Compile Include="..\EntityFramework.Triggers\DbPropertyValuesWrapper.cs">
-      <Link>DbPropertyValuesWrapper.cs</Link>
     </Compile>
     <Compile Include="..\EntityFramework.Triggers\ExtensionHelpers.cs">
       <Link>ExtensionHelpers.cs</Link>

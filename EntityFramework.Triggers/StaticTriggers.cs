@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
+
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
+#else
+using System.Data.Entity;
+#endif
 
 namespace EntityFramework.Triggers {
 	internal static class StaticTriggers {
