@@ -17,7 +17,7 @@
 
 	"dependencies": {
 		"Microsoft.EntityFrameworkCore": "1.0.0",
-		"EntityFrameworkCore.TypedOriginalValues": "0.4.2-prerelease",
+		"EntityFrameworkCore.TypedOriginalValues": "0.4.3-prerelease",
 		"System.Runtime": "4.1.0",
 		"System.Reflection": "4.1.0",
 		"System.Reflection.Emit": "4.0.1",
