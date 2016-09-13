@@ -1,0 +1,32 @@
+﻿{
+	"version": "1.0.0-*",
+
+	"configurations": {
+		"Debug": {
+			"buildOptions": {
+				"define": [ "DEBUG", "TRACE", "EF_CORE" ]
+			}
+		},
+		"Release": {
+			"buildOptions": {
+				"define": [ "RELEASE", "TRACE", "EF_CORE" ],
+				"optimize": true
+			}
+		}
+	},
+
+	"dependencies": {
+		"NETStandard.Library": "1.6.0",
+		"xunit": "2.2.0-beta2-build3300",
+		"xunit.runner.visualstudio": "2.2.0-beta2-build1149",
+		"Microsoft.EntityFrameworkCore": "1.0.0",
+		"EntityFrameworkCore.Triggers.NETCore": { "target": "project" }
+	},
+
+	"frameworks": {
+		"net451": {},
+		"netstandard1.3": {
+			"imports": "dnxcore50"
+		}
+	}
+}
