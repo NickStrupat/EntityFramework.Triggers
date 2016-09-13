@@ -64,8 +64,6 @@ namespace EntityFrameworkCore.Triggers {
 			var context = (TDbContext) dbContext;
 			foreach (var entry in dbUpdateException.Entries)
 				RaiseTheFailedEvents(context, entry, dbUpdateException);
-			foreach (var entry in dbUpdateException.Entries)
-				RaiseTheFailedEvents(context, entry, dbUpdateException);
 		}
 
 		private static void RaiseTheFailedEvents(TDbContext dbContext, EntityEntry entry, Exception exception) {

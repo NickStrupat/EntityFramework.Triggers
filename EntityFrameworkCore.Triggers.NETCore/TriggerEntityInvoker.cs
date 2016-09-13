@@ -6,8 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace EntityFrameworkCore.Triggers {
 	internal class TriggerEntityInvoker<TDbContext, TEntity> : ITriggerEntityInvoker<TDbContext> where TDbContext : DbContext where TEntity : class {
 		private static readonly Type BaseEntityType = typeof(TEntity).GetTypeInfo().BaseType;
-		private static readonly Boolean HasBaseType = BaseEntityType != null;
-		private static readonly ITriggerEntityInvoker<TDbContext> BaseTriggerEntityInvoker = HasBaseType ? TriggerEntityInvokers<TDbContext>.Get(BaseEntityType) : null;
+		private static readonly ITriggerEntityInvoker<TDbContext> BaseTriggerEntityInvoker = BaseEntityType == null ? null : TriggerEntityInvokers<TDbContext>.Get(BaseEntityType);
 		private static readonly ITriggerEntityInvoker<TDbContext>[] DeclaredInterfaces = typeof(TEntity).GetDeclaredInterfaces().Select(TriggerEntityInvokers<TDbContext>.Get).ToArray();
 
 		void ITriggerEntityInvoker<TDbContext>.RaiseBeforeInsert(Object entity, TDbContext dbc) {
@@ -39,7 +38,7 @@ namespace EntityFrameworkCore.Triggers {
 			BaseTriggerEntityInvoker?.RaiseInsertFailed(e, dbc, ex);
 			foreach (var declaredInterface in DeclaredInterfaces)
 				declaredInterface.RaiseInsertFailed(e, dbc, ex);
-			Triggers<TEntity, TDbContext>.RaiseInsertFailed((TEntity) entity, dbc, ex);
+			Triggers<TEntity, TDbContext>.RaiseInsertFailed(e, dbc, ex);
 		}
 
 		void ITriggerEntityInvoker<TDbContext>.RaiseUpdateFailed(Object entity, TDbContext dbc, Exception ex) {
@@ -47,7 +46,7 @@ namespace EntityFrameworkCore.Triggers {
 			BaseTriggerEntityInvoker?.RaiseUpdateFailed(e, dbc, ex);
 			foreach (var declaredInterface in DeclaredInterfaces)
 				declaredInterface.RaiseUpdateFailed(e, dbc, ex);
-			Triggers<TEntity, TDbContext>.RaiseUpdateFailed((TEntity) entity, dbc, ex);
+			Triggers<TEntity, TDbContext>.RaiseUpdateFailed(e, dbc, ex);
 		}
 
 		void ITriggerEntityInvoker<TDbContext>.RaiseDeleteFailed(Object entity, TDbContext dbc, Exception ex) {
@@ -55,7 +54,7 @@ namespace EntityFrameworkCore.Triggers {
 			BaseTriggerEntityInvoker?.RaiseDeleteFailed(e, dbc, ex);
 			foreach (var declaredInterface in DeclaredInterfaces)
 				declaredInterface.RaiseDeleteFailed(e, dbc, ex);
-			Triggers<TEntity, TDbContext>.RaiseDeleteFailed((TEntity) entity, dbc, ex);
+			Triggers<TEntity, TDbContext>.RaiseDeleteFailed(e, dbc, ex);
 		}
 
 		void ITriggerEntityInvoker<TDbContext>.RaiseAfterInsert (Object entity, TDbContext dbc) {
