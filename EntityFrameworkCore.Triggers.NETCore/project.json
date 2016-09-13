@@ -1,0 +1,33 @@
+﻿{
+	"version": "1.0.0-*",
+
+	"configurations": {
+		"Debug": {
+			"buildOptions": {
+				"define": [ "DEBUG", "TRACE", "EF_CORE" ]
+			}
+		},
+		"Release": {
+			"buildOptions": {
+				"define": [ "RELEASE", "TRACE", "EF_CORE" ],
+				"optimize": true
+			}
+		}
+	},
+
+	"dependencies": {
+		"Microsoft.EntityFrameworkCore": "1.0.0",
+		"EntityFrameworkCore.TypedOriginalValues": "0.4.2-prerelease",
+		"System.Runtime": "4.1.0",
+		"System.Reflection": "4.1.0",
+		"System.Reflection.Emit": "4.0.1",
+		"System.Reflection.Emit.Lightweight": "4.0.1",
+	},
+
+	"frameworks": {
+		"net451": {},
+		"netstandard1.3": {
+			"imports": "dnxcore50"
+		}
+	}
+}
