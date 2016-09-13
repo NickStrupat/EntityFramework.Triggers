@@ -3,7 +3,7 @@
   "version": 2,
   "targets": {
     ".NETFramework,Version=v4.5.1": {
-      "EntityFrameworkCore.TypedOriginalValues/0.4.2-prerelease": {
+      "EntityFrameworkCore.TypedOriginalValues/0.4.3-prerelease": {
         "type": "package",
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "1.0.0",
@@ -710,7 +710,7 @@
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.1",
         "dependencies": {
-          "EntityFrameworkCore.TypedOriginalValues": "0.4.2-prerelease",
+          "EntityFrameworkCore.TypedOriginalValues": "0.4.3-prerelease",
           "Microsoft.EntityFrameworkCore": "1.0.0",
           "System.Reflection": "4.1.0",
           "System.Reflection.Emit": "4.0.1",
@@ -726,7 +726,7 @@
       }
     },
     ".NETStandard,Version=v1.3": {
-      "EntityFrameworkCore.TypedOriginalValues/0.4.2-prerelease": {
+      "EntityFrameworkCore.TypedOriginalValues/0.4.3-prerelease": {
         "type": "package",
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "1.0.0",
@@ -1919,7 +1919,7 @@
         "type": "project",
         "framework": ".NETStandard,Version=v1.3",
         "dependencies": {
-          "EntityFrameworkCore.TypedOriginalValues": "0.4.2-prerelease",
+          "EntityFrameworkCore.TypedOriginalValues": "0.4.3-prerelease",
           "Microsoft.EntityFrameworkCore": "1.0.0",
           "System.Reflection": "4.1.0",
           "System.Reflection.Emit": "4.0.1",
@@ -1936,12 +1936,12 @@
     }
   },
   "libraries": {
-    "EntityFrameworkCore.TypedOriginalValues/0.4.2-prerelease": {
-      "sha512": "1ji9NBHIWxeZIspnH1D9b9Av0b1uoY209Hs7XygwAQlZcNYMAUEksYBxycshKMFvQMbXp0F0T/qDPyO46yj87A==",
+    "EntityFrameworkCore.TypedOriginalValues/0.4.3-prerelease": {
+      "sha512": "GtTPWkHe6TAkJLYsI02pwysJxC6epRiyK+RYGJh0S87xpkI0w62v1F0KicaMX6dFRP7qe3RiuK3KNXPl5cnM5g==",
       "type": "package",
-      "path": "EntityFrameworkCore.TypedOriginalValues/0.4.2-prerelease",
+      "path": "EntityFrameworkCore.TypedOriginalValues/0.4.3-prerelease",
       "files": [
-        "EntityFrameworkCore.TypedOriginalValues.0.4.2-prerelease.nupkg.sha512",
+        "EntityFrameworkCore.TypedOriginalValues.0.4.3-prerelease.nupkg.sha512",
         "EntityFrameworkCore.TypedOriginalValues.nuspec",
         "lib/net451/EntityFrameworkCore.TypedOriginalValues.dll",
         "lib/netstandard1.3/EntityFrameworkCore.TypedOriginalValues.dll"
