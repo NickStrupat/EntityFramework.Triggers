@@ -706,7 +706,7 @@
       "xunit.runner.visualstudio/2.2.0-beta2-build1149": {
         "type": "package"
       },
-      "EntityFrameworkCore.Triggers.NETCore/1.0.0": {
+      "EntityFrameworkCore.Triggers/1.0.0": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.1",
         "dependencies": {
@@ -718,10 +718,10 @@
           "System.Runtime": "4.1.0"
         },
         "compile": {
-          "net451/EntityFrameworkCore.Triggers.NETCore.dll": {}
+          "net451/EntityFrameworkCore.Triggers.dll": {}
         },
         "runtime": {
-          "net451/EntityFrameworkCore.Triggers.NETCore.dll": {}
+          "net451/EntityFrameworkCore.Triggers.dll": {}
         }
       }
     },
@@ -1915,7 +1915,7 @@
       "xunit.runner.visualstudio/2.2.0-beta2-build1149": {
         "type": "package"
       },
-      "EntityFrameworkCore.Triggers.NETCore/1.0.0": {
+      "EntityFrameworkCore.Triggers/1.0.0": {
         "type": "project",
         "framework": ".NETStandard,Version=v1.3",
         "dependencies": {
@@ -1927,10 +1927,10 @@
           "System.Runtime": "4.1.0"
         },
         "compile": {
-          "netstandard1.3/EntityFrameworkCore.Triggers.NETCore.dll": {}
+          "netstandard1.3/EntityFrameworkCore.Triggers.dll": {}
         },
         "runtime": {
-          "netstandard1.3/EntityFrameworkCore.Triggers.NETCore.dll": {}
+          "netstandard1.3/EntityFrameworkCore.Triggers.dll": {}
         }
       }
     }
@@ -5217,15 +5217,15 @@
         "xunit.runner.visualstudio.nuspec"
       ]
     },
-    "EntityFrameworkCore.Triggers.NETCore/1.0.0": {
+    "EntityFrameworkCore.Triggers/1.0.0": {
       "type": "project",
-      "path": "../EntityFrameworkCore.Triggers.NETCore/project.json",
-      "msbuildProject": "../EntityFrameworkCore.Triggers.NETCore/EntityFrameworkCore.Triggers.NETCore.xproj"
+      "path": "../EntityFrameworkCore.Triggers/project.json",
+      "msbuildProject": "../EntityFrameworkCore.Triggers/EntityFrameworkCore.Triggers.xproj"
     }
   },
   "projectFileDependencyGroups": {
     "": [
-      "EntityFrameworkCore.Triggers.NETCore",
+      "EntityFrameworkCore.Triggers",
       "Microsoft.EntityFrameworkCore >= 1.0.0",
       "NETStandard.Library >= 1.6.0",
       "xunit >= 2.2.0-beta2-build3300",
