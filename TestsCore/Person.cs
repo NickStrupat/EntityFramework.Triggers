@@ -1,14 +1,20 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using EntityFramework.Triggers;
 
-namespace Tests {
-	public class Person : EntityWithTracking, ITriggerable {
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
+namespace EntityFrameworkCore.Triggers.Tests {
+#else
+using System.Data.Entity;
+namespace EntityFramework.Triggers.Tests {
+#endif
+	
+	public class Person : EntityWithTracking {
 		[Key]
 		public virtual Int64 Id { get; private set; }
-		public String FirstName { get; set; }
+		public virtual String FirstName { get; set; }
 		[Required]
-		public String LastName { get; set; }
-		public Boolean IsMarkedDeleted { get; set; }
+		public virtual String LastName { get; set; }
+		public virtual Boolean IsMarkedDeleted { get; set; }
 	}
 }

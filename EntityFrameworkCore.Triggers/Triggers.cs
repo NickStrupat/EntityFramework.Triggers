@@ -96,7 +96,7 @@ namespace EntityFramework.Triggers {
 		internal static void RaiseAfterDelete (TEntity entity, TDbContext dbc)               => Raise(ref staticDeleted     , new AfterChangeEntry  { Entity = entity, Context = dbc });
 		#endregion
 		#region Entry implementations
-		private class Entry : IEntry<TEntity, TDbContext> {
+		private abstract class Entry : IEntry<TEntity, TDbContext> {
 			public TEntity Entity { get; internal set; }
 			public TDbContext Context { get; internal set; }
 		}

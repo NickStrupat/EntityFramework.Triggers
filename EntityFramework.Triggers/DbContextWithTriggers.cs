@@ -3,13 +3,9 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-#if EF_CORE
-using Microsoft.EntityFrameworkCore;
-#else
 using System.Data.Entity;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
-#endif
 
 namespace EntityFramework.Triggers {
 	/// <summary>
@@ -33,17 +29,6 @@ namespace EntityFramework.Triggers {
 		/// </summary>
 		protected DbContextWithTriggers() : base() { }
 
-#if EF_CORE
-		/// <summary>
-		///     <para>
-		///         Initializes a new instance of the <see cref="T:Microsoft.EntityFrameworkCore.DbContext" /> class using the specified options.
-		///         The <see cref="M:Microsoft.EntityFrameworkCore.DbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)" /> method will still be called to allow further
-		///         configuration of the options.
-		///     </para>
-		/// </summary>
-		/// <param name="options">The options for this context.</param>
-		protected DbContextWithTriggers(DbContextOptions options) : base(options) { }
-#else
 		/// <summary>
 		///     Constructs a new context instance using conventions to create the name of the
 		///     database to which a connection will be made, and initializes it from the given
@@ -97,6 +82,5 @@ namespace EntityFramework.Triggers {
 		/// <param name="model">The model that will back this context.</param>
 		/// <param name="contextOwnsConnection">If set to true the connection is disposed when the context is disposed, otherwise the caller must dispose the connection.</param>
 		protected DbContextWithTriggers(DbConnection existingConnection, DbCompiledModel model, Boolean contextOwnsConnection) : base(existingConnection, model, contextOwnsConnection) { }
-#endif
 	}
 }

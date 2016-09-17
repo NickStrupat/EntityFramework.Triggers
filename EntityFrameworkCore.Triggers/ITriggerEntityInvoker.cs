@@ -1,7 +1,12 @@
 using System;
-using Microsoft.EntityFrameworkCore;
 
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
 namespace EntityFrameworkCore.Triggers {
+#else
+using System.Data.Entity;
+namespace EntityFramework.Triggers {
+#endif
 	internal interface ITriggerEntityInvoker<TDbContext> where TDbContext : DbContext {
 		void RaiseBeforeInsert(Object entity, TDbContext dbc);
 		void RaiseBeforeUpdate(Object entity, TDbContext dbc);

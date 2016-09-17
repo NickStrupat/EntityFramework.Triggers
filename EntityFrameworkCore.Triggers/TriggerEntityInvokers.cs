@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Concurrent;
-using Microsoft.EntityFrameworkCore;
 
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
 namespace EntityFrameworkCore.Triggers {
+#else
+using System.Data.Entity;
+namespace EntityFramework.Triggers {
+#endif
 	internal static class TriggerEntityInvokers<TDbContext> where TDbContext : DbContext {
 		public static ITriggerEntityInvoker<TDbContext> Get(Type entityType) {
 			return cache.GetOrAdd(entityType, ValueFactory);

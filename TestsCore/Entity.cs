@@ -1,10 +1,15 @@
 ﻿using System;
-using EntityFramework.Triggers;
 
-namespace Tests {
-	public abstract class EntityWithInsertTracking : ITriggerable {
+#if EF_CORE
+namespace EntityFrameworkCore.Triggers.Tests {
+#else
+namespace EntityFramework.Triggers.Tests {
+#endif
+
+	public abstract class EntityWithInsertTracking {
 		public DateTime Inserted { get; private set; }
 		public Int32 Number { get; private set; }
+
 		static EntityWithInsertTracking() {
 			Triggers<EntityWithInsertTracking>.Inserting += e => e.Entity.Inserted = DateTime.UtcNow;
 			Triggers<EntityWithInsertTracking>.Inserting += e => e.Entity.Number = 42;
@@ -12,9 +17,10 @@ namespace Tests {
 	}
 	public abstract class EntityWithTracking : EntityWithInsertTracking {
 		public DateTime Updated { get; private set; }
-		protected EntityWithTracking() {
-			this.Triggers().Inserting += e => e.Entity.Updated = DateTime.UtcNow;
-			this.Triggers().Updating += e => e.Entity.Updated = DateTime.UtcNow;
+
+		static EntityWithTracking() {
+			Triggers<EntityWithTracking>.Inserting += e => e.Entity.Updated = DateTime.UtcNow;
+			Triggers<EntityWithTracking>.Updating += e => e.Entity.Updated = DateTime.UtcNow;
 		}
 	}
 }

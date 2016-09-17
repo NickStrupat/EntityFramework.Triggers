@@ -41,8 +41,12 @@
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net40\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="EntityFramework.TypedOriginalValues, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.TypedOriginalValues.0.4.2-prerelease\lib\net40\EntityFramework.TypedOriginalValues.dll</HintPath>
+    <Reference Include="EntityFramework.TypedOriginalValues, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.TypedOriginalValues.1.0.0\lib\net40\EntityFramework.TypedOriginalValues.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Rackspace.Collections.Immutable, Version=1.1.0.0, Culture=neutral, PublicKeyToken=8acff7051142f28d, processorArchitecture=MSIL">
+      <HintPath>..\packages\Rackspace.Collections.Immutable.1.1.36\lib\net40-client\Rackspace.Collections.Immutable.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -55,35 +59,44 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\EntityFramework.Triggers\AfterActions.cs">
-      <Link>AfterActions.cs</Link>
-    </Compile>
     <Compile Include="..\EntityFramework.Triggers\DbContextWithTriggers.cs">
       <Link>DbContextWithTriggers.cs</Link>
-    </Compile>
-    <Compile Include="..\EntityFramework.Triggers\ExtensionHelpers.cs">
-      <Link>ExtensionHelpers.cs</Link>
-    </Compile>
-    <Compile Include="..\EntityFramework.Triggers\Extensions.cs">
-      <Link>Extensions.cs</Link>
-    </Compile>
-    <Compile Include="..\EntityFramework.Triggers\IEntry.cs">
-      <Link>IEntry.cs</Link>
-    </Compile>
-    <Compile Include="..\EntityFramework.Triggers\ITriggerable.cs">
-      <Link>ITriggerable.cs</Link>
-    </Compile>
-    <Compile Include="..\EntityFramework.Triggers\ITriggers.cs">
-      <Link>ITriggers.cs</Link>
     </Compile>
     <Compile Include="..\EntityFramework.Triggers\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\EntityFramework.Triggers\StaticTriggers.cs">
-      <Link>StaticTriggers.cs</Link>
+    <Compile Include="..\EntityFrameworkCore.Triggers\Extensions.cs">
+      <Link>Extensions.cs</Link>
     </Compile>
-    <Compile Include="..\EntityFramework.Triggers\Triggers.cs">
+    <Compile Include="..\EntityFrameworkCore.Triggers\IEntry.cs">
+      <Link>IEntry.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFrameworkCore.Triggers\ITriggerEntityInvoker.cs">
+      <Link>ITriggerEntityInvoker.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFrameworkCore.Triggers\ITriggerInvoker.cs">
+      <Link>ITriggerInvoker.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFrameworkCore.Triggers\ParentDbContext.cs">
+      <Link>ParentDbContext.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFrameworkCore.Triggers\TriggerEntityInvoker.cs">
+      <Link>TriggerEntityInvoker.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFrameworkCore.Triggers\TriggerEntityInvokers.cs">
+      <Link>TriggerEntityInvokers.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFrameworkCore.Triggers\TriggerInvoker.cs">
+      <Link>TriggerInvoker.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFrameworkCore.Triggers\TriggerInvokers.cs">
+      <Link>TriggerInvokers.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFrameworkCore.Triggers\Triggers.cs">
       <Link>Triggers.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFrameworkCore.Triggers\TypeInfoExtensions.cs">
+      <Link>TypeInfoExtensions.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

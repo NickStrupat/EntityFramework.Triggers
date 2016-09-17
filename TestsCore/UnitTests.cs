@@ -1,256 +1,306 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Data.Entity.Validation;
 using System.Linq;
-using System.Threading.Tasks;
-using EntityFrameworkCore.Triggers;
-
-namespace Tests {
-    [TestClass]
-    public class UnitTests {
-        private Int32 insertingFiredCount;
-        private Int32 updatingFiredCount;
-		private Int32 deletingFiredCount;
-		private Int32 insertFailedFiredCount;
-		private Int32 updateFailedFiredCount;
-		private Int32 deleteFailedFiredCount;
-        private Int32 insertedFiredCount;
-        private Int32 updatedFiredCount;
-        private Int32 deletedFiredCount;
-	    private String updateFailedThingValue;
-
-	    [TestMethod]
-        public void TestSynchronous() {
-            TestEvents(context => context.SaveChanges());
-            TestOrder(context => context.SaveChanges());
-        }
-#if !NET40
-        [TestMethod]
-        public void TestAsynchronous() {
-            TestEvents(context => context.SaveChangesAsync().Result);
-            TestOrder(context => context.SaveChangesAsync().Result);
-        }
+using System.Reflection;
+using System.Threading;
+#if NET40
+using NUnit.Framework;
+using Fact = NUnit.Framework.TestAttribute;
+#else
+using Xunit;
 #endif
-        private void TestEvents(Func<Context, Int32> saveChangesAction) {
-            insertingFiredCount = 0;
-            updatingFiredCount = 0;
-            deletingFiredCount = 0;
-			insertFailedFiredCount = 0;
-			updateFailedFiredCount = 0;
-			deleteFailedFiredCount = 0;
-            insertedFiredCount = 0;
-            updatedFiredCount = 0;
-			deletedFiredCount = 0;
-			updateFailedThingValue = null;
-            using (var context = new Context()) {
-	            if (context.Database.Exists()) {
-		            context.Database.Delete();
-					context.Database.Create();
-	            }
-	            var people = context.People.ToList();
-                var nickStrupat = new Person {
-                                                 FirstName = "Nick",
-                                                 LastName = "Strupat",
-                                             };
-                AddHandlers(nickStrupat);
-				nickStrupat.Triggers().Deleting += e => {
-					e.Entity.IsMarkedDeleted = true;
-					e.Cancel();
-				};
-                context.People.Add(nickStrupat);
 
-	            var johnSmith = new Person {
-                                               FirstName = "John",
-                                               LastName = "Smith"
-                                           };
-                AddHandlers(johnSmith);
-                context.People.Add(johnSmith);
-                AssertNoEventsHaveFired();
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
+namespace EntityFrameworkCore.Triggers.Tests {
+#else
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Validation;
+namespace EntityFramework.Triggers.Tests {
+#endif
 
-                saveChangesAction(context);
-				Assert.IsTrue(nickStrupat.Number == 42);
-                AssertInsertEventsHaveFired();
-				Assert.IsTrue(context.Things.First().Value == "Insert trigger fired for Nick");
+	public class UnitTests {
+		// inserting
+		// insertfailed
+		// inserted
+		// updating
+		// updatefailed
+		// updated
+		// deleting
+		// deletefailed
+		// deleted
 
-                nickStrupat.FirstName = "Nicholas";
-                saveChangesAction(context);
-				AssertUpdateEventsHaveFired();
+		// TODO:
+		// cancel inserting
+		// cancel updating
+		// cancel deleting
 
-				nickStrupat.LastName = null;
-				try {
-					context.SaveChanges();
-				}
-				catch (DbEntityValidationException ex) {
-					nickStrupat.LastName = "Strupat";
-				}
-				catch (Exception ex) {
-					Assert.Fail(ex.GetType().Name + " exception caught");
-				}
-				context.SaveChanges();
-				Assert.AreEqual(updateFailedFiredCount, 1);
-				Assert.IsTrue(context.Things.OrderByDescending(x => x.Id).First().Value == updateFailedThingValue);
+		// DbEntityValidationException
+		// DbUpdateException
 
-                context.People.Remove(nickStrupat);
-                context.People.Remove(johnSmith);
-                saveChangesAction(context);
-				AssertAllEventsHaveFired();
+		// event order
+		// original values on updating
+		// inheritance hierarchy event order
+		// doubly-declared interfaces
+		// event loops
+		// calling savechanges in an event handler
+	}
 
-                context.Database.Delete();
-            }
-        }
-        private void AddHandlers(Person person) {
-			person.Triggers().Inserting += e => ((Context)e.Context).Things.Add(new Thing { Value = "Insert trigger fired for " + e.Entity.FirstName });
-			person.Triggers().Inserting += e => ++insertingFiredCount;
-			person.Triggers().Inserting += e => e.Entity.LastName = "asdf";
-            person.Triggers().Updating += e => ++updatingFiredCount;
-            person.Triggers().Deleting += e => ++deletingFiredCount;
-            person.Triggers().Inserted += e => ++insertedFiredCount;
-            person.Triggers().Updated += e => ++updatedFiredCount;
-            person.Triggers().Deleted += e => ++deletedFiredCount;
-			person.Triggers().InsertFailed += e => ((Context)e.Context).Things.Add(new Thing { Value = "Insert failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
-			person.Triggers().InsertFailed += e => ++insertFailedFiredCount;
-			person.Triggers().UpdateFailed += e => ((Context)e.Context).Things.Add(new Thing { Value = updateFailedThingValue = "Update failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
-			person.Triggers().UpdateFailed += e => ++updateFailedFiredCount;
-			person.Triggers().DeleteFailed += e => ((Context)e.Context).Things.Add(new Thing { Value = "Delete failed for " + e.Entity.FirstName + " with exception message: " + e.Exception.Message });
-			person.Triggers().DeleteFailed += e => ++deleteFailedFiredCount;
-        }
-        private void AssertAllEventsHaveFired() {
-            Assert.AreEqual(insertingFiredCount, 2);
-            Assert.AreEqual(updatingFiredCount, 3);
-            Assert.AreEqual(deletingFiredCount, 2);
-            Assert.AreEqual(insertedFiredCount, 2);
-            Assert.AreEqual(updatedFiredCount, 2);
-            Assert.AreEqual(deletedFiredCount, 1);
-        }
-        private void AssertUpdateEventsHaveFired() {
-            Assert.AreEqual(updatingFiredCount, 1);
-            Assert.AreEqual(deletingFiredCount, 0);
-            Assert.AreEqual(updatedFiredCount, 1);
-            Assert.AreEqual(deletedFiredCount, 0);
-        }
-        private void AssertInsertEventsHaveFired() {
-            Assert.AreEqual(insertingFiredCount, 2);
-            Assert.AreEqual(updatingFiredCount, 0);
-            Assert.AreEqual(deletingFiredCount, 0);
-            Assert.AreEqual(insertedFiredCount, 2);
-            Assert.AreEqual(updatedFiredCount, 0);
-            Assert.AreEqual(deletedFiredCount, 0);
-        }
-        private void AssertNoEventsHaveFired() {
-            Assert.AreEqual(insertingFiredCount, 0);
-            Assert.AreEqual(updatingFiredCount, 0);
-            Assert.AreEqual(deletingFiredCount, 0);
-            Assert.AreEqual(insertedFiredCount, 0);
-            Assert.AreEqual(updatedFiredCount, 0);
-            Assert.AreEqual(deletedFiredCount, 0);
-        }
+	public abstract class TestBase : IDisposable {
+		protected readonly Context Context = new Context();
+		public void Dispose() => Context.Dispose();
+	}
 
-        private void TestOrder(Func<Context, Int32> saveChangesAction) {
-            var list = new List<Int32>();
-            using (var context = new Context()) {
-                var janeDoe = new Person {
-                    FirstName = "Jane",
-                    LastName = "Doe",
-                };
-                janeDoe.Triggers().Inserted += e => list.Add(0);
-                ((EntityWithInsertTracking)janeDoe).Triggers().Inserted += e => list.Add(1);
-                ((EntityWithTracking)janeDoe).Triggers().Inserted += e => list.Add(2);
-                context.People.Add(janeDoe);
-                saveChangesAction(context);
-            }
-            Assert.IsTrue(list.SequenceEqual(new [] {0, 1, 2}));
-        }
+	public abstract class ThingTestBase : TestBase {
+		static ThingTestBase() {
+			Triggers<Thing>.Inserting    += e => e.Entity.Inserting    = true;
+			Triggers<Thing>.Inserting    += e => CheckFlags(e.Entity, nameof(e.Entity.Inserting));
 
-	    [TestMethod]
-	    public void InstanceAndStaticEventTest() {
-		    var instanceFiredCount = 0;
-		    var staticFiredCount = 0;
-			var nick = new Person { FirstName = "Nick", LastName = "Strupat" };
-			var john = new Person { FirstName = "John", LastName = "Smith" };
-			nick.Triggers().Inserting += entry => instanceFiredCount++;
-		    Triggers<Person>.Inserting += entry => staticFiredCount++;
-		    using (var context = new Context()) {
-			    context.People.Add(nick);
-			    context.People.Add(john);
-				context.SaveChanges();
-		    }
-			Assert.AreEqual(1, instanceFiredCount);
-			Assert.AreEqual(2, staticFiredCount);
+			Triggers<Thing>.InsertFailed += e => e.Entity.InsertFailed = true;
+			Triggers<Thing>.InsertFailed += e => CheckFlags(e.Entity, nameof(e.Entity.Inserting), nameof(e.Entity.InsertFailed));
+
+			Triggers<Thing>.Inserted     += e => e.Entity.Inserted     = true;
+			Triggers<Thing>.Inserted     += e => CheckFlags(e.Entity, nameof(e.Entity.Inserting), nameof(e.Entity.Inserted));
+
+			Triggers<Thing>.Updating     += e => e.Entity.Updating     = true;
+			Triggers<Thing>.Updating     += e => CheckFlags(e.Entity, nameof(e.Entity.Updating));
+
+			Triggers<Thing>.UpdateFailed += e => e.Entity.UpdateFailed = true;
+			Triggers<Thing>.UpdateFailed += e => CheckFlags(e.Entity, nameof(e.Entity.Updating), nameof(e.Entity.UpdateFailed));
+
+			Triggers<Thing>.Updated      += e => e.Entity.Updated      = true;
+			Triggers<Thing>.Updated      += e => CheckFlags(e.Entity, nameof(e.Entity.Updating), nameof(e.Entity.Updated));
+
+			Triggers<Thing>.Deleting     += e => e.Entity.Deleting     = true;
+			Triggers<Thing>.Deleting     += e => CheckFlags(e.Entity, nameof(e.Entity.Deleting));
+
+			Triggers<Thing>.DeleteFailed += e => e.Entity.DeleteFailed = true;
+			Triggers<Thing>.DeleteFailed += e => CheckFlags(e.Entity, nameof(e.Entity.Deleting), nameof(e.Entity.DeleteFailed));
+
+			Triggers<Thing>.Deleted      += e => e.Entity.Deleted      = true;
+			Triggers<Thing>.Deleted      += e => CheckFlags(e.Entity, nameof(e.Entity.Deleting), nameof(e.Entity.Deleted));
 		}
 
-		class OtherContext : DbContext { }
+		private static readonly IEnumerable<PropertyInfo> FlagPropertyInfos = typeof(Thing).GetProperties().Where(x => x.PropertyType == typeof(Boolean));
 
-		[TestMethod]
-		public void TypedContextEventTest() {
-			var instanceFiredCount = 0;
-			var staticFiredCount = 0;
-			var nick = new Person { FirstName = "Nick", LastName = "Strupat" };
-			var john = new Person { FirstName = "John", LastName = "Smith" };
+		private static void CheckFlags(Thing thing, params String[] trueFlagNames) {
+			foreach (var flagPropertyInfo in FlagPropertyInfos) {
+				var flagSet = (Boolean) flagPropertyInfo.GetValue(thing, null);
+				var failedAssertMessage = $"{flagPropertyInfo.Name}: {flagSet}";
 
-			nick.Triggers<Person, Context>().Inserting += OnInserting;
-			nick.Triggers<Person, Context>().Inserting += OnInserting;
-			nick.Triggers<Person, Context>().Inserting += OnInserting;
-			nick.Triggers<Person, Context>().Inserting += OnInserting;
-			nick.Triggers<Person, Context>().Inserting -= OnInserting;
-			nick.Triggers<Person, Context>().Inserting -= OnInserting;
-
-			nick.Triggers().Inserting += entry => instanceFiredCount++;
-			nick.Triggers<Person, Context>().Inserting += entry => instanceFiredCount++;
-			nick.Triggers<Person, OtherContext>().Inserting += entry => instanceFiredCount++;
-			Triggers<Person, Context>.Inserting += entry => {
-			                                           entry.Context.Things.Add(new Thing { Value = "Hat" });
-			                                           staticFiredCount++;
-			                                       };
-			Triggers<Person, OtherContext>.Inserting += entry => staticFiredCount++;
-
-			var actions = new Action<IBeforeEntry<Person, Context>>[] {
-				OnInsertingO, OnInsertingH, OnInsertingE, OnInsertingH, OnInsertingL, OnInsertingE, OnInsertingL, OnInsertingO, OnInsertingL
-			};
-			foreach (var action in actions)
-				nick.Triggers<Person, Context>().Inserting += action;
-
-			foreach (var action in new Action<IBeforeEntry<Person, Context>>[] { OnInsertingE, OnInsertingH, OnInsertingL, OnInsertingO, OnInsertingO })
-				nick.Triggers<Person, Context>().Inserting -= action;
-			nick.Triggers<Person, Context>().Inserting += OnInsertingO;
-			
-			using (var context = new Context()) {
-				context.People.Add(nick);
-				context.People.Add(john);
-				context.SaveChanges();
-			}
-
-			Assert.AreEqual(2, instanceFiredCount);
-			Assert.AreEqual(2, staticFiredCount);
-			Assert.AreEqual(2, onInsertingCount);
-			Assert.AreEqual("HELLO", hello);
-		}
-
-		private Int32 onInsertingCount;
-		private void OnInserting(IBeforeEntry<Person, Context> beforeEntry) => onInsertingCount++;
-
-		private String hello;
-	    private void OnInsertingH(IBeforeEntry<Person, Context> beforeEntry) => hello += "H";
-		private void OnInsertingE(IBeforeEntry<Person, Context> beforeEntry) => hello += "E";
-		private void OnInsertingL(IBeforeEntry<Person, Context> beforeEntry) => hello += "L";
-		private void OnInsertingO(IBeforeEntry<Person, Context> beforeEntry) => hello += "O";
-
-		[TestMethod]
-	    public void OriginalValuesTest() {
-			Person og = null;
-			Triggers<Person, Context>.Updating += entry => og = entry.Original;
-			using (var context = new Context()) {
-				if (context.Database.Delete())
-					context.Database.Create();
-				var nick = new Person { FirstName = "Nick", LastName = "Strupat" };
-				context.People.Add(nick);
-				context.SaveChanges();
-				nick.FirstName = "Ned";
-				nick.LastName = "Sputnik";
-				context.SaveChanges();
-				Assert.AreEqual("Nick", og.FirstName);
-				Assert.AreEqual("Strupat", og.LastName);
+				if (trueFlagNames.Contains(flagPropertyInfo.Name))
+					Assert.True(flagSet, failedAssertMessage);
+				else
+					Assert.False(flagSet, failedAssertMessage);
 			}
 		}
+
+		protected void ResetFlags(Thing thing) {
+			foreach (var flag in FlagPropertyInfos)
+				flag.SetValue(thing, false, null);
+		}
+	}
+
+	public class Insert : ThingTestBase {
+		[Fact]
+		public void Sync() {
+			Context.Things.Add(new Thing {Value = "Foo"});
+			Context.SaveChanges();
+		}
+
+#if !NET40
+		[Fact]
+		public async void Async() {
+			Context.Things.Add(new Thing {Value = "Foo"});
+			await Context.SaveChangesAsync();
+		}
+#endif
+	}
+
+	public class InsertFail : ThingTestBase {
+		[Fact]
+		public void Sync() {
+			Context.Things.Add(new Thing { Value = null });
+			try {
+				Context.SaveChanges();
+			}
+#if EF_CORE
+			catch (DbUpdateException) {
+#else
+			catch (DbEntityValidationException) {
+#endif
+			}
+		}
+
+#if !NET40
+		[Fact]
+		public async void Async() {
+			Context.Things.Add(new Thing { Value = null });
+			try {
+				await Context.SaveChangesAsync();
+			}
+#if EF_CORE
+			catch (DbUpdateException) {
+#else
+			catch (DbEntityValidationException) {
+#endif
+			}
+		}
+#endif
+	}
+
+	public class Update : ThingTestBase {
+		[Fact]
+		public void Sync() {
+			var thing = new Thing { Value = "Foo" };
+			Context.Things.Add(thing);
+			Context.SaveChanges();
+			thing.Value = "Bar";
+			ResetFlags(thing);
+			Context.SaveChanges();
+		}
+
+#if !NET40
+		[Fact]
+		public async void Async() {
+			var thing = new Thing { Value = "Foo" };
+			Context.Things.Add(thing);
+			await Context.SaveChangesAsync();
+			thing.Value = "Bar";
+			ResetFlags(thing);
+			await Context.SaveChangesAsync();
+		}
+#endif
+	}
+
+	public class UpdateFail : ThingTestBase {
+		[Fact]
+		public void Sync() {
+			var thing = new Thing { Value = "Foo" };
+			Context.Things.Add(thing);
+			Context.SaveChanges();
+			thing.Value = "Bar";
+			ResetFlags(thing);
+			try {
+				Context.SaveChanges();
+			}
+#if EF_CORE
+			catch (DbUpdateException) {
+#else
+			catch (DbEntityValidationException) {
+#endif
+			}
+		}
+
+#if !NET40
+		[Fact]
+		public async void Async() {
+			var thing = new Thing { Value = "Foo" };
+			Context.Things.Add(thing);
+			await Context.SaveChangesAsync();
+			thing.Value = "Bar";
+			ResetFlags(thing);
+			try {
+				await Context.SaveChangesAsync();
+			}
+#if EF_CORE
+			catch (DbUpdateException) {
+#else
+			catch (DbEntityValidationException) {
+#endif
+			}
+		}
+#endif
+	}
+
+	public class Delete : ThingTestBase {
+		[Fact]
+		public void Sync() {
+			var thing = new Thing { Value = "Foo" };
+			Context.Things.Add(thing);
+			Context.SaveChanges();
+			ResetFlags(thing);
+			Context.Things.Remove(thing);
+			Context.SaveChanges();
+		}
+
+#if !NET40
+		[Fact]
+		public async void Async() {
+			var thing = new Thing { Value = "Foo" };
+			Context.Things.Add(thing);
+			await Context.SaveChangesAsync();
+			ResetFlags(thing);
+			Context.Things.Remove(thing);
+			await Context.SaveChangesAsync();
+		}
+#endif
+	}
+
+	public class DeleteFail : ThingTestBase {
+		[Fact]
+		public void Sync() {
+			var thing = new Thing { Value = "Foo" };
+			Context.Things.Add(thing);
+			Context.SaveChanges();
+			ResetFlags(thing);
+			Context.Things.Remove(thing);
+			try {
+				Context.SaveChanges();
+			}
+#if EF_CORE
+			catch (DbUpdateException) {
+#else
+			catch (DbEntityValidationException) {
+#endif
+			}
+		}
+
+#if !NET40
+		[Fact]
+		public async void Async() {
+			var thing = new Thing { Value = "Foo" };
+			Context.Things.Add(thing);
+			await Context.SaveChangesAsync();
+			ResetFlags(thing);
+			Context.Things.Remove(thing);
+			try {
+				await Context.SaveChangesAsync();
+			}
+#if EF_CORE
+			catch (DbUpdateException) {
+#else
+			catch (DbEntityValidationException) {
+#endif
+			}
+		}
+#endif
+	}
+
+	public class CancelInserting : TestBase {
+		static CancelInserting() {
+			Triggers<Thing>.Inserting += e => e.Cancel();
+		}
+
+		[Fact]
+		public void Sync() {
+			var guid = Guid.NewGuid().ToString();
+			var thing = new Thing { Value = guid };
+			Context.Things.Add(thing);
+			Context.SaveChanges();
+			Assert.True(Context.Things.SingleOrDefault(x => x.Value == guid) == null);
+		}
+
+#if !NET40
+		[Fact]
+		public async void Async() {
+			var guid = Guid.NewGuid().ToString();
+			var thing = new Thing { Value = guid };
+			Context.Things.Add(thing);
+			await Context.SaveChangesAsync();
+			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid) == null);
+		}
+#endif
 	}
 }
