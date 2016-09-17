@@ -31,11 +31,11 @@ namespace EntityFramework.Triggers.Tests {
 		// deletefailed
 		// deleted
 
-		// TODO:
 		// cancel inserting
 		// cancel updating
 		// cancel deleting
 
+		// TODO:
 		// DbEntityValidationException
 		// DbUpdateException
 
@@ -300,6 +300,68 @@ namespace EntityFramework.Triggers.Tests {
 			Context.Things.Add(thing);
 			await Context.SaveChangesAsync();
 			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid) == null);
+		}
+#endif
+	}
+
+	public class CancelUpdating : TestBase {
+		static CancelUpdating() {
+			Triggers<Thing>.Updating += e => e.Cancel();
+		}
+
+		[Fact]
+		public void Sync() {
+			var guid = Guid.NewGuid().ToString();
+			var thing = new Thing { Value = guid };
+			Context.Things.Add(thing);
+			Context.SaveChanges();
+			var updatedGuid = Guid.NewGuid().ToString();
+			thing.Value = updatedGuid;
+			Context.SaveChanges();
+			Assert.True(Context.Things.SingleOrDefault(x => x.Value == guid) != null);
+		}
+
+#if !NET40
+		[Fact]
+		public async void Async() {
+			var guid = Guid.NewGuid().ToString();
+			var thing = new Thing { Value = guid };
+			Context.Things.Add(thing);
+			await Context.SaveChangesAsync();
+			var updatedGuid = Guid.NewGuid().ToString();
+			thing.Value = updatedGuid;
+			await Context.SaveChangesAsync();
+			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid) != null);
+		}
+#endif
+	}
+
+	public class CancelDeleting : TestBase {
+		static CancelDeleting() {
+			Triggers<Thing>.Deleting += e => e.Cancel();
+		}
+
+		[Fact]
+		public void Sync() {
+			var guid = Guid.NewGuid().ToString();
+			var thing = new Thing { Value = guid };
+			Context.Things.Add(thing);
+			Context.SaveChanges();
+			Context.Things.Remove(thing);
+			Context.SaveChanges();
+			Assert.True(Context.Things.SingleOrDefault(x => x.Value == guid) != null);
+		}
+
+#if !NET40
+		[Fact]
+		public async void Async() {
+			var guid = Guid.NewGuid().ToString();
+			var thing = new Thing { Value = guid };
+			Context.Things.Add(thing);
+			await Context.SaveChangesAsync();
+			Context.Things.Remove(thing);
+			await Context.SaveChangesAsync();
+			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid) != null);
 		}
 #endif
 	}
