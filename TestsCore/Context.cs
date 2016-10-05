@@ -34,12 +34,16 @@ namespace EntityFramework.Triggers.Tests {
 	public class Context : DbContext {
 #if EF_CORE
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-			optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=EntityFrameworkCore.Triggers.Tests;Trusted_Connection=True;");
+			//optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=EntityFrameworkCore.Triggers.Tests;Trusted_Connection=True;");
+			//optionsBuilder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Integrated Security=True;Connect Timeout=15;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
+			optionsBuilder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=EntityFramework.Triggers.Tests.Context;Integrated Security=True;Connect Timeout=15;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
 		}
 #endif
 
-		public DbSet<Person> People { get; set; }
-		public DbSet<Thing> Things { get; set; }
+		public DbSet<Person>    People     { get; set; }
+		public DbSet<Thing>     Things     { get; set; }
+		public DbSet<Apple>     Apples     { get; set; }
+		public DbSet<RoyalGala> RoyalGalas { get; set; }
 
 		public override Int32 SaveChanges() {
 			return this.SaveChangesWithTriggers();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -10,6 +11,7 @@ namespace EntityFramework.Triggers.Tests {
 #endif
 
 	public class Thing {
+		[Key]
         public virtual Int64 Id             { get; private set; }
 
         [Required]
@@ -24,5 +26,10 @@ namespace EntityFramework.Triggers.Tests {
 		[NotMapped] public virtual Boolean Deleting     { get; set; }
 		[NotMapped] public virtual Boolean DeleteFailed { get; set; }
 		[NotMapped] public virtual Boolean Deleted      { get; set; }
+
+		[NotMapped] public virtual List<Int32> Numbers { get; } = new List<Int32>();
 	}
+
+	public class Apple : Thing { }
+	public class RoyalGala : Apple { }
 }
