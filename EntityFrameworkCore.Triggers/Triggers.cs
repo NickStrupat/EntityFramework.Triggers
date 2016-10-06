@@ -122,7 +122,7 @@ namespace EntityFramework.Triggers {
 		}
 
 		private class InsertingEntry : Entry, IBeforeEntry<TEntity, TDbContext> {
-			public void Cancel() => Context.Entry(Entity).State = EntityState.Unchanged;
+			public void Cancel() => Context.Entry(Entity).State = EntityState.Detached;
 		}
 
 		private class UpdatingEntry : ChangeEntry, IBeforeChangeEntry<TEntity, TDbContext> {
