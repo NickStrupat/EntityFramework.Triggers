@@ -95,16 +95,15 @@ namespace EntityFramework.Triggers {
 #endif
 
 		private static void RaiseTheFailedEvents(TDbContext dbContext, EntityEntry entry, Exception exception) {
-			var triggers = TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType());
 			switch (entry.State) {
 				case EntityState.Added:
-					triggers.RaiseInsertFailed(entry.Entity, dbContext, exception);
+					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseInsertFailed(entry.Entity, dbContext, exception);
 					break;
 				case EntityState.Modified:
-					triggers.RaiseUpdateFailed(entry.Entity, dbContext, exception);
+					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseUpdateFailed(entry.Entity, dbContext, exception);
 					break;
 				case EntityState.Deleted:
-					triggers.RaiseDeleteFailed(entry.Entity, dbContext, exception);
+					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseDeleteFailed(entry.Entity, dbContext, exception);
 					break;
 			}
 		}
