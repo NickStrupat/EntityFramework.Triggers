@@ -42,6 +42,7 @@ namespace EntityFramework.Triggers.Tests {
 
 		// event order
 		// inheritance hierarchy event order
+
 		// TODO:
 		// original values on updating
 		// doubly-declared interfaces
@@ -50,64 +51,83 @@ namespace EntityFramework.Triggers.Tests {
 	}
 
 	public abstract class TestBase : IDisposable {
+		protected abstract void Setup();
+		protected abstract void Teardown();
+
+		private void SetupInternal() {
+			semaphoreSlim.Wait();
+			Setup();
+		}
+
+		private void TearDownInternal() {
+			Teardown();
+			semaphoreSlim.Release();
+		}
+
+		protected void DoATest(Action action) {
+			try {
+				SetupInternal();
+				action();
+			}
+			finally {
+				TearDownInternal();
+			}
+		}
+
+#if !NET40
+		private async Task SetupInternalAsync() {
+			await semaphoreSlim.WaitAsync();
+			Setup();
+		}
+
+		protected async Task DoATestAsync(Func<Task> action) {
+			try {
+				await SetupInternalAsync();
+				await action();
+			}
+			finally {
+				TearDownInternal();
+			}
+		}
+#endif
+
+		private static readonly SemaphoreSlim semaphoreSlim = new SemaphoreSlim(1, 1);
 		protected readonly Context Context = new Context();
+
 		public virtual void Dispose() => Context.Dispose();
-		protected Object SyncRoot = new Object();
-
-//		protected abstract void Setup();
-//		protected abstract void Teardown();
-
-//		protected abstract void Sync();
-//#if !NET40
-//		protected abstract Task Async();
-//#endif
-
-//		[Fact]
-//		public void SyncRun() {
-//			Setup();
-//			Sync();
-//			Teardown();
-//		}
-//#if !NET40
-//		public async Task Async() {
-//			Setup();
-//			await Async();
-//			Teardown();
-//		}
-//#endif
 	}
 
 	public abstract class ThingTestBase : TestBase {
-		protected ThingTestBase() {
-			Triggers<Thing>.Inserting    += InsertingTrue;
-			Triggers<Thing>.Inserting    += InsertingCheckFlags;
+		protected override void Setup() {
+			Triggers<Thing>.Inserting += InsertingTrue;
+			Triggers<Thing>.Inserting += InsertingCheckFlags;
 
 			Triggers<Thing>.InsertFailed += InsertFailedTrue;
 			Triggers<Thing>.InsertFailed += InsertFailedCheckFlags;
 
-			Triggers<Thing>.Inserted     += InsertedTrue;
-			Triggers<Thing>.Inserted     += InsertedCheckFlags;
+			Triggers<Thing>.Inserted += InsertedTrue;
+			Triggers<Thing>.Inserted += InsertedCheckFlags;
 
-			Triggers<Thing>.Updating     += UpdatingTrue;
-			Triggers<Thing>.Updating     += UpdatingCheckFlags;
+			Triggers<Thing>.Updating += UpdatingTrue;
+			Triggers<Thing>.Updating += UpdatingCheckFlags;
 
 			Triggers<Thing>.UpdateFailed += UpdateFailedTrue;
 			Triggers<Thing>.UpdateFailed += UpdateFailedCheckFlags;
 
-			Triggers<Thing>.Updated      += UpdatedTrue;
-			Triggers<Thing>.Updated      += UpdatedCheckFlags;
+			Triggers<Thing>.Updated += UpdatedTrue;
+			Triggers<Thing>.Updated += UpdatedCheckFlags;
 
-			Triggers<Thing>.Deleting     += DeletingTrue;
-			Triggers<Thing>.Deleting     += DeletingCheckFlags;
+			Triggers<Thing>.Deleting += DeletingTrue;
+			Triggers<Thing>.Deleting += DeletingCheckFlags;
 
 			Triggers<Thing>.DeleteFailed += DeleteFailedTrue;
 			Triggers<Thing>.DeleteFailed += DeleteFailedCheckFlags;
 
-			Triggers<Thing>.Deleted      += DeletedTrue;
-			Triggers<Thing>.Deleted      += DeletedCheckFlags;
+			Triggers<Thing>.Deleted += DeletedTrue;
+			Triggers<Thing>.Deleted += DeletedCheckFlags;
 		}
 
-		public override void Dispose() {
+		protected override void Teardown() {
 			Triggers<Thing>.Inserting    -= InsertingTrue;
 			Triggers<Thing>.Inserting    -= InsertingCheckFlags;
 
@@ -134,8 +154,6 @@ namespace EntityFramework.Triggers.Tests {
 
 			Triggers<Thing>.Deleted      -= DeletedTrue;
 			Triggers<Thing>.Deleted      -= DeletedCheckFlags;
-
-			base.Dispose();
 		}
 
 		private static void InsertingTrue         (IBeforeEntry<Thing, DbContext>       e) => e.Entity.Inserting = true;
@@ -179,23 +197,23 @@ namespace EntityFramework.Triggers.Tests {
 
 	public class Insert : ThingTestBase {
 		[Fact]
-		public void Sync() {
-			Context.Things.Add(new Thing { Value = "Foo"} );
+		public void Sync() => DoATest(() => {
+			Context.Things.Add(new Thing {Value = "Foo"});
 			Context.SaveChanges();
-		}
+		});
 
 #if !NET40
 		[Fact]
-		public async void Async() {
-			Context.Things.Add(new Thing { Value = "Foo"} );
+		public Task Async() => DoATestAsync(async () => {
+			Context.Things.Add(new Thing {Value = "Foo"});
 			await Context.SaveChangesAsync();
-		}
+		});
 #endif
 	}
 
 	public class InsertFail : ThingTestBase {
 		[Fact]
-		public void Sync() {
+		public void Sync() => DoATest(() => {
 			Context.Things.Add(new Thing { Value = null });
 			try {
 				Context.SaveChanges();
@@ -206,11 +224,11 @@ namespace EntityFramework.Triggers.Tests {
 			catch (DbEntityValidationException) {
 #endif
 			}
-		}
+		});
 
 #if !NET40
 		[Fact]
-		public async void Async() {
+		public Task Async() => DoATestAsync(async () => {
 			Context.Things.Add(new Thing { Value = null });
 			try {
 				await Context.SaveChangesAsync();
@@ -221,37 +239,37 @@ namespace EntityFramework.Triggers.Tests {
 			catch (DbEntityValidationException) {
 #endif
 			}
-		}
+		});
 #endif
 	}
 
 	public class Update : ThingTestBase {
 		[Fact]
-		public void Sync() {
+		public void Sync() => DoATest(() => {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
 			Context.SaveChanges();
 			thing.Value = "Bar";
 			ResetFlags(thing);
 			Context.SaveChanges();
-		}
+		});
 
 #if !NET40
 		[Fact]
-		public async void Async() {
+		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
 			await Context.SaveChangesAsync();
 			thing.Value = "Bar";
 			ResetFlags(thing);
 			await Context.SaveChangesAsync();
-		}
+		});
 #endif
 	}
 
 	public class UpdateFail : ThingTestBase {
 		[Fact]
-		public void Sync() {
+		public void Sync() => DoATest(() => {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
 			Context.SaveChanges();
@@ -266,11 +284,11 @@ namespace EntityFramework.Triggers.Tests {
 			catch (DbEntityValidationException) {
 #endif
 			}
-		}
+		});
 
 #if !NET40
 		[Fact]
-		public async void Async() {
+		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
 			await Context.SaveChangesAsync();
@@ -285,37 +303,37 @@ namespace EntityFramework.Triggers.Tests {
 			catch (DbEntityValidationException) {
 #endif
 			}
-		}
+		});
 #endif
 	}
 
 	public class Delete : ThingTestBase {
 		[Fact]
-		public void Sync() {
+		public void Sync() => DoATest(() => {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
 			Context.SaveChanges();
 			ResetFlags(thing);
 			Context.Things.Remove(thing);
 			Context.SaveChanges();
-		}
+		});
 
 #if !NET40
 		[Fact]
-		public async void Async() {
+		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
 			await Context.SaveChangesAsync();
 			ResetFlags(thing);
 			Context.Things.Remove(thing);
 			await Context.SaveChangesAsync();
-		}
+		});
 #endif
 	}
 
 	public class DeleteFail : ThingTestBase {
 		[Fact]
-		public void Sync() {
+		public void Sync() => DoATest(() => {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
 			Context.SaveChanges();
@@ -330,11 +348,11 @@ namespace EntityFramework.Triggers.Tests {
 			catch (DbEntityValidationException) {
 #endif
 			}
-		}
+		});
 
 #if !NET40
 		[Fact]
-		public async void Async() {
+		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
 			await Context.SaveChangesAsync();
@@ -349,57 +367,55 @@ namespace EntityFramework.Triggers.Tests {
 			catch (DbEntityValidationException) {
 #endif
 			}
-		}
+		});
 #endif
 	}
 
 	public class CancelInserting : TestBase {
-		public CancelInserting() {
+		protected override void Setup() {
 			Triggers<Person>.Inserting += Cancel;
 		}
 
-		public override void Dispose() {
+		protected override void Teardown() {
 			Triggers<Person>.Inserting -= Cancel;
-			base.Dispose();
 		}
 
 		private static void Cancel(IBeforeEntry<Person, DbContext> e) => e.Cancel();
 
 		[Fact]
-		public void Sync() {
+		public void Sync() => DoATest(() => {
 			var guid = Guid.NewGuid().ToString();
-			var person = new Person { LastName = guid };
+			var person = new Person {LastName = guid};
 			Context.People.Add(person);
 			Context.SaveChanges();
 			Assert.True(Context.People.SingleOrDefault(x => x.LastName == guid) == null);
-		}
+		});
 
 #if !NET40
 		[Fact]
-		public async void Async() {
+		public Task Async() => DoATestAsync(async () => {
 			var guid = Guid.NewGuid().ToString();
 			var person = new Person { LastName = guid };
 			Context.People.Add(person);
 			await Context.SaveChangesAsync();
 			Assert.True(await Context.People.SingleOrDefaultAsync(x => x.LastName == guid) == null);
-		}
+		});
 #endif
 	}
 
 	public class CancelUpdating : TestBase {
-		public CancelUpdating() {
+		protected override void Setup() {
 			Triggers<Person>.Updating += Cancel;
 		}
 
-		public override void Dispose() {
+		protected override void Teardown() {
 			Triggers<Person>.Updating -= Cancel;
-			base.Dispose();
 		}
 
 		private static void Cancel(IBeforeChangeEntry<Person, DbContext> e) => e.Cancel();
 
 		[Fact]
-		public void Sync() {
+		public void Sync() => DoATest(() => {
 			var guid = Guid.NewGuid().ToString();
 			var person = new Person { LastName = guid };
 			Context.People.Add(person);
@@ -408,37 +424,36 @@ namespace EntityFramework.Triggers.Tests {
 			person.LastName = updatedGuid;
 			Context.SaveChanges();
 			Assert.True(Context.People.SingleOrDefault(x => x.LastName == guid) != null);
-		}
+		});
 
 #if !NET40
 		[Fact]
-		public async void Async() {
+		public Task Async() => DoATestAsync(async () => {
 			var guid = Guid.NewGuid().ToString();
-			var person = new Person { LastName = guid };
+			var person = new Person {LastName = guid};
 			Context.People.Add(person);
 			await Context.SaveChangesAsync();
 			var updatedGuid = Guid.NewGuid().ToString();
 			person.LastName = updatedGuid;
 			await Context.SaveChangesAsync();
 			Assert.True(await Context.People.SingleOrDefaultAsync(x => x.LastName == guid) != null);
-		}
+		});
 #endif
 	}
 
 	public class CancelDeleting : TestBase {
-		public CancelDeleting() {
+		protected override void Setup() {
 			Triggers<Person>.Deleting += Cancel;
 		}
 
-		public override void Dispose() {
+		protected override void Teardown() {
 			Triggers<Person>.Deleting -= Cancel;
-			base.Dispose();
 		}
 
-		private void Cancel(IBeforeChangeEntry<Person, DbContext> e) => e.Cancel();
+		private static void Cancel(IBeforeChangeEntry<Person, DbContext> e) => e.Cancel();
 
 		[Fact]
-		public void Sync() {
+		public void Sync() => DoATest(() => {
 			var guid = Guid.NewGuid().ToString();
 			var person = new Person { LastName = guid };
 			Context.People.Add(person);
@@ -446,11 +461,11 @@ namespace EntityFramework.Triggers.Tests {
 			Context.People.Remove(person);
 			Context.SaveChanges();
 			Assert.True(Context.People.SingleOrDefault(x => x.LastName == guid) != null);
-		}
+		});
 
 #if !NET40
 		[Fact]
-		public async void Async() {
+		public Task Async() => DoATestAsync(async () => {
 			var guid = Guid.NewGuid().ToString();
 			var person = new Person { LastName = guid };
 			Context.People.Add(person);
@@ -458,22 +473,21 @@ namespace EntityFramework.Triggers.Tests {
 			Context.People.Remove(person);
 			await Context.SaveChangesAsync();
 			Assert.True(await Context.People.SingleOrDefaultAsync(x => x.LastName == guid) != null);
-		}
+		});
 #endif
 	}
 
 	public class EventFiringOrderRelativeToAttachment : TestBase {
-		public EventFiringOrderRelativeToAttachment() {
+		protected override void Setup() {
 			Triggers<Thing>.Inserting += Add1;
 			Triggers<Thing>.Inserting += Add2;
 			Triggers<Thing>.Inserting += Add3;
 		}
-		
-		public override void Dispose() {
+
+		protected override void Teardown() {
 			Triggers<Thing>.Inserting -= Add1;
 			Triggers<Thing>.Inserting -= Add2;
 			Triggers<Thing>.Inserting -= Add3;
-			base.Dispose();
 		}
 
 		private static void Add1(IBeforeEntry<Thing, DbContext> e) => e.Entity.Numbers.Add(1);
@@ -481,36 +495,35 @@ namespace EntityFramework.Triggers.Tests {
 		private static void Add3(IBeforeEntry<Thing, DbContext> e) => e.Entity.Numbers.Add(3);
 		
 		[Fact]
-		public void Sync() {
+		public void Sync() => DoATest(() => {
 			var thing = new Thing { Value = Guid.NewGuid().ToString() };
 			Context.Things.Add(thing);
 			Context.SaveChanges();
 			Assert.True(thing.Numbers.SequenceEqual(new [] { 1, 2, 3 }));
-		}
+		});
 
 #if !NET40
 		[Fact]
-		public async void Async() {
+		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = Guid.NewGuid().ToString() };
 			Context.Things.Add(thing);
 			await Context.SaveChangesAsync();
 			Assert.True(thing.Numbers.SequenceEqual(new[] { 1, 2, 3 }));
-		}
+		});
 #endif
 	}
 
 	public class EventFiringOrderRelativeToClassHierarchy : TestBase {
-		public EventFiringOrderRelativeToClassHierarchy() {
-			Triggers<Thing>    .Inserting += e => e.Entity.Numbers.Add(1);
-			Triggers<Apple>    .Inserting += e => e.Entity.Numbers.Add(2);
-			Triggers<RoyalGala>.Inserting += e => e.Entity.Numbers.Add(3);
+		protected override void Setup() {
+			Triggers<RoyalGala>.Inserting += Add3;
+			Triggers<Apple>.Inserting     += Add2;
+			Triggers<Thing>.Inserting     += Add1;
 		}
 
-		public override void Dispose() {
-			Triggers<Thing>.Inserting -= Add1;
-			Triggers<Apple>.Inserting -= Add2;
+		protected override void Teardown() {
+			Triggers<Thing>.Inserting     -= Add1;
+			Triggers<Apple>.Inserting     -= Add2;
 			Triggers<RoyalGala>.Inserting -= Add3;
-			base.Dispose();
 		}
 
 		private static void Add1(IBeforeEntry<Thing, DbContext> e) => e.Entity.Numbers.Add(1);
@@ -518,21 +531,21 @@ namespace EntityFramework.Triggers.Tests {
 		private static void Add3(IBeforeEntry<Thing, DbContext> e) => e.Entity.Numbers.Add(3);
 
 		[Fact]
-		public void Sync() {
+		public void Sync() => DoATest(() => {
 			var royalGala = new RoyalGala { Value = Guid.NewGuid().ToString() };
 			Context.RoyalGalas.Add(royalGala);
 			Context.SaveChanges();
 			Assert.True(royalGala.Numbers.SequenceEqual(new[] { 1, 2, 3 }));
-		}
+		});
 
 #if !NET40
 		[Fact]
-		public async void Async() {
+		public Task Async() => DoATestAsync(async () => {
 			var royalGala = new RoyalGala { Value = Guid.NewGuid().ToString() };
 			Context.RoyalGalas.Add(royalGala);
 			await Context.SaveChangesAsync();
 			Assert.True(royalGala.Numbers.SequenceEqual(new[] { 1, 2, 3 }));
-		}
+		});
 #endif
 	}
 }
