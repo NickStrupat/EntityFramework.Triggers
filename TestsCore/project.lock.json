@@ -6349,6 +6349,7 @@
       "EntityFrameworkCore.Triggers",
       "Microsoft.EntityFrameworkCore.SqlServer >= 1.0.1",
       "NETStandard.Library >= 1.6.0",
+      "System.Linq >= 4.1.0",
       "xunit >= 2.2.0-beta2-build3300",
       "xunit.runner.visualstudio >= 2.2.0-beta2-build1149"
     ],
