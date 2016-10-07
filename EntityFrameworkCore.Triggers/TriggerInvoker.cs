@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,9 @@ namespace EntityFramework.Triggers {
 			var theAfterEvents = BaseTriggerInvoker?.RaiseTheBeforeEvents(dbContext) ?? new List<Action<DbContext>>();
 
 			var entries = dbContext.ChangeTracker.Entries();
+#if EF_CORE
+			entries = entries.ToArray();
+#endif
 			foreach (var entry in entries) {
 				var after = RaiseTheBeforeEvent(entry, dbContext);
 				if (after != null)

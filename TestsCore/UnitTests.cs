@@ -198,15 +198,19 @@ namespace EntityFramework.Triggers.Tests {
 	public class Insert : ThingTestBase {
 		[Fact]
 		public void Sync() => DoATest(() => {
-			Context.Things.Add(new Thing {Value = "Foo"});
+			var guid = Guid.NewGuid().ToString();
+			Context.Things.Add(new Thing { Value = guid });
 			Context.SaveChanges();
+			Assert.True(Context.Things.SingleOrDefault(x => x.Value == guid) != null);
 		});
 
 #if !NET40
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
-			Context.Things.Add(new Thing {Value = "Foo"});
+			var guid = Guid.NewGuid().ToString();
+			Context.Things.Add(new Thing { Value = guid });
 			await Context.SaveChangesAsync();
+			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid) != null);
 		});
 #endif
 	}
@@ -223,7 +227,9 @@ namespace EntityFramework.Triggers.Tests {
 #else
 			catch (DbEntityValidationException) {
 #endif
+				return;
 			}
+			Assert.True(false, "Exception not caught");
 		});
 
 #if !NET40
@@ -238,7 +244,9 @@ namespace EntityFramework.Triggers.Tests {
 #else
 			catch (DbEntityValidationException) {
 #endif
+				return;
 			}
+			Assert.True(false, "Exception not caught");
 		});
 #endif
 	}
@@ -273,7 +281,7 @@ namespace EntityFramework.Triggers.Tests {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
 			Context.SaveChanges();
-			thing.Value = "Bar";
+			thing.Value = null;
 			ResetFlags(thing);
 			try {
 				Context.SaveChanges();
@@ -283,7 +291,9 @@ namespace EntityFramework.Triggers.Tests {
 #else
 			catch (DbEntityValidationException) {
 #endif
+				return;
 			}
+			Assert.True(false, "Exception not caught");
 		});
 
 #if !NET40
@@ -292,7 +302,7 @@ namespace EntityFramework.Triggers.Tests {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
 			await Context.SaveChangesAsync();
-			thing.Value = "Bar";
+			thing.Value = null;
 			ResetFlags(thing);
 			try {
 				await Context.SaveChangesAsync();
@@ -302,7 +312,9 @@ namespace EntityFramework.Triggers.Tests {
 #else
 			catch (DbEntityValidationException) {
 #endif
+				return;
 			}
+			Assert.True(false, "Exception not caught");
 		});
 #endif
 	}
@@ -332,6 +344,20 @@ namespace EntityFramework.Triggers.Tests {
 	}
 
 	public class DeleteFail : ThingTestBase {
+		protected override void Setup() {
+			base.Setup();
+			Triggers<Thing>.Deleting += OnDeleting;
+		}
+
+		protected override void Teardown() {
+			Triggers<Thing>.Deleting -= OnDeleting;
+			base.Teardown();
+		}
+
+		private static void OnDeleting(IBeforeChangeEntry<Thing, DbContext> e) {
+			throw new Exception();
+		}
+
 		[Fact]
 		public void Sync() => DoATest(() => {
 			var thing = new Thing { Value = "Foo" };
@@ -342,12 +368,10 @@ namespace EntityFramework.Triggers.Tests {
 			try {
 				Context.SaveChanges();
 			}
-#if EF_CORE
-			catch (DbUpdateException) {
-#else
-			catch (DbEntityValidationException) {
-#endif
+			catch (Exception) {
+				return;
 			}
+			Assert.True(false, "Exception not caught");
 		});
 
 #if !NET40
@@ -361,12 +385,10 @@ namespace EntityFramework.Triggers.Tests {
 			try {
 				await Context.SaveChangesAsync();
 			}
-#if EF_CORE
-			catch (DbUpdateException) {
-#else
-			catch (DbEntityValidationException) {
-#endif
+			catch (Exception) {
+				return;
 			}
+			Assert.True(false, "Exception not caught");
 		});
 #endif
 	}

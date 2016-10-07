@@ -7,8 +7,8 @@ namespace EntityFramework.Triggers.Tests {
 #endif
 
 	public abstract class EntityWithInsertTracking {
-		public DateTime Inserted { get; private set; }
-		public Int32 Number { get; private set; }
+		public DateTime Inserted { get; protected set; }
+		public Int32 Number { get; protected set; }
 
 		static EntityWithInsertTracking() {
 			Triggers<EntityWithInsertTracking>.Inserting += e => e.Entity.Inserted = DateTime.UtcNow;
@@ -16,7 +16,7 @@ namespace EntityFramework.Triggers.Tests {
 		}
 	}
 	public abstract class EntityWithTracking : EntityWithInsertTracking {
-		public DateTime Updated { get; private set; }
+		public DateTime Updated { get; protected set; }
 
 		static EntityWithTracking() {
 			Triggers<EntityWithTracking>.Inserting += e => e.Entity.Updated = DateTime.UtcNow;
