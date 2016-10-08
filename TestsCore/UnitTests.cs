@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -43,11 +44,11 @@ namespace EntityFramework.Triggers.Tests {
 		// event order
 		// inheritance hierarchy event order
 
-		// TODO:
 		// original values on updating
-		// doubly-declared interfaces
+		// TODO:
 		// event loops
 		// calling savechanges in an event handler
+		// doubly-declared interfaces
 	}
 
 	public abstract class TestBase : IDisposable {
@@ -394,13 +395,8 @@ namespace EntityFramework.Triggers.Tests {
 	}
 
 	public class CancelInserting : TestBase {
-		protected override void Setup() {
-			Triggers<Person>.Inserting += Cancel;
-		}
-
-		protected override void Teardown() {
-			Triggers<Person>.Inserting -= Cancel;
-		}
+		protected override void Setup()    => Triggers<Person>.Inserting += Cancel;
+		protected override void Teardown() => Triggers<Person>.Inserting -= Cancel;
 
 		private static void Cancel(IBeforeEntry<Person, DbContext> e) => e.Cancel();
 
@@ -426,13 +422,8 @@ namespace EntityFramework.Triggers.Tests {
 	}
 
 	public class CancelUpdating : TestBase {
-		protected override void Setup() {
-			Triggers<Person>.Updating += Cancel;
-		}
-
-		protected override void Teardown() {
-			Triggers<Person>.Updating -= Cancel;
-		}
+		protected override void Setup()    => Triggers<Person>.Updating += Cancel;
+		protected override void Teardown() => Triggers<Person>.Updating -= Cancel;
 
 		private static void Cancel(IBeforeChangeEntry<Person, DbContext> e) => e.Cancel();
 
@@ -464,13 +455,8 @@ namespace EntityFramework.Triggers.Tests {
 	}
 
 	public class CancelDeleting : TestBase {
-		protected override void Setup() {
-			Triggers<Person>.Deleting += Cancel;
-		}
-
-		protected override void Teardown() {
-			Triggers<Person>.Deleting -= Cancel;
-		}
+		protected override void Setup()    => Triggers<Person>.Deleting += Cancel;
+		protected override void Teardown() => Triggers<Person>.Deleting -= Cancel;
 
 		private static void Cancel(IBeforeChangeEntry<Person, DbContext> e) => e.Cancel();
 
@@ -570,4 +556,64 @@ namespace EntityFramework.Triggers.Tests {
 		});
 #endif
 	}
+
+	public class OriginalValuesOnUpdate : TestBase {
+		protected override void Setup()    => Triggers<Thing>.Updating += TriggersOnUpdating;
+		protected override void Teardown() => Triggers<Thing>.Updating -= TriggersOnUpdating;
+
+		private void TriggersOnUpdating(IBeforeChangeEntry<Thing, DbContext> beforeChangeEntry) {
+			Assert.True(beforeChangeEntry.Original.Value == guid);
+			Assert.True(beforeChangeEntry.Entity.Value == guid2);
+		}
+
+		private String guid;
+		private String guid2;
+
+		[Fact]
+		public void Sync() => DoATest(() => {
+			guid = Guid.NewGuid().ToString();
+			guid2 = Guid.NewGuid().ToString();
+			var thing = new Thing { Value = guid };
+			Context.Things.Add(thing);
+			Context.SaveChanges();
+			thing.Value = guid2;
+			Context.SaveChanges();
+		});
+
+#if !NET40
+		[Fact]
+		public Task Async() => DoATestAsync(async () => {
+			guid = Guid.NewGuid().ToString();
+			guid2 = Guid.NewGuid().ToString();
+			var thing = new Thing { Value = guid };
+			Context.Things.Add(thing);
+			await Context.SaveChangesAsync();
+			thing.Value = guid2;
+			await Context.SaveChangesAsync();
+		});
+#endif
+	}
+
+//	public class MultiplyDeclaredInterfaces : TestBase {
+//		protected override void Setup() {}
+//		protected override void Teardown() { }
+
+//		[Fact]
+//		public void Sync() => DoATest(() => {
+//		});
+
+//#if !NET40
+//		[Fact]
+//		public Task Async() => DoATestAsync(async () => {
+//		});
+//#endif
+//	}
+
+//	public interface ICreature { }
+//	public class Creature : ICreature {
+//		[Key]
+//		public virtual Int64 Id { get; protected set; }
+//		public virtual String Name { get; set; }
+//	}
+//	public class Dog : Creature, ICreature { }
 }

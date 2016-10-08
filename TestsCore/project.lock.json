@@ -3,7 +3,7 @@
   "version": 2,
   "targets": {
     ".NETFramework,Version=v4.5.1": {
-      "EntityFrameworkCore.TypedOriginalValues/1.0.0": {
+      "EntityFrameworkCore.TypedOriginalValues/1.0.1": {
         "type": "package",
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "1.0.0",
@@ -748,7 +748,7 @@
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.1",
         "dependencies": {
-          "EntityFrameworkCore.TypedOriginalValues": "1.0.0",
+          "EntityFrameworkCore.TypedOriginalValues": "1.0.1",
           "Microsoft.EntityFrameworkCore": "1.0.1",
           "System.Reflection": "4.1.0",
           "System.Reflection.Emit": "4.0.1",
@@ -764,7 +764,7 @@
       }
     },
     ".NETStandard,Version=v1.3": {
-      "EntityFrameworkCore.TypedOriginalValues/1.0.0": {
+      "EntityFrameworkCore.TypedOriginalValues/1.0.1": {
         "type": "package",
         "dependencies": {
           "Microsoft.EntityFrameworkCore": "1.0.0",
@@ -2381,7 +2381,7 @@
         "type": "project",
         "framework": ".NETStandard,Version=v1.3",
         "dependencies": {
-          "EntityFrameworkCore.TypedOriginalValues": "1.0.0",
+          "EntityFrameworkCore.TypedOriginalValues": "1.0.1",
           "Microsoft.EntityFrameworkCore": "1.0.1",
           "System.Reflection": "4.1.0",
           "System.Reflection.Emit": "4.0.1",
@@ -2398,12 +2398,12 @@
     }
   },
   "libraries": {
-    "EntityFrameworkCore.TypedOriginalValues/1.0.0": {
-      "sha512": "1vS7MmRXKTWpLGtWojaEfGmV3+B7X/f+2DtH7ScWp3qOCO/oMHvzIzfgWuAX4t5n2yNuJRB14PyQgrmxmUzLBA==",
+    "EntityFrameworkCore.TypedOriginalValues/1.0.1": {
+      "sha512": "Stb9CTZYz6N0sz2UIsvZKVxwUAb6fBFURysXHsWN37VVQIG3aMSCCwQS2mZyj0zVXqCgL714xoL9Y9q190+w6A==",
       "type": "package",
-      "path": "EntityFrameworkCore.TypedOriginalValues/1.0.0",
+      "path": "EntityFrameworkCore.TypedOriginalValues/1.0.1",
       "files": [
-        "EntityFrameworkCore.TypedOriginalValues.1.0.0.nupkg.sha512",
+        "EntityFrameworkCore.TypedOriginalValues.1.0.1.nupkg.sha512",
         "EntityFrameworkCore.TypedOriginalValues.nuspec",
         "lib/net451/EntityFrameworkCore.TypedOriginalValues.dll",
         "lib/netstandard1.3/EntityFrameworkCore.TypedOriginalValues.dll"

@@ -41,8 +41,8 @@
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net40\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="EntityFramework.TypedOriginalValues, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.TypedOriginalValues.1.0.0\lib\net40\EntityFramework.TypedOriginalValues.dll</HintPath>
+    <Reference Include="EntityFramework.TypedOriginalValues, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.TypedOriginalValues.1.0.1\lib\net40\EntityFramework.TypedOriginalValues.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Rackspace.Collections.Immutable, Version=1.1.0.0, Culture=neutral, PublicKeyToken=8acff7051142f28d, processorArchitecture=MSIL">
