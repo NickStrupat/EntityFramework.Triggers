@@ -57,7 +57,7 @@ namespace EntityFramework.Triggers.Tests {
 
 		protected void DoATest(Action action) {
 			if (!semaphoreSlim.Wait(10000))
-				Assert.True(false, "Lock not taken");
+				Assert.True(false, "Wait failed due to timeout");
 			Setup();
 			try {
 				action();
@@ -71,11 +71,11 @@ namespace EntityFramework.Triggers.Tests {
 #if !NET40
 
 		protected async Task DoATestAsync(Func<Task> action) {
-			if (!await semaphoreSlim.WaitAsync(10000))
-				Assert.True(false, "Lock not taken");
+			if (!await semaphoreSlim.WaitAsync(10000).ConfigureAwait(false))
+				Assert.True(false, "Wait failed due to timeout");
 			Setup();
 			try {
-				await action();
+				await action().ConfigureAwait(false);
 			}
 			finally {
 				Teardown();
@@ -225,8 +225,8 @@ namespace EntityFramework.Triggers.Tests {
 		public Task Async() => DoATestAsync(async () => {
 			var guid = Guid.NewGuid().ToString();
 			Context.Things.Add(new Thing { Value = guid });
-			await Context.SaveChangesAsync();
-			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid) != null);
+			await Context.SaveChangesAsync().ConfigureAwait(false);
+			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid).ConfigureAwait(false) != null);
 		});
 #endif
 	}
@@ -253,7 +253,7 @@ namespace EntityFramework.Triggers.Tests {
 		public Task Async() => DoATestAsync(async () => {
 			Context.Things.Add(new Thing { Value = null });
 			try {
-				await Context.SaveChangesAsync();
+				await Context.SaveChangesAsync().ConfigureAwait(false);
 			}
 #if EF_CORE
 			catch (DbUpdateException) {
@@ -283,10 +283,10 @@ namespace EntityFramework.Triggers.Tests {
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
-			await Context.SaveChangesAsync();
+			await Context.SaveChangesAsync().ConfigureAwait(false);
 			thing.Value = "Bar";
 			ResetFlags(thing);
-			await Context.SaveChangesAsync();
+			await Context.SaveChangesAsync().ConfigureAwait(false);
 		});
 #endif
 	}
@@ -317,11 +317,11 @@ namespace EntityFramework.Triggers.Tests {
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
-			await Context.SaveChangesAsync();
+			await Context.SaveChangesAsync().ConfigureAwait(false);
 			thing.Value = null;
 			ResetFlags(thing);
 			try {
-				await Context.SaveChangesAsync();
+				await Context.SaveChangesAsync().ConfigureAwait(false);
 			}
 #if EF_CORE
 			catch (DbUpdateException) {
@@ -351,10 +351,10 @@ namespace EntityFramework.Triggers.Tests {
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
-			await Context.SaveChangesAsync();
+			await Context.SaveChangesAsync().ConfigureAwait(false);
 			ResetFlags(thing);
 			Context.Things.Remove(thing);
-			await Context.SaveChangesAsync();
+			await Context.SaveChangesAsync().ConfigureAwait(false);
 		});
 #endif
 	}
@@ -395,11 +395,11 @@ namespace EntityFramework.Triggers.Tests {
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
 			Context.Things.Add(thing);
-			await Context.SaveChangesAsync();
+			await Context.SaveChangesAsync().ConfigureAwait(false);
 			ResetFlags(thing);
 			Context.Things.Remove(thing);
 			try {
-				await Context.SaveChangesAsync();
+				await Context.SaveChangesAsync().ConfigureAwait(false);
 			}
 			catch (Exception) {
 				return;
@@ -430,8 +430,8 @@ namespace EntityFramework.Triggers.Tests {
 			var guid = Guid.NewGuid().ToString();
 			var person = new Person { LastName = guid };
 			Context.People.Add(person);
-			await Context.SaveChangesAsync();
-			Assert.True(await Context.People.SingleOrDefaultAsync(x => x.LastName == guid) == null);
+			await Context.SaveChangesAsync().ConfigureAwait(false);
+			Assert.True(await Context.People.SingleOrDefaultAsync(x => x.LastName == guid).ConfigureAwait(false) == null);
 		});
 #endif
 	}
@@ -460,11 +460,11 @@ namespace EntityFramework.Triggers.Tests {
 			var guid = Guid.NewGuid().ToString();
 			var person = new Person {LastName = guid};
 			Context.People.Add(person);
-			await Context.SaveChangesAsync();
+			await Context.SaveChangesAsync().ConfigureAwait(false);
 			var updatedGuid = Guid.NewGuid().ToString();
 			person.LastName = updatedGuid;
-			await Context.SaveChangesAsync();
-			Assert.True(await Context.People.SingleOrDefaultAsync(x => x.LastName == guid) != null);
+			await Context.SaveChangesAsync().ConfigureAwait(false);
+			Assert.True(await Context.People.SingleOrDefaultAsync(x => x.LastName == guid).ConfigureAwait(false) != null);
 		});
 #endif
 	}
@@ -492,10 +492,10 @@ namespace EntityFramework.Triggers.Tests {
 			var guid = Guid.NewGuid().ToString();
 			var person = new Person { LastName = guid };
 			Context.People.Add(person);
-			await Context.SaveChangesAsync();
+			await Context.SaveChangesAsync().ConfigureAwait(false);
 			Context.People.Remove(person);
-			await Context.SaveChangesAsync();
-			Assert.True(await Context.People.SingleOrDefaultAsync(x => x.LastName == guid) != null);
+			await Context.SaveChangesAsync().ConfigureAwait(false);
+			Assert.True(await Context.People.SingleOrDefaultAsync(x => x.LastName == guid).ConfigureAwait(false) != null);
 		});
 #endif
 	}
@@ -530,7 +530,7 @@ namespace EntityFramework.Triggers.Tests {
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = Guid.NewGuid().ToString() };
 			Context.Things.Add(thing);
-			await Context.SaveChangesAsync();
+			await Context.SaveChangesAsync().ConfigureAwait(false);
 			Assert.True(thing.Numbers.SequenceEqual(new[] { 1, 2, 3 }));
 		});
 #endif
@@ -566,7 +566,7 @@ namespace EntityFramework.Triggers.Tests {
 		public Task Async() => DoATestAsync(async () => {
 			var royalGala = new RoyalGala { Value = Guid.NewGuid().ToString() };
 			Context.RoyalGalas.Add(royalGala);
-			await Context.SaveChangesAsync();
+			await Context.SaveChangesAsync().ConfigureAwait(false);
 			Assert.True(royalGala.Numbers.SequenceEqual(new[] { 1, 2, 3 }));
 		});
 #endif
@@ -602,9 +602,9 @@ namespace EntityFramework.Triggers.Tests {
 			guid2 = Guid.NewGuid().ToString();
 			var thing = new Thing { Value = guid };
 			Context.Things.Add(thing);
-			await Context.SaveChangesAsync();
+			await Context.SaveChangesAsync().ConfigureAwait(false);
 			thing.Value = guid2;
-			await Context.SaveChangesAsync();
+			await Context.SaveChangesAsync().ConfigureAwait(false);
 		});
 #endif
 	}
