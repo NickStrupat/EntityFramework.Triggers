@@ -55,39 +55,31 @@ namespace EntityFramework.Triggers.Tests {
 		protected abstract void Setup();
 		protected abstract void Teardown();
 
-		private void SetupInternal() {
-			semaphoreSlim.Wait();
-			Setup();
-		}
-
-		private void TearDownInternal() {
-			Teardown();
-			semaphoreSlim.Release();
-		}
-
 		protected void DoATest(Action action) {
+			if (!semaphoreSlim.Wait(10000))
+				Assert.True(false, "Lock not taken");
+			Setup();
 			try {
-				SetupInternal();
 				action();
 			}
 			finally {
-				TearDownInternal();
+				Teardown();
+				semaphoreSlim.Release();
 			}
 		}
 
 #if !NET40
-		private async Task SetupInternalAsync() {
-			await semaphoreSlim.WaitAsync();
-			Setup();
-		}
 
 		protected async Task DoATestAsync(Func<Task> action) {
+			if (!await semaphoreSlim.WaitAsync(10000))
+				Assert.True(false, "Lock not taken");
+			Setup();
 			try {
-				await SetupInternalAsync();
 				await action();
 			}
 			finally {
-				TearDownInternal();
+				Teardown();
+				semaphoreSlim.Release();
 			}
 		}
 #endif
@@ -194,6 +186,29 @@ namespace EntityFramework.Triggers.Tests {
 			foreach (var flag in FlagPropertyInfos)
 				flag.SetValue(thing, false, null);
 		}
+	}
+
+	public class AddRemoveEventHandler : TestBase {
+		protected override void Setup() { }
+		protected override void Teardown() { }
+
+		private Int32 triggerCount;
+		private void TriggersOnInserting(IBeforeEntry<Thing, DbContext> beforeEntry) => ++triggerCount;
+
+		[Fact]
+		public void Sync() => DoATest(() => {
+			triggerCount = 0;
+
+			Triggers<Thing>.Inserting += TriggersOnInserting;
+			Context.Things.Add(new Thing { Value = "Foo" });
+			Context.SaveChanges();
+			Assert.True(1 == triggerCount);
+
+			Triggers<Thing>.Inserting -= TriggersOnInserting;
+			Context.Things.Add(new Thing { Value = "Foo" });
+			Context.SaveChanges();
+			Assert.True(1 == triggerCount);
+		});
 	}
 
 	public class Insert : ThingTestBase {
