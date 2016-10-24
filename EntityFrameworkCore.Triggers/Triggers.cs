@@ -1,11 +1,5 @@
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Threading;
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
 using EntityFrameworkCore.TypedOriginalValues;
@@ -65,40 +59,41 @@ namespace EntityFramework.Triggers {
 		}
 		#endregion
 		#region Events
-		private static ImmutableArray<Action<IBeforeEntry      <TEntity, TDbContext>>> staticInserting    = ImmutableArray<Action<IBeforeEntry      <TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IBeforeChangeEntry<TEntity, TDbContext>>> staticUpdating     = ImmutableArray<Action<IBeforeChangeEntry<TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IBeforeChangeEntry<TEntity, TDbContext>>> staticDeleting     = ImmutableArray<Action<IBeforeChangeEntry<TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IFailedEntry      <TEntity, TDbContext>>> staticInsertFailed = ImmutableArray<Action<IFailedEntry      <TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IChangeFailedEntry<TEntity, TDbContext>>> staticUpdateFailed = ImmutableArray<Action<IChangeFailedEntry<TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IChangeFailedEntry<TEntity, TDbContext>>> staticDeleteFailed = ImmutableArray<Action<IChangeFailedEntry<TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IAfterEntry       <TEntity, TDbContext>>> staticInserted     = ImmutableArray<Action<IAfterEntry       <TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IAfterChangeEntry <TEntity, TDbContext>>> staticUpdated      = ImmutableArray<Action<IAfterChangeEntry <TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IAfterChangeEntry <TEntity, TDbContext>>> staticDeleted      = ImmutableArray<Action<IAfterChangeEntry <TEntity, TDbContext>>>.Empty;
+		private static ImmutableArray<Action<IBeforeEntry      <TEntity, TDbContext>>> inserting    = ImmutableArray<Action<IBeforeEntry      <TEntity, TDbContext>>>.Empty;
+		private static ImmutableArray<Action<IBeforeChangeEntry<TEntity, TDbContext>>> updating     = ImmutableArray<Action<IBeforeChangeEntry<TEntity, TDbContext>>>.Empty;
+		private static ImmutableArray<Action<IBeforeChangeEntry<TEntity, TDbContext>>> deleting     = ImmutableArray<Action<IBeforeChangeEntry<TEntity, TDbContext>>>.Empty;
+		private static ImmutableArray<Action<IFailedEntry      <TEntity, TDbContext>>> insertFailed = ImmutableArray<Action<IFailedEntry      <TEntity, TDbContext>>>.Empty;
+		private static ImmutableArray<Action<IChangeFailedEntry<TEntity, TDbContext>>> updateFailed = ImmutableArray<Action<IChangeFailedEntry<TEntity, TDbContext>>>.Empty;
+		private static ImmutableArray<Action<IChangeFailedEntry<TEntity, TDbContext>>> deleteFailed = ImmutableArray<Action<IChangeFailedEntry<TEntity, TDbContext>>>.Empty;
+		private static ImmutableArray<Action<IAfterEntry       <TEntity, TDbContext>>> inserted     = ImmutableArray<Action<IAfterEntry       <TEntity, TDbContext>>>.Empty;
+		private static ImmutableArray<Action<IAfterChangeEntry <TEntity, TDbContext>>> updated      = ImmutableArray<Action<IAfterChangeEntry <TEntity, TDbContext>>>.Empty;
+		private static ImmutableArray<Action<IAfterChangeEntry <TEntity, TDbContext>>> deleted      = ImmutableArray<Action<IAfterChangeEntry <TEntity, TDbContext>>>.Empty;
 
-		public static event Action<IBeforeEntry      <TEntity, TDbContext>> Inserting    { add { Add(ref staticInserting   , value); } remove { Remove(ref staticInserting   , value); } }
-		public static event Action<IBeforeChangeEntry<TEntity, TDbContext>> Updating     { add { Add(ref staticUpdating    , value); } remove { Remove(ref staticUpdating    , value); } }
-		public static event Action<IBeforeChangeEntry<TEntity, TDbContext>> Deleting     { add { Add(ref staticDeleting    , value); } remove { Remove(ref staticDeleting    , value); } }
-		public static event Action<IFailedEntry      <TEntity, TDbContext>> InsertFailed { add { Add(ref staticInsertFailed, value); } remove { Remove(ref staticInsertFailed, value); } }
-		public static event Action<IChangeFailedEntry<TEntity, TDbContext>> UpdateFailed { add { Add(ref staticUpdateFailed, value); } remove { Remove(ref staticUpdateFailed, value); } }
-		public static event Action<IChangeFailedEntry<TEntity, TDbContext>> DeleteFailed { add { Add(ref staticDeleteFailed, value); } remove { Remove(ref staticDeleteFailed, value); } }
-		public static event Action<IAfterEntry       <TEntity, TDbContext>> Inserted     { add { Add(ref staticInserted    , value); } remove { Remove(ref staticInserted    , value); } }
-		public static event Action<IAfterChangeEntry <TEntity, TDbContext>> Updated      { add { Add(ref staticUpdated     , value); } remove { Remove(ref staticUpdated     , value); } }
-		public static event Action<IAfterChangeEntry <TEntity, TDbContext>> Deleted      { add { Add(ref staticDeleted     , value); } remove { Remove(ref staticDeleted     , value); } }
+		public static event Action<IBeforeEntry      <TEntity, TDbContext>> Inserting    { add { Add(ref inserting   , value); } remove { Remove(ref inserting   , value); } }
+		public static event Action<IBeforeChangeEntry<TEntity, TDbContext>> Updating     { add { Add(ref updating    , value); } remove { Remove(ref updating    , value); } }
+		public static event Action<IBeforeChangeEntry<TEntity, TDbContext>> Deleting     { add { Add(ref deleting    , value); } remove { Remove(ref deleting    , value); } }
+		public static event Action<IFailedEntry      <TEntity, TDbContext>> InsertFailed { add { Add(ref insertFailed, value); } remove { Remove(ref insertFailed, value); } }
+		public static event Action<IChangeFailedEntry<TEntity, TDbContext>> UpdateFailed { add { Add(ref updateFailed, value); } remove { Remove(ref updateFailed, value); } }
+		public static event Action<IChangeFailedEntry<TEntity, TDbContext>> DeleteFailed { add { Add(ref deleteFailed, value); } remove { Remove(ref deleteFailed, value); } }
+		public static event Action<IAfterEntry       <TEntity, TDbContext>> Inserted     { add { Add(ref inserted    , value); } remove { Remove(ref inserted    , value); } }
+		public static event Action<IAfterChangeEntry <TEntity, TDbContext>> Updated      { add { Add(ref updated     , value); } remove { Remove(ref updated     , value); } }
+		public static event Action<IAfterChangeEntry <TEntity, TDbContext>> Deleted      { add { Add(ref deleted     , value); } remove { Remove(ref deleted     , value); } }
 
-		internal static void RaiseBeforeInsert(TEntity entity, TDbContext dbc)               => Raise(ref staticInserting   , new InsertingEntry    { Entity = entity, Context = dbc });
-		internal static void RaiseBeforeUpdate(TEntity entity, TDbContext dbc)               => Raise(ref staticUpdating    , new UpdatingEntry     { Entity = entity, Context = dbc });
-		internal static void RaiseBeforeDelete(TEntity entity, TDbContext dbc)               => Raise(ref staticDeleting    , new DeletingEntry     { Entity = entity, Context = dbc });
-		internal static void RaiseInsertFailed(TEntity entity, TDbContext dbc, Exception ex) => Raise(ref staticInsertFailed, new FailedEntry       { Entity = entity, Context = dbc, Exception = ex });
-		internal static void RaiseUpdateFailed(TEntity entity, TDbContext dbc, Exception ex) => Raise(ref staticUpdateFailed, new ChangeFailedEntry { Entity = entity, Context = dbc, Exception = ex });
-		internal static void RaiseDeleteFailed(TEntity entity, TDbContext dbc, Exception ex) => Raise(ref staticDeleteFailed, new ChangeFailedEntry { Entity = entity, Context = dbc, Exception = ex });
-		internal static void RaiseAfterInsert (TEntity entity, TDbContext dbc)               => Raise(ref staticInserted    , new AfterEntry        { Entity = entity, Context = dbc });
-		internal static void RaiseAfterUpdate (TEntity entity, TDbContext dbc)               => Raise(ref staticUpdated     , new AfterChangeEntry  { Entity = entity, Context = dbc });
-		internal static void RaiseAfterDelete (TEntity entity, TDbContext dbc)               => Raise(ref staticDeleted     , new AfterChangeEntry  { Entity = entity, Context = dbc });
+		internal static void RaiseBeforeInsert(TEntity entity, TDbContext dbc)               => Raise(ref inserting   , new InsertingEntry    { Entity = entity, Context = dbc });
+		internal static void RaiseBeforeUpdate(TEntity entity, TDbContext dbc)               => Raise(ref updating    , new UpdatingEntry     { Entity = entity, Context = dbc });
+		internal static void RaiseBeforeDelete(TEntity entity, TDbContext dbc)               => Raise(ref deleting    , new DeletingEntry     { Entity = entity, Context = dbc });
+		internal static void RaiseInsertFailed(TEntity entity, TDbContext dbc, Exception ex) => Raise(ref insertFailed, new FailedEntry       { Entity = entity, Context = dbc, Exception = ex });
+		internal static void RaiseUpdateFailed(TEntity entity, TDbContext dbc, Exception ex) => Raise(ref updateFailed, new ChangeFailedEntry { Entity = entity, Context = dbc, Exception = ex });
+		internal static void RaiseDeleteFailed(TEntity entity, TDbContext dbc, Exception ex) => Raise(ref deleteFailed, new ChangeFailedEntry { Entity = entity, Context = dbc, Exception = ex });
+		internal static void RaiseAfterInsert (TEntity entity, TDbContext dbc)               => Raise(ref inserted    , new AfterEntry        { Entity = entity, Context = dbc });
+		internal static void RaiseAfterUpdate (TEntity entity, TDbContext dbc)               => Raise(ref updated     , new AfterChangeEntry  { Entity = entity, Context = dbc });
+		internal static void RaiseAfterDelete (TEntity entity, TDbContext dbc)               => Raise(ref deleted     , new AfterChangeEntry  { Entity = entity, Context = dbc });
 		#endregion
 		#region Entry implementations
 		private abstract class Entry : IEntry<TEntity, TDbContext> {
 			public TEntity Entity { get; internal set; }
 			public TDbContext Context { get; internal set; }
+			DbContext IEntry<TEntity>.Context => Context;
 		}
 
 		private class AfterEntry : Entry, IAfterEntry<TEntity, TDbContext> { }
