@@ -1,5 +1,5 @@
 ﻿{
-	"version": "1.0.0-*",
+	"version": "1.0.1-*",
 	"title": "EntityFrameworkCore.Triggers",
 	"description": "Supports events for entity inserting, inserted, updating, updated, deleting, and deleted. Also events on insert failure, update failure, and delete failure.",
 	"authors": [ "Nick Strupat" ],
