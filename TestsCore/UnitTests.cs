@@ -149,24 +149,24 @@ namespace EntityFramework.Triggers.Tests {
 			Triggers<Thing>.Deleted      -= DeletedCheckFlags;
 		}
 
-		private static void InsertingTrue         (IBeforeEntry<Thing, DbContext>       e) => e.Entity.Inserting = true;
-		private static void InsertingCheckFlags   (IBeforeEntry<Thing, DbContext>       e) => CheckFlags(e.Entity, nameof(e.Entity.Inserting));
-		private static void InsertFailedTrue      (IFailedEntry<Thing, DbContext>       e) => e.Entity.InsertFailed = true;
-		private static void InsertFailedCheckFlags(IFailedEntry<Thing, DbContext>       e) => CheckFlags(e.Entity, nameof(e.Entity.Inserting), nameof(e.Entity.InsertFailed));
-		private static void InsertedTrue          (IAfterEntry<Thing, DbContext>        e) => e.Entity.Inserted = true;
-		private static void InsertedCheckFlags    (IAfterEntry<Thing, DbContext>        e) => CheckFlags(e.Entity, nameof(e.Entity.Inserting), nameof(e.Entity.Inserted));
-		private static void UpdatingTrue          (IBeforeChangeEntry<Thing, DbContext> e) => e.Entity.Updating = true;
-		private static void UpdatingCheckFlags    (IBeforeChangeEntry<Thing, DbContext> e) => CheckFlags(e.Entity, nameof(e.Entity.Updating));
-		private static void UpdateFailedTrue      (IChangeFailedEntry<Thing, DbContext> e) => e.Entity.UpdateFailed = true;
-		private static void UpdateFailedCheckFlags(IChangeFailedEntry<Thing, DbContext> e) => CheckFlags(e.Entity, nameof(e.Entity.Updating), nameof(e.Entity.UpdateFailed));
-		private static void UpdatedTrue           (IAfterChangeEntry<Thing, DbContext>  e) => e.Entity.Updated = true;
-		private static void UpdatedCheckFlags     (IAfterChangeEntry<Thing, DbContext>  e) => CheckFlags(e.Entity, nameof(e.Entity.Updating), nameof(e.Entity.Updated));
-		private static void DeletingTrue          (IBeforeChangeEntry<Thing, DbContext> e) => e.Entity.Deleting = true;
-		private static void DeletingCheckFlags    (IBeforeChangeEntry<Thing, DbContext> e) => CheckFlags(e.Entity, nameof(e.Entity.Deleting));
-		private static void DeleteFailedTrue      (IChangeFailedEntry<Thing, DbContext> e) => e.Entity.DeleteFailed = true;
-		private static void DeleteFailedCheckFlags(IChangeFailedEntry<Thing, DbContext> e) => CheckFlags(e.Entity, nameof(e.Entity.Deleting), nameof(e.Entity.DeleteFailed));
-		private static void DeletedTrue           (IAfterChangeEntry<Thing, DbContext>  e) => e.Entity.Deleted = true;
-		private static void DeletedCheckFlags     (IAfterChangeEntry<Thing, DbContext>  e) => CheckFlags(e.Entity, nameof(e.Entity.Deleting), nameof(e.Entity.Deleted));
+		private static void InsertingTrue         (IBeforeEntry<Thing>       e) => e.Entity.Inserting = true;
+		private static void InsertingCheckFlags   (IBeforeEntry<Thing>       e) => CheckFlags(e.Entity, nameof(e.Entity.Inserting));
+		private static void InsertFailedTrue      (IFailedEntry<Thing>       e) => e.Entity.InsertFailed = true;
+		private static void InsertFailedCheckFlags(IFailedEntry<Thing>       e) => CheckFlags(e.Entity, nameof(e.Entity.Inserting), nameof(e.Entity.InsertFailed));
+		private static void InsertedTrue          (IAfterEntry<Thing>        e) => e.Entity.Inserted = true;
+		private static void InsertedCheckFlags    (IAfterEntry<Thing>        e) => CheckFlags(e.Entity, nameof(e.Entity.Inserting), nameof(e.Entity.Inserted));
+		private static void UpdatingTrue          (IBeforeChangeEntry<Thing> e) => e.Entity.Updating = true;
+		private static void UpdatingCheckFlags    (IBeforeChangeEntry<Thing> e) => CheckFlags(e.Entity, nameof(e.Entity.Updating));
+		private static void UpdateFailedTrue      (IChangeFailedEntry<Thing> e) => e.Entity.UpdateFailed = true;
+		private static void UpdateFailedCheckFlags(IChangeFailedEntry<Thing> e) => CheckFlags(e.Entity, nameof(e.Entity.Updating), nameof(e.Entity.UpdateFailed));
+		private static void UpdatedTrue           (IAfterChangeEntry<Thing>  e) => e.Entity.Updated = true;
+		private static void UpdatedCheckFlags     (IAfterChangeEntry<Thing>  e) => CheckFlags(e.Entity, nameof(e.Entity.Updating), nameof(e.Entity.Updated));
+		private static void DeletingTrue          (IBeforeChangeEntry<Thing> e) => e.Entity.Deleting = true;
+		private static void DeletingCheckFlags    (IBeforeChangeEntry<Thing> e) => CheckFlags(e.Entity, nameof(e.Entity.Deleting));
+		private static void DeleteFailedTrue      (IChangeFailedEntry<Thing> e) => e.Entity.DeleteFailed = true;
+		private static void DeleteFailedCheckFlags(IChangeFailedEntry<Thing> e) => CheckFlags(e.Entity, nameof(e.Entity.Deleting), nameof(e.Entity.DeleteFailed));
+		private static void DeletedTrue           (IAfterChangeEntry<Thing>  e) => e.Entity.Deleted = true;
+		private static void DeletedCheckFlags     (IAfterChangeEntry<Thing>  e) => CheckFlags(e.Entity, nameof(e.Entity.Deleting), nameof(e.Entity.Deleted));
 
 		private static readonly IEnumerable<PropertyInfo> FlagPropertyInfos = typeof(Thing).GetProperties().Where(x => x.PropertyType == typeof(Boolean));
 
@@ -193,18 +193,18 @@ namespace EntityFramework.Triggers.Tests {
 		protected override void Teardown() { }
 
 		private Int32 triggerCount;
-		private void TriggersOnInserting(IBeforeEntry<Thing, DbContext> beforeEntry) => ++triggerCount;
+		private void TriggersOnInserting(IBeforeEntry<Thing> beforeEntry) => ++triggerCount;
 
 		[Fact]
 		public void Sync() => DoATest(() => {
 			triggerCount = 0;
 
-			Triggers<Thing>.Inserting += TriggersOnInserting;
+			Triggers<Thing, Context>.Inserting += TriggersOnInserting;
 			Context.Things.Add(new Thing { Value = "Foo" });
 			Context.SaveChanges();
 			Assert.True(1 == triggerCount);
 
-			Triggers<Thing>.Inserting -= TriggersOnInserting;
+			Triggers<Thing, Context>.Inserting -= TriggersOnInserting;
 			Context.Things.Add(new Thing { Value = "Foo" });
 			Context.SaveChanges();
 			Assert.True(1 == triggerCount);
@@ -413,7 +413,7 @@ namespace EntityFramework.Triggers.Tests {
 		protected override void Setup()    => Triggers<Person>.Inserting += Cancel;
 		protected override void Teardown() => Triggers<Person>.Inserting -= Cancel;
 
-		private static void Cancel(IBeforeEntry<Person, DbContext> e) => e.Cancel();
+		private static void Cancel(IBeforeEntry<Person> e) => e.Cancel();
 
 		[Fact]
 		public void Sync() => DoATest(() => {
