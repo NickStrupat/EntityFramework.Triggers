@@ -13,11 +13,11 @@ namespace EntityFramework.Triggers {
 	/// </summary>
 	public abstract class DbContextWithTriggers : DbContext {
 		public override Int32 SaveChanges() {
-			return this.SaveChangesWithTriggers();
+			return this.SaveChangesWithTriggers(base.SaveChanges);
 		}
 #if !NET40
 		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
-			return this.SaveChangesWithTriggersAsync(cancellationToken);
+			return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken);
 		}
 #endif
 

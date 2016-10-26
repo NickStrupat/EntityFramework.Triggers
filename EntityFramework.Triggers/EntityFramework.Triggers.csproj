@@ -75,9 +75,6 @@
     <Compile Include="..\EntityFrameworkCore.Triggers\ITriggerInvoker.cs">
       <Link>ITriggerInvoker.cs</Link>
     </Compile>
-    <Compile Include="..\EntityFrameworkCore.Triggers\ParentDbContext.cs">
-      <Link>ParentDbContext.cs</Link>
-    </Compile>
     <Compile Include="..\EntityFrameworkCore.Triggers\TriggerEntityInvoker.cs">
       <Link>TriggerEntityInvoker.cs</Link>
     </Compile>

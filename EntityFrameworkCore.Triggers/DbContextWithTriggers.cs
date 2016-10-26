@@ -21,7 +21,7 @@ namespace EntityFrameworkCore.Triggers {
 		///     The number of state entries written to the database.
 		/// </returns>
 		public override Int32 SaveChanges() {
-			return this.SaveChangesWithTriggers(acceptAllChangesOnSuccess: true);
+			return this.SaveChangesWithTriggers(base.SaveChanges, acceptAllChangesOnSuccess: true);
 		}
 
 		/// <summary>
@@ -40,7 +40,7 @@ namespace EntityFrameworkCore.Triggers {
 		///     The number of state entries written to the database.
 		/// </returns>
 		public override Int32 SaveChanges(Boolean acceptAllChangesOnSuccess) {
-			return this.SaveChangesWithTriggers(acceptAllChangesOnSuccess);
+			return this.SaveChangesWithTriggers(base.SaveChanges, acceptAllChangesOnSuccess);
 		}
 
 		/// <summary>
@@ -63,7 +63,7 @@ namespace EntityFrameworkCore.Triggers {
 		///     number of state entries written to the database.
 		/// </returns>
 		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-			return this.SaveChangesWithTriggersAsync(acceptAllChangesOnSuccess: true, cancellationToken: cancellationToken);
+			return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess: true, cancellationToken: cancellationToken);
 		}
 
 		/// <summary>
@@ -90,7 +90,7 @@ namespace EntityFrameworkCore.Triggers {
 		///     number of state entries written to the database.
 		/// </returns>
 		public override Task<Int32> SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
-			return this.SaveChangesWithTriggersAsync(acceptAllChangesOnSuccess, cancellationToken);
+			return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess, cancellationToken);
 		}
 
 		/// <summary>

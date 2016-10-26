@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,31 +14,35 @@ namespace EntityFramework.Triggers {
 #endif
 	public static class Extensions {
 		/// <summary>
-		/// Saves all changes made in this context to the underlying database, firing trigger events accordingly.
+		/// Saves all changes made in this context to the underlying database, firing trigger events accordingly. Only call this within your DbContext class.
 		/// </summary>
 		/// <param name="dbContext"></param>
+		/// <param name="baseSaveChanges">Always pass base.SaveChanges</param>
 #if EF_CORE
 		/// <param name="acceptAllChangesOnSuccess">
 		///     Indicates whether <see cref="M:Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.AcceptAllChanges" /> is called after the changes have
 		///     been sent successfully to the database.
 		/// </param>
+		/// <example>this.SaveChangesWithTriggers(base.SaveChanges, true);</example>
+#else
+		/// <example>this.SaveChangesWithTriggers(base.SaveChanges);</example>
 #endif
-		/// <example>this.SaveChangesWithTriggers();</example>
 		/// <returns>The number of objects written to the underlying database.</returns>
 #if EF_CORE
-		public static Int32 SaveChangesWithTriggers(this DbContext dbContext, Boolean acceptAllChangesOnSuccess = true) {
+		public static Int32 SaveChangesWithTriggers(this DbContext dbContext, Func<Boolean, Int32> baseSaveChanges, Boolean acceptAllChangesOnSuccess = true) {
 #else
-		public static Int32 SaveChangesWithTriggers(this DbContext dbContext) {
+		public static Int32 SaveChangesWithTriggers(this DbContext dbContext, Func<Int32> baseSaveChanges) {
 #endif
 			if (dbContext == null)
 				throw new ArgumentNullException(nameof(dbContext));
-			var invoker = TriggerInvokers.Get(dbContext.GetType());
+			var dbContextType = dbContext.GetType();
+			var invoker = TriggerInvokers.Get(dbContextType);
 			try {
 				var afterActions = invoker.RaiseTheBeforeEvents(dbContext);
 #if EF_CORE
-				var result = invoker.BaseSaveChanges(dbContext, acceptAllChangesOnSuccess);
+				var result = baseSaveChanges(acceptAllChangesOnSuccess);
 #else
-				var result = invoker.BaseSaveChanges(dbContext);
+				var result = baseSaveChanges();
 #endif
 				invoker.RaiseTheAfterEvents(dbContext, afterActions);
 				return result;
@@ -57,6 +62,7 @@ namespace EntityFramework.Triggers {
 		/// Asynchronously saves all changes made in this context to the underlying database, firing trigger events accordingly.
 		/// </summary>
 		/// <param name="dbContext"></param>
+		/// <param name="baseSaveChangesAsync">Always pass base.SaveChangesAsync</param>
 #if EF_CORE
 		/// <param name="acceptAllChangesOnSuccess">
 		///     Indicates whether <see cref="M:Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.AcceptAllChanges" /> is called after the changes have
@@ -67,9 +73,9 @@ namespace EntityFramework.Triggers {
 		/// <example>this.SaveChangesWithTriggersAsync();</example>
 		/// <returns>A task that represents the asynchronous save operation. The task result contains the number of objects written to the underlying database.</returns>
 #if EF_CORE
-		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
+		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
 #else
-		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, CancellationToken cancellationToken = default(CancellationToken)) {
+		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken = default(CancellationToken)) {
 #endif
 			if (dbContext == null)
 				throw new ArgumentNullException(nameof(dbContext));
@@ -77,9 +83,9 @@ namespace EntityFramework.Triggers {
 			try {
 				var afterActions = invoker.RaiseTheBeforeEvents(dbContext);
 #if EF_CORE
-				var result = await invoker.BaseSaveChangesAsync(dbContext, acceptAllChangesOnSuccess, cancellationToken);
+				var result = await baseSaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 #else
-				var result = await invoker.BaseSaveChangesAsync(dbContext, cancellationToken);
+				var result = await baseSaveChangesAsync(cancellationToken);
 #endif
 				invoker.RaiseTheAfterEvents(dbContext, afterActions);
 				return result;
@@ -95,8 +101,8 @@ namespace EntityFramework.Triggers {
 		}
 
 #if EF_CORE
-		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, CancellationToken cancellationToken = default(CancellationToken)) {
-			return dbContext.SaveChangesWithTriggersAsync(true, cancellationToken);
+		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken = default(CancellationToken)) {
+			return dbContext.SaveChangesWithTriggersAsync(baseSaveChangesAsync, true, cancellationToken);
 		}
 #endif
 #endif

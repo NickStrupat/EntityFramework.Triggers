@@ -64,26 +64,6 @@ namespace EntityFramework.Triggers {
 				after(dbContext);
 		}
 
-#if EF_CORE
-		public Int32 BaseSaveChanges(DbContext dbContext, Boolean acceptAllChangesOnSuccess) {
-			return ParentDbContext<TDbContext>.SaveChanges((TDbContext) dbContext, acceptAllChangesOnSuccess); // must call as TDbContext
-		}
-		
-		public Task<Int32> BaseSaveChangesAsync(DbContext dbContext, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken) {
-			return ParentDbContext<TDbContext>.SaveChangesAsync((TDbContext) dbContext, acceptAllChangesOnSuccess, cancellationToken); // must call as TDbContext
-		}
-#else
-		public Int32 BaseSaveChanges(DbContext dbContext) {
-			return ParentDbContext<TDbContext>.SaveChanges((TDbContext) dbContext); // must call as TDbContext
-		}
-
-#if !NET40
-		public Task<Int32> BaseSaveChangesAsync(DbContext dbContext, CancellationToken cancellationToken) {
-			return ParentDbContext<TDbContext>.SaveChangesAsync((TDbContext) dbContext, cancellationToken); // must call as TDbContext
-		}
-#endif
-#endif
-
 		public void RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException) {
 			var context = (TDbContext) dbContext;
 			foreach (var entry in dbUpdateException.Entries)
