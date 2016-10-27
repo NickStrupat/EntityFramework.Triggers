@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
@@ -21,22 +19,48 @@ namespace EntityFramework.Triggers {
 		private static readonly Boolean IsADbContextType = typeof(DbContext).IsAssignableFrom(BaseDbContextType);
 		private static readonly ITriggerInvoker BaseTriggerInvoker = IsADbContextType ? TriggerInvokers.Get(BaseDbContextType) : null;
 
-		public List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext) {
-			var theAfterEvents = BaseTriggerInvoker?.RaiseTheBeforeEvents(dbContext) ?? new List<Action<DbContext>>();
+		private class EntityEntryComparer : IEqualityComparer<EntityEntry> {
+			private EntityEntryComparer() {}
+			public Boolean Equals(EntityEntry x, EntityEntry y) => ReferenceEquals(x.Entity, y.Entity);
+			public Int32 GetHashCode(EntityEntry obj) => obj.Entity.GetHashCode();
+			public static readonly EntityEntryComparer Default = new EntityEntryComparer();
+		}
 
-			var entries = dbContext.ChangeTracker.Entries();
-#if EF_CORE
-			entries = entries.ToArray();
-#endif
-			foreach (var entry in entries) {
-				var after = RaiseTheBeforeEvent(entry, dbContext);
-				if (after != null)
-					theAfterEvents.Add(after);
-			}
-			return theAfterEvents;
+		//public List<Action<DbContext>> RaiseTheBeforeEventsOuter(DbContext dbContext) {
+		//	var entries = dbContext.ChangeTracker.Entries().ToArray();
+		//	var triggeredEntries = new List<EntityEntry>();
+		//	var afterEvents = new List<Action<DbContext>>();
+		//}
+
+		//public void RaiseTheBeforeEventsInner(DbContext dbContext, )
+
+		public List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext, List<EntityEntry> entries, List<EntityEntry> triggeredEntries, List<Action<DbContext>> afterEvents) {
+			var firstCall = entries == null;
+			if (entries == null)
+				entries = dbContext.ChangeTracker.Entries().ToList();
+			if (triggeredEntries == null)
+				triggeredEntries = new List<EntityEntry>(entries.Count);
+			if (afterEvents == null)
+				afterEvents = new List<Action<DbContext>>();
+			do {
+				BaseTriggerInvoker?.RaiseTheBeforeEvents(dbContext, entries, triggeredEntries, afterEvents);
+				foreach (var entry in entries) {
+					var after = RaiseTheBeforeEvent(entry, dbContext);
+					triggeredEntries.Add(entry);
+					if (after != null)
+						afterEvents.Add(after);
+				}
+				if (firstCall) {
+					var newEntries = dbContext.ChangeTracker.Entries().Except(triggeredEntries, EntityEntryComparer.Default);
+					entries.Clear();
+					entries.AddRange(newEntries);
+				}
+			} while (firstCall && entries.Any());
+			return afterEvents;
 		}
 
 		private Action<DbContext> RaiseTheBeforeEvent(EntityEntry entry, DbContext dbContext) {
+			// TODO: fix the "after" lamdba dbcontext argument... RaiseAfterInsert(entry.Entity, (TDbContext)context)
 			var tDbContext = (TDbContext)dbContext;
 			var triggers = TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType());
 			switch (entry.State) {
