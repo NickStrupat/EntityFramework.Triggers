@@ -52,6 +52,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\TestsCore\AddingEntitiesWithinABeforeTrigger.cs">
+      <Link>AddingEntitiesWithinABeforeTrigger.cs</Link>
+    </Compile>
     <Compile Include="..\TestsCore\Context.cs">
       <Link>Context.cs</Link>
     </Compile>

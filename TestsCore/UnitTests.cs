@@ -189,26 +189,37 @@ namespace EntityFramework.Triggers.Tests {
 	}
 
 	public class AddRemoveEventHandler : TestBase {
-		protected override void Setup() { }
-		protected override void Teardown() { }
+		protected override void Setup() => Triggers<Thing, Context>.Inserting += TriggersOnInserting;
+		protected override void Teardown() => Triggers<Thing, Context>.Inserting -= TriggersOnInserting;
 
 		private Int32 triggerCount;
 		private void TriggersOnInserting(IBeforeEntry<Thing> beforeEntry) => ++triggerCount;
 
 		[Fact]
 		public void Sync() => DoATest(() => {
-			triggerCount = 0;
-
-			Triggers<Thing, Context>.Inserting += TriggersOnInserting;
 			Context.Things.Add(new Thing { Value = "Foo" });
 			Context.SaveChanges();
 			Assert.True(1 == triggerCount);
 
-			Triggers<Thing, Context>.Inserting -= TriggersOnInserting;
+			Teardown(); // Remove handler
 			Context.Things.Add(new Thing { Value = "Foo" });
 			Context.SaveChanges();
 			Assert.True(1 == triggerCount);
 		});
+
+#if !NET40
+		[Fact]
+		public Task Async() => DoATestAsync(async () => {
+			Context.Things.Add(new Thing { Value = "Foo" });
+			await Context.SaveChangesAsync().ConfigureAwait(false);
+			Assert.True(1 == triggerCount);
+
+			Teardown(); // Remove handler
+			Context.Things.Add(new Thing { Value = "Foo" });
+			await Context.SaveChangesAsync().ConfigureAwait(false);
+			Assert.True(1 == triggerCount);
+		});
+#endif
 	}
 
 	public class Insert : ThingTestBase {
@@ -572,7 +583,7 @@ namespace EntityFramework.Triggers.Tests {
 #endif
 	}
 
-	public class OriginalValuesOnUpdate : TestBase {
+	public class OriginalValuesOnUpdating : TestBase {
 		protected override void Setup()    => Triggers<Thing>.Updating += TriggersOnUpdating;
 		protected override void Teardown() => Triggers<Thing>.Updating -= TriggersOnUpdating;
 
@@ -604,6 +615,45 @@ namespace EntityFramework.Triggers.Tests {
 			Context.Things.Add(thing);
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 			thing.Value = guid2;
+			await Context.SaveChangesAsync().ConfigureAwait(false);
+		});
+#endif
+	}
+
+	public class OriginalValuesOnDeleting : TestBase {
+		protected override void Setup()    => Triggers<Thing>.Deleting += TriggersOnDeleting;
+		protected override void Teardown() => Triggers<Thing>.Deleting -= TriggersOnDeleting;
+
+		private void TriggersOnDeleting(IBeforeChangeEntry<Thing, DbContext> beforeChangeEntry) {
+			Assert.True(beforeChangeEntry.Original.Value == guid);
+			Assert.True(beforeChangeEntry.Entity.Value == guid2);
+		}
+
+		private String guid;
+		private String guid2;
+
+		[Fact]
+		public void Sync() => DoATest(() => {
+			guid = Guid.NewGuid().ToString();
+			guid2 = Guid.NewGuid().ToString();
+			var thing = new Thing { Value = guid };
+			Context.Things.Add(thing);
+			Context.SaveChanges();
+			thing.Value = guid2;
+			Context.Things.Remove(thing);
+			Context.SaveChanges();
+		});
+
+#if !NET40
+		[Fact]
+		public Task Async() => DoATestAsync(async () => {
+			guid = Guid.NewGuid().ToString();
+			guid2 = Guid.NewGuid().ToString();
+			var thing = new Thing { Value = guid };
+			Context.Things.Add(thing);
+			await Context.SaveChangesAsync().ConfigureAwait(false);
+			thing.Value = guid2;
+			Context.Things.Remove(thing);
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 		});
 #endif
