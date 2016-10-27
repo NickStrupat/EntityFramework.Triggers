@@ -13,7 +13,8 @@ using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
 namespace EntityFramework.Triggers {
 #endif
 	internal interface ITriggerInvoker {
-		List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext, List<EntityEntry> entries = null, List<EntityEntry> triggeredEntries = null, List<Action<DbContext>> afterEvents = null);
+		List<Action<DbContext>> RaiseTheBeforeEventsOuter(DbContext dbContext);
+		void RaiseTheBeforeEventsInner(DbContext dbContext, List<EntityEntry> entries, List<EntityEntry> triggeredEntries, List<Action<DbContext>> afterEvents);
 		void RaiseTheAfterEvents(DbContext dbContext, IEnumerable<Action<DbContext>> afterEvents);
 		void RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException);
 #if !EF_CORE

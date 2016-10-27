@@ -38,7 +38,7 @@ namespace EntityFramework.Triggers {
 			var dbContextType = dbContext.GetType();
 			var invoker = TriggerInvokers.Get(dbContextType);
 			try {
-				var afterActions = invoker.RaiseTheBeforeEvents(dbContext);
+				var afterActions = invoker.RaiseTheBeforeEventsOuter(dbContext);
 #if EF_CORE
 				var result = baseSaveChanges(acceptAllChangesOnSuccess);
 #else
@@ -81,7 +81,7 @@ namespace EntityFramework.Triggers {
 				throw new ArgumentNullException(nameof(dbContext));
 			var invoker = TriggerInvokers.Get(dbContext.GetType());
 			try {
-				var afterActions = invoker.RaiseTheBeforeEvents(dbContext);
+				var afterActions = invoker.RaiseTheBeforeEventsOuter(dbContext);
 #if EF_CORE
 				var result = await baseSaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 #else

@@ -26,58 +26,47 @@ namespace EntityFramework.Triggers {
 			public static readonly EntityEntryComparer Default = new EntityEntryComparer();
 		}
 
-		//public List<Action<DbContext>> RaiseTheBeforeEventsOuter(DbContext dbContext) {
-		//	var entries = dbContext.ChangeTracker.Entries().ToArray();
-		//	var triggeredEntries = new List<EntityEntry>();
-		//	var afterEvents = new List<Action<DbContext>>();
-		//}
-
-		//public void RaiseTheBeforeEventsInner(DbContext dbContext, )
-
-		public List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext, List<EntityEntry> entries, List<EntityEntry> triggeredEntries, List<Action<DbContext>> afterEvents) {
-			var firstCall = entries == null;
-			if (entries == null)
-				entries = dbContext.ChangeTracker.Entries().ToList();
-			if (triggeredEntries == null)
-				triggeredEntries = new List<EntityEntry>(entries.Count);
-			if (afterEvents == null)
-				afterEvents = new List<Action<DbContext>>();
-			do {
-				BaseTriggerInvoker?.RaiseTheBeforeEvents(dbContext, entries, triggeredEntries, afterEvents);
-				foreach (var entry in entries) {
-					var after = RaiseTheBeforeEvent(entry, dbContext);
-					triggeredEntries.Add(entry);
-					if (after != null)
-						afterEvents.Add(after);
-				}
-				if (firstCall) {
-					var newEntries = dbContext.ChangeTracker.Entries().Except(triggeredEntries, EntityEntryComparer.Default);
-					entries.Clear();
-					entries.AddRange(newEntries);
-				}
-			} while (firstCall && entries.Any());
+		public List<Action<DbContext>> RaiseTheBeforeEventsOuter(DbContext dbContext) {
+			var entries = dbContext.ChangeTracker.Entries().ToList();
+			var triggeredEntries = new List<EntityEntry>();
+			var afterEvents = new List<Action<DbContext>>();
+			while (entries.Any()) {
+				RaiseTheBeforeEventsInner(dbContext, entries, triggeredEntries, afterEvents);
+				var newEntries = dbContext.ChangeTracker.Entries().Except(triggeredEntries, EntityEntryComparer.Default);
+				entries.Clear();
+				entries.AddRange(newEntries);
+			}
 			return afterEvents;
 		}
 
+		public void RaiseTheBeforeEventsInner(DbContext dbContext, List<EntityEntry> entries, List<EntityEntry> triggeredEntries, List<Action<DbContext>> afterEvents) {
+			BaseTriggerInvoker?.RaiseTheBeforeEventsInner(dbContext, entries, triggeredEntries, afterEvents);
+			foreach (var entry in entries) {
+				var after = RaiseTheBeforeEvent(entry, dbContext);
+				triggeredEntries.Add(entry);
+				if (after != null)
+					afterEvents.Add(after);
+			}
+		}
+
 		private Action<DbContext> RaiseTheBeforeEvent(EntityEntry entry, DbContext dbContext) {
-			// TODO: fix the "after" lamdba dbcontext argument... RaiseAfterInsert(entry.Entity, (TDbContext)context)
 			var tDbContext = (TDbContext)dbContext;
 			var triggers = TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType());
 			switch (entry.State) {
 				case EntityState.Added:
 					triggers.RaiseBeforeInsert(entry.Entity, tDbContext);
 					if (entry.State == EntityState.Added)
-						return context => triggers.RaiseAfterInsert(entry.Entity, tDbContext);
+						return context => triggers.RaiseAfterInsert(entry.Entity, (TDbContext) context);
 					break;
 				case EntityState.Deleted:
 					triggers.RaiseBeforeDelete(entry.Entity, tDbContext);
 					if (entry.State == EntityState.Deleted)
-						return context => triggers.RaiseAfterDelete(entry.Entity, tDbContext);
+						return context => triggers.RaiseAfterDelete(entry.Entity, (TDbContext) context);
 					break;
 				case EntityState.Modified:
 					triggers.RaiseBeforeUpdate(entry.Entity, tDbContext);
 					if (entry.State == EntityState.Modified)
-						return context => triggers.RaiseAfterUpdate(entry.Entity, tDbContext);
+						return context => triggers.RaiseAfterUpdate(entry.Entity, (TDbContext) context);
 					break;
 			}
 			return null;
