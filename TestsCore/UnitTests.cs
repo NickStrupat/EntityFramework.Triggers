@@ -41,14 +41,16 @@ namespace EntityFramework.Triggers.Tests {
 
 		// original values on updating
 		// firing 'before' triggers of an entity added by another's "before" trigger, all before actual SaveChanges is executed
-		// TODO:
+
 		// Cancelled property of "before" trigger
 		// Swallow proprety of "failed" trigger
+
+		// TODO:
 		// event loops
 		// calling savechanges in an event handler
 		// doubly-declared interfaces
 
-		// check ...edFailed exception logic...
+		// test ...edFailed exception logic...
 		//     DbUpdateException raises failed triggers and is swallowable if contains entries or changetracker has only one entry
 		//     DbEntityValidationException raises failed triggers and is swallowable if it contains entries
 		//     All other exceptions raises failed triggers and is swallowable if changetracker has only one entry
