@@ -64,8 +64,14 @@
     <Compile Include="..\TestsCore\Person.cs">
       <Link>Person.cs</Link>
     </Compile>
+    <Compile Include="..\TestsCore\TestBase.cs">
+      <Link>TestBase.cs</Link>
+    </Compile>
     <Compile Include="..\TestsCore\Thing.cs">
       <Link>Thing.cs</Link>
+    </Compile>
+    <Compile Include="..\TestsCore\ThingTestBase.cs">
+      <Link>ThingTestBase.cs</Link>
     </Compile>
     <Compile Include="..\TestsCore\UnitTests.cs">
       <Link>UnitTests.cs</Link>
