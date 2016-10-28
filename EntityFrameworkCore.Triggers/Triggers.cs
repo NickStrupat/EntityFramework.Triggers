@@ -1,11 +1,5 @@
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Threading;
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
 using EntityFrameworkCore.TypedOriginalValues;
@@ -85,54 +79,15 @@ namespace EntityFramework.Triggers {
 		public static event Action<IAfterChangeEntry <TEntity, TDbContext>> Updated      { add { Add(ref updated     , value); } remove { Remove(ref updated     , value); } }
 		public static event Action<IAfterChangeEntry <TEntity, TDbContext>> Deleted      { add { Add(ref deleted     , value); } remove { Remove(ref deleted     , value); } }
 
-		internal static void RaiseBeforeInsert(TEntity entity, TDbContext dbc)               => Raise(ref inserting   , new InsertingEntry    { Entity = entity, Context = dbc });
-		internal static void RaiseBeforeUpdate(TEntity entity, TDbContext dbc)               => Raise(ref updating    , new UpdatingEntry     { Entity = entity, Context = dbc });
-		internal static void RaiseBeforeDelete(TEntity entity, TDbContext dbc)               => Raise(ref deleting    , new DeletingEntry     { Entity = entity, Context = dbc });
-		internal static void RaiseInsertFailed(TEntity entity, TDbContext dbc, Exception ex) => Raise(ref insertFailed, new FailedEntry       { Entity = entity, Context = dbc, Exception = ex });
-		internal static void RaiseUpdateFailed(TEntity entity, TDbContext dbc, Exception ex) => Raise(ref updateFailed, new ChangeFailedEntry { Entity = entity, Context = dbc, Exception = ex });
-		internal static void RaiseDeleteFailed(TEntity entity, TDbContext dbc, Exception ex) => Raise(ref deleteFailed, new ChangeFailedEntry { Entity = entity, Context = dbc, Exception = ex });
-		internal static void RaiseAfterInsert (TEntity entity, TDbContext dbc)               => Raise(ref inserted    , new AfterEntry        { Entity = entity, Context = dbc });
-		internal static void RaiseAfterUpdate (TEntity entity, TDbContext dbc)               => Raise(ref updated     , new AfterChangeEntry  { Entity = entity, Context = dbc });
-		internal static void RaiseAfterDelete (TEntity entity, TDbContext dbc)               => Raise(ref deleted     , new AfterChangeEntry  { Entity = entity, Context = dbc });
-		#endregion
-		#region Entry implementations
-		private abstract class Entry : IEntry<TEntity, TDbContext> {
-			public TEntity Entity { get; internal set; }
-			public TDbContext Context { get; internal set; }
-			DbContext IEntry<TEntity>.Context => Context;
-		}
-
-		private class AfterEntry : Entry, IAfterEntry<TEntity, TDbContext> { }
-
-		private abstract class ChangeEntry : Entry, IChangeEntry<TEntity, TDbContext> {
-			private readonly Lazy<TEntity> original;
-			public TEntity Original => original.Value;
-			protected ChangeEntry() {
-				original = new Lazy<TEntity>(() => Context.GetOriginal(Entity));
-			}
-		}
-
-		private class AfterChangeEntry : ChangeEntry, IAfterChangeEntry<TEntity, TDbContext> { }
-
-		private class FailedEntry : Entry, IFailedEntry<TEntity, TDbContext> {
-			public Exception Exception { get; internal set; }
-		}
-
-		private class ChangeFailedEntry : ChangeEntry, IChangeFailedEntry<TEntity, TDbContext> {
-			public Exception Exception { get; internal set; }
-		}
-
-		private class InsertingEntry : Entry, IBeforeEntry<TEntity, TDbContext> {
-			public void Cancel() => Context.Entry(Entity).State = EntityState.Detached;
-		}
-
-		private class UpdatingEntry : ChangeEntry, IBeforeChangeEntry<TEntity, TDbContext> {
-			public void Cancel() => Context.Entry(Entity).State = EntityState.Unchanged;
-		}
-
-		private class DeletingEntry : ChangeEntry, IBeforeChangeEntry<TEntity, TDbContext> {
-			public void Cancel() => Context.Entry(Entity).State = EntityState.Modified;
-		}
+		internal static void RaiseBeforeInsert(IBeforeEntry      <TEntity, TDbContext> entry) => Raise(ref inserting   , entry);
+		internal static void RaiseBeforeUpdate(IBeforeChangeEntry<TEntity, TDbContext> entry) => Raise(ref updating    , entry);
+		internal static void RaiseBeforeDelete(IBeforeChangeEntry<TEntity, TDbContext> entry) => Raise(ref deleting    , entry);
+		internal static void RaiseInsertFailed(IFailedEntry      <TEntity, TDbContext> entry) => Raise(ref insertFailed, entry);
+		internal static void RaiseUpdateFailed(IChangeFailedEntry<TEntity, TDbContext> entry) => Raise(ref updateFailed, entry);
+		internal static void RaiseDeleteFailed(IChangeFailedEntry<TEntity, TDbContext> entry) => Raise(ref deleteFailed, entry);
+		internal static void RaiseAfterInsert (IAfterEntry       <TEntity, TDbContext> entry) => Raise(ref inserted    , entry);
+		internal static void RaiseAfterUpdate (IAfterChangeEntry <TEntity, TDbContext> entry) => Raise(ref updated     , entry);
+		internal static void RaiseAfterDelete (IAfterChangeEntry <TEntity, TDbContext> entry) => Raise(ref deleted     , entry);
 		#endregion
 	}
 }

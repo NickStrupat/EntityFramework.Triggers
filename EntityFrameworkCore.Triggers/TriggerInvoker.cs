@@ -26,7 +26,7 @@ namespace EntityFramework.Triggers {
 			public static readonly EntityEntryComparer Default = new EntityEntryComparer();
 		}
 
-		public List<Action<DbContext>> RaiseTheBeforeEventsOuter(DbContext dbContext) {
+		public List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext) {
 			var entries = dbContext.ChangeTracker.Entries().ToList();
 			var triggeredEntries = new List<EntityEntry>();
 			var afterEvents = new List<Action<DbContext>>();
@@ -77,31 +77,60 @@ namespace EntityFramework.Triggers {
 				after(dbContext);
 		}
 
-		public void RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException) {
+		public Boolean RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException, Boolean swallow) {
+			if (BaseTriggerInvoker != null)
+				swallow = BaseTriggerInvoker.RaiseTheFailedEvents(dbContext, dbUpdateException, swallow);
 			var context = (TDbContext) dbContext;
-			foreach (var entry in dbUpdateException.Entries)
-				RaiseTheFailedEvents(context, entry, dbUpdateException);
+
+			IEnumerable<EntityEntry> entries;
+			
+			if (dbUpdateException.Entries.Any()) {
+				entries = dbUpdateException.Entries;
+			}
+			else {
+				entries = dbContext.ChangeTracker.Entries().ToArray();
+				if (entries.Count() != 1)
+					return false;
+			}
+			return RaiseTheFailedEvents(context, entries, dbUpdateException, swallow);
+
 		}
 
 #if !EF_CORE
-		public void RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException) {
+		public Boolean RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException, Boolean swallow) {
+			if (BaseTriggerInvoker != null)
+				swallow = BaseTriggerInvoker.RaiseTheFailedEvents(dbContext, dbEntityValidationException, swallow);
 			var context = (TDbContext) dbContext;
-			foreach (var entry in dbEntityValidationException.EntityValidationErrors)
-				RaiseTheFailedEvents(context, entry.Entry, dbEntityValidationException);
+			return RaiseTheFailedEvents(context, dbEntityValidationException.EntityValidationErrors.Select(x => x.Entry), dbEntityValidationException, swallow);
 		}
 #endif
 
-		private static void RaiseTheFailedEvents(TDbContext dbContext, EntityEntry entry, Exception exception) {
+		public Boolean RaiseTheFailedEvents(DbContext dbContext, Exception exception, Boolean swallow) {
+			if (BaseTriggerInvoker != null)
+				swallow = BaseTriggerInvoker.RaiseTheFailedEvents(dbContext, exception, swallow);
+			var context = (TDbContext) dbContext;
+			var entries = dbContext.ChangeTracker.Entries().ToArray();
+			if (entries.Length != 1)
+				return false;
+			return RaiseTheFailedEvents(context, entries, exception, swallow);
+		}
+
+		private static Boolean RaiseTheFailedEvents(TDbContext dbContext, IEnumerable<EntityEntry> entries, Exception exception, Boolean swallow) {
+			foreach (var entry in entries)
+				swallow = RaiseTheFailedEvents(dbContext, entry, exception, swallow);
+			return swallow;
+		}
+
+		private static Boolean RaiseTheFailedEvents(TDbContext dbContext, EntityEntry entry, Exception exception, Boolean swallow) {
 			switch (entry.State) {
 				case EntityState.Added:
-					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseInsertFailed(entry.Entity, dbContext, exception);
-					break;
+					return TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseInsertFailed(entry.Entity, dbContext, exception, swallow);
 				case EntityState.Modified:
-					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseUpdateFailed(entry.Entity, dbContext, exception);
-					break;
+					return TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseUpdateFailed(entry.Entity, dbContext, exception, swallow);
 				case EntityState.Deleted:
-					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseDeleteFailed(entry.Entity, dbContext, exception);
-					break;
+					return TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseDeleteFailed(entry.Entity, dbContext, exception, swallow);
+				default:
+					return swallow;
 			}
 		}
 	}

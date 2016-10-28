@@ -13,12 +13,13 @@ using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
 namespace EntityFramework.Triggers {
 #endif
 	internal interface ITriggerInvoker {
-		List<Action<DbContext>> RaiseTheBeforeEventsOuter(DbContext dbContext);
+		List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext);
 		void RaiseTheBeforeEventsInner(DbContext dbContext, List<EntityEntry> entries, List<EntityEntry> triggeredEntries, List<Action<DbContext>> afterEvents);
 		void RaiseTheAfterEvents(DbContext dbContext, IEnumerable<Action<DbContext>> afterEvents);
-		void RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException);
+		Boolean RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException, Boolean swallow = false);
 #if !EF_CORE
-		void RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException);
+		Boolean RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException, Boolean swallow = false);
 #endif
+		Boolean RaiseTheFailedEvents(DbContext dbContext, Exception exception, Boolean swallow = false);
 	}
 }

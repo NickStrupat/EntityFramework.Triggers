@@ -7,7 +7,7 @@ namespace EntityFrameworkCore.Triggers {
 using System.Data.Entity;
 namespace EntityFramework.Triggers {
 #endif
-
+	#region Without specific DbContext type
 	/// <summary>Contains the context and the instance of the changed entity</summary>
 	public interface IEntry<out TEntity> where TEntity : class {
 		TEntity Entity { get; }
@@ -15,11 +15,14 @@ namespace EntityFramework.Triggers {
 	}
 
 	public interface IBeforeEntry<out TEntity> : IEntry<TEntity> where TEntity : class {
+		[Obsolete("This method is being deprecated in favour of the `Cancelled` Boolean property. It will likely be removed in a future version.")]
 		void Cancel();
+		Boolean Cancelled { get; set; }
 	}
 
 	public interface IFailedEntry<out TEntity> : IEntry<TEntity> where TEntity : class {
 		Exception Exception { get; }
+		Boolean Swallow { get; set; }
 	}
 
 	public interface IAfterEntry<out TEntity> : IEntry<TEntity> where TEntity : class { }
@@ -33,6 +36,22 @@ namespace EntityFramework.Triggers {
 	public interface IChangeFailedEntry<out TEntity> : IChangeEntry<TEntity>, IFailedEntry<TEntity> where TEntity : class { }
 	public interface IAfterChangeEntry <out TEntity> : IChangeEntry<TEntity>, IAfterEntry <TEntity> where TEntity : class { }
 
+	#region Specific to events
+	public interface IInsertingEntry<out TEntity> : IBeforeEntry<TEntity> where TEntity : class { }
+	public interface IUpdatingEntry <out TEntity> : IBeforeEntry<TEntity> where TEntity : class { }
+	public interface IDeletingEntry <out TEntity> : IBeforeEntry<TEntity> where TEntity : class { }
+
+	public interface IInsertFailedEntry<out TEntity> : IFailedEntry<TEntity> where TEntity : class { }
+	public interface IUpdateFailedEntry<out TEntity> : IFailedEntry<TEntity> where TEntity : class { }
+	public interface IDeleteFailedEntry<out TEntity> : IFailedEntry<TEntity> where TEntity : class { }
+
+	public interface IInsertedEntry<out TEntity> : IAfterEntry<TEntity> where TEntity : class { }
+	public interface IUpdatedEntry <out TEntity> : IAfterEntry<TEntity> where TEntity : class { }
+	public interface IDeletedEntry <out TEntity> : IAfterEntry<TEntity> where TEntity : class { }
+	#endregion
+	#endregion
+
+	#region With specific DbContext type
 	/// <summary>Contains the context and the instance of the changed entity</summary>
 	public interface IEntry<out TEntity, out TDbContext> : IEntry<TEntity> where TEntity : class where TDbContext : DbContext {
 		new TDbContext Context { get; }
@@ -45,4 +64,19 @@ namespace EntityFramework.Triggers {
 	public interface IBeforeChangeEntry<out TEntity, out TDbContext> : IBeforeChangeEntry<TEntity>, IChangeEntry<TEntity, TDbContext>, IBeforeEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
 	public interface IChangeFailedEntry<out TEntity, out TDbContext> : IChangeFailedEntry<TEntity>, IChangeEntry<TEntity, TDbContext>, IFailedEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
 	public interface IAfterChangeEntry <out TEntity, out TDbContext> : IAfterChangeEntry <TEntity>, IChangeEntry<TEntity, TDbContext>, IAfterEntry <TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
+	
+	#region Specific to events
+	public interface IInsertingEntry<out TEntity, out TDbContext> : IInsertingEntry<TEntity>, IBeforeEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
+	public interface IUpdatingEntry <out TEntity, out TDbContext> : IUpdatingEntry <TEntity>, IBeforeEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
+	public interface IDeletingEntry <out TEntity, out TDbContext> : IDeletingEntry <TEntity>, IBeforeEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
+
+	public interface IInsertFailedEntry<out TEntity, out TDbContext> : IInsertFailedEntry<TEntity>, IFailedEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
+	public interface IUpdateFailedEntry<out TEntity, out TDbContext> : IUpdateFailedEntry<TEntity>, IFailedEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
+	public interface IDeleteFailedEntry<out TEntity, out TDbContext> : IDeleteFailedEntry<TEntity>, IFailedEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
+
+	public interface IInsertedEntry<out TEntity, out TDbContext> : IInsertedEntry<TEntity>, IAfterEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
+	public interface IUpdatedEntry <out TEntity, out TDbContext> : IUpdatedEntry <TEntity>, IAfterEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
+	public interface IDeletedEntry <out TEntity, out TDbContext> : IDeletedEntry <TEntity>, IAfterEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
+	#endregion
+	#endregion
 }

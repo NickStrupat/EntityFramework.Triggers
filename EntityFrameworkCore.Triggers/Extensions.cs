@@ -38,7 +38,7 @@ namespace EntityFramework.Triggers {
 			var dbContextType = dbContext.GetType();
 			var invoker = TriggerInvokers.Get(dbContextType);
 			try {
-				var afterActions = invoker.RaiseTheBeforeEventsOuter(dbContext);
+				var afterActions = invoker.RaiseTheBeforeEvents(dbContext);
 #if EF_CORE
 				var result = baseSaveChanges(acceptAllChangesOnSuccess);
 #else
@@ -47,14 +47,24 @@ namespace EntityFramework.Triggers {
 				invoker.RaiseTheAfterEvents(dbContext, afterActions);
 				return result;
 			}
-			catch (DbUpdateException dbUpdateException) when (ExceptionFilterAction(() => invoker.RaiseTheFailedEvents(dbContext, dbUpdateException))) {
-				throw new InvalidOperationException(CaughtExceptionMessage, dbUpdateException);
+			catch (DbUpdateException ex) {
+				var swallow = invoker.RaiseTheFailedEvents(dbContext, ex);
+				if (!swallow)
+					throw;
 			}
 #if !EF_CORE
-			catch (DbEntityValidationException dbEntityValidationException) when (ExceptionFilterAction(() => invoker.RaiseTheFailedEvents(dbContext, dbEntityValidationException))) {
-				throw new InvalidOperationException(CaughtExceptionMessage, dbEntityValidationException);
+			catch (DbEntityValidationException ex) {
+				var swallow = invoker.RaiseTheFailedEvents(dbContext, ex);
+				if (!swallow)
+					throw;
 			}
 #endif
+			catch (Exception ex) {
+				var swallow = invoker.RaiseTheFailedEvents(dbContext, ex);
+				if (!swallow)
+					throw;
+			}
+			return 0;
 		}
 
 #if !NET40
@@ -81,7 +91,7 @@ namespace EntityFramework.Triggers {
 				throw new ArgumentNullException(nameof(dbContext));
 			var invoker = TriggerInvokers.Get(dbContext.GetType());
 			try {
-				var afterActions = invoker.RaiseTheBeforeEventsOuter(dbContext);
+				var afterActions = invoker.RaiseTheBeforeEvents(dbContext);
 #if EF_CORE
 				var result = await baseSaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 #else
@@ -90,14 +100,24 @@ namespace EntityFramework.Triggers {
 				invoker.RaiseTheAfterEvents(dbContext, afterActions);
 				return result;
 			}
-			catch (DbUpdateException dbUpdateException) when (ExceptionFilterAction(() => invoker.RaiseTheFailedEvents(dbContext, dbUpdateException))) {
-				throw new InvalidOperationException(CaughtExceptionMessage, dbUpdateException);
+			catch (DbUpdateException ex) {
+				var swallow = invoker.RaiseTheFailedEvents(dbContext, ex);
+				if (!swallow)
+					throw;
 			}
 #if !EF_CORE
-			catch (DbEntityValidationException dbEntityValidationException) when (ExceptionFilterAction(() => invoker.RaiseTheFailedEvents(dbContext, dbEntityValidationException))) {
-				throw new InvalidOperationException(CaughtExceptionMessage, dbEntityValidationException);
+			catch (DbEntityValidationException ex) {
+				var swallow = invoker.RaiseTheFailedEvents(dbContext, ex);
+				if (!swallow)
+					throw;
 			}
 #endif
+			catch (Exception ex) {
+				var swallow = invoker.RaiseTheFailedEvents(dbContext, ex);
+				if (!swallow)
+					throw;
+			}
+			return 0;
 		}
 
 #if EF_CORE
@@ -106,12 +126,5 @@ namespace EntityFramework.Triggers {
 		}
 #endif
 #endif
-
-		private const String CaughtExceptionMessage = "An exception was caught which instead should have been observed in the exception catch filter and not caught.";
-
-		private static Boolean ExceptionFilterAction(Action action) {
-			action();
-			return false;
-		}
 	}
 }
