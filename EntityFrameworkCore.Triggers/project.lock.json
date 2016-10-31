@@ -3,6 +3,18 @@
   "version": 2,
   "targets": {
     ".NETFramework,Version=v4.5.1": {
+      "CoContra/0.1.0-prerelease": {
+        "type": "package",
+        "dependencies": {
+          "System.Collections.Immutable": "1.2.0"
+        },
+        "compile": {
+          "lib/net451/CoContra.NETCore.dll": {}
+        },
+        "runtime": {
+          "lib/net451/CoContra.NETCore.dll": {}
+        }
+      },
       "EntityFrameworkCore.TypedOriginalValues/1.0.1": {
         "type": "package",
         "dependencies": {
@@ -432,6 +444,20 @@
       }
     },
     ".NETStandard,Version=v1.3": {
+      "CoContra/0.1.0-prerelease": {
+        "type": "package",
+        "dependencies": {
+          "System.Collections.Immutable": "1.2.0",
+          "System.Reflection.Extensions": "4.0.1",
+          "System.Runtime.InteropServices": "4.1.0"
+        },
+        "compile": {
+          "lib/netstandard1.0/CoContra.NETCore.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.0/CoContra.NETCore.dll": {}
+        }
+      },
       "EntityFrameworkCore.TypedOriginalValues/1.0.1": {
         "type": "package",
         "dependencies": {
@@ -1033,6 +1059,19 @@
     }
   },
   "libraries": {
+    "CoContra/0.1.0-prerelease": {
+      "sha512": "ziZcF+bhsC124W8aS320VujC2ZyU0HDGvZORS01+mq+rKBxGcNRdEA3Nybdg7Ix6576VFxN5q5+ylbVKjAd5kg==",
+      "type": "package",
+      "path": "CoContra/0.1.0-prerelease",
+      "files": [
+        "CoContra.0.1.0-prerelease.nupkg.sha512",
+        "CoContra.nuspec",
+        "lib/net40/CoContra.NET4.dll",
+        "lib/net45/CoContra.NET45.dll",
+        "lib/net451/CoContra.NETCore.dll",
+        "lib/netstandard1.0/CoContra.NETCore.dll"
+      ]
+    },
     "EntityFrameworkCore.TypedOriginalValues/1.0.1": {
       "sha512": "Stb9CTZYz6N0sz2UIsvZKVxwUAb6fBFURysXHsWN37VVQIG3aMSCCwQS2mZyj0zVXqCgL714xoL9Y9q190+w6A==",
       "type": "package",
@@ -2947,6 +2986,7 @@
   },
   "projectFileDependencyGroups": {
     "": [
+      "CoContra >= 0.1.0-prerelease",
       "EntityFrameworkCore.TypedOriginalValues >= 1.0.1",
       "Microsoft.EntityFrameworkCore >= 1.0.1",
       "System.Reflection >= 4.1.0",

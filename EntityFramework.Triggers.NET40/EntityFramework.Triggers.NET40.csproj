@@ -33,6 +33,10 @@
     <DocumentationFile>bin\Release\EntityFramework.Triggers.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CoContra.NET4, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CoContra.0.1.0-prerelease\lib\net40\CoContra.NET4.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net40\EntityFramework.dll</HintPath>
       <Private>True</Private>

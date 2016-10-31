@@ -1,4 +1,4 @@
-﻿{
+{
 	"version": "1.0.1-*",
 	"title": "EntityFrameworkCore.Triggers",
 	"description": "Supports events for entity inserting, inserted, updating, updated, deleting, and deleted. Also events on insert failure, update failure, and delete failure.",
@@ -23,14 +23,15 @@
 		}
 	},
 
-	"dependencies": {
-		"System.Runtime": "4.1.0",
-		"System.Reflection": "4.1.0",
-		"System.Reflection.Emit": "4.0.1",
-		"System.Reflection.Emit.Lightweight": "4.0.1",
-		"Microsoft.EntityFrameworkCore": "1.0.1",
-		"EntityFrameworkCore.TypedOriginalValues": "1.0.1"
-	},
+    "dependencies": {
+        "System.Runtime": "4.1.0",
+        "System.Reflection": "4.1.0",
+        "System.Reflection.Emit": "4.0.1",
+        "System.Reflection.Emit.Lightweight": "4.0.1",
+        "Microsoft.EntityFrameworkCore": "1.0.1",
+        "EntityFrameworkCore.TypedOriginalValues": "1.0.1",
+        "CoContra": "0.1.0-prerelease"
+    },
 
 	"frameworks": {
 		"net451": {},

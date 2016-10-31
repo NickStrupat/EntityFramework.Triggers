@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Immutable;
+using CoContra;
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
 using EntityFrameworkCore.TypedOriginalValues;
@@ -23,71 +23,34 @@ namespace EntityFramework.Triggers {
 	}
 
 	public static class Triggers<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext {
-		#region Event helpers
-		internal static void Add<TIEntry>(ref ImmutableArray<Action<TIEntry>> handlers, Action<TIEntry> handler) where TIEntry : IEntry<TEntity, TDbContext> {
-			if (handler == null)
-				return;
+		private static readonly CovariantAction<IBeforeEntry      <TEntity, TDbContext>> inserting    = new CovariantAction<IBeforeEntry      <TEntity, TDbContext>>();
+		private static readonly CovariantAction<IBeforeChangeEntry<TEntity, TDbContext>> updating     = new CovariantAction<IBeforeChangeEntry<TEntity, TDbContext>>();
+		private static readonly CovariantAction<IBeforeChangeEntry<TEntity, TDbContext>> deleting     = new CovariantAction<IBeforeChangeEntry<TEntity, TDbContext>>();
+		private static readonly CovariantAction<IFailedEntry      <TEntity, TDbContext>> insertFailed = new CovariantAction<IFailedEntry      <TEntity, TDbContext>>();
+		private static readonly CovariantAction<IChangeFailedEntry<TEntity, TDbContext>> updateFailed = new CovariantAction<IChangeFailedEntry<TEntity, TDbContext>>();
+		private static readonly CovariantAction<IChangeFailedEntry<TEntity, TDbContext>> deleteFailed = new CovariantAction<IChangeFailedEntry<TEntity, TDbContext>>();
+		private static readonly CovariantAction<IAfterEntry       <TEntity, TDbContext>> inserted     = new CovariantAction<IAfterEntry       <TEntity, TDbContext>>();
+		private static readonly CovariantAction<IAfterChangeEntry <TEntity, TDbContext>> updated      = new CovariantAction<IAfterChangeEntry <TEntity, TDbContext>>();
+		private static readonly CovariantAction<IAfterChangeEntry <TEntity, TDbContext>> deleted      = new CovariantAction<IAfterChangeEntry <TEntity, TDbContext>>();
 
-			ImmutableArray<Action<TIEntry>> initial, computed;
-			do {
-				initial = InterlockedGet(ref handlers);
-				computed = initial.Add(handler);
-			}
-			while (initial != ImmutableInterlocked.InterlockedCompareExchange(ref handlers, computed, initial));
-		}
+		public static event Action<IBeforeEntry      <TEntity, TDbContext>> Inserting    { add { inserting   .Add(value); } remove { inserting   .Remove(value); } }
+		public static event Action<IBeforeChangeEntry<TEntity, TDbContext>> Updating     { add { updating    .Add(value); } remove { updating    .Remove(value); } }
+		public static event Action<IBeforeChangeEntry<TEntity, TDbContext>> Deleting     { add { deleting    .Add(value); } remove { deleting    .Remove(value); } }
+		public static event Action<IFailedEntry      <TEntity, TDbContext>> InsertFailed { add { insertFailed.Add(value); } remove { insertFailed.Remove(value); } }
+		public static event Action<IChangeFailedEntry<TEntity, TDbContext>> UpdateFailed { add { updateFailed.Add(value); } remove { updateFailed.Remove(value); } }
+		public static event Action<IChangeFailedEntry<TEntity, TDbContext>> DeleteFailed { add { deleteFailed.Add(value); } remove { deleteFailed.Remove(value); } }
+		public static event Action<IAfterEntry       <TEntity, TDbContext>> Inserted     { add { inserted    .Add(value); } remove { inserted    .Remove(value); } }
+		public static event Action<IAfterChangeEntry <TEntity, TDbContext>> Updated      { add { updated     .Add(value); } remove { updated     .Remove(value); } }
+		public static event Action<IAfterChangeEntry <TEntity, TDbContext>> Deleted      { add { deleted     .Add(value); } remove { deleted     .Remove(value); } }
 
-		internal static void Remove<TIEntry>(ref ImmutableArray<Action<TIEntry>> handlers, Action<TIEntry> handler) where TIEntry : IEntry<TEntity, TDbContext> {
-			if (handler == null)
-				return;
-
-			ImmutableArray<Action<TIEntry>> initial, computed;
-			do {
-				initial = InterlockedGet(ref handlers);
-				computed = initial.Remove(handler);
-			}
-			while (initial != ImmutableInterlocked.InterlockedCompareExchange(ref handlers, computed, initial));
-		}
-
-		private static void Raise<TIEntry>(ref ImmutableArray<Action<TIEntry>> handlers, TIEntry entry) where TIEntry : IEntry<TEntity, TDbContext> {
-			var latestHandlers = InterlockedGet(ref handlers);
-			for (var i = 0; i < latestHandlers.Length; i++)
-				latestHandlers[i].Invoke(entry);
-		}
-
-		private static ImmutableArray<Action<TIEntry>> InterlockedGet<TIEntry>(ref ImmutableArray<Action<TIEntry>> handlers) {
-			return ImmutableInterlocked.InterlockedCompareExchange(ref handlers, ImmutableArray<Action<TIEntry>>.Empty, ImmutableArray<Action<TIEntry>>.Empty);
-		}
-		#endregion
-		#region Events
-		private static ImmutableArray<Action<IBeforeEntry      <TEntity, TDbContext>>> inserting    = ImmutableArray<Action<IBeforeEntry      <TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IBeforeChangeEntry<TEntity, TDbContext>>> updating     = ImmutableArray<Action<IBeforeChangeEntry<TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IBeforeChangeEntry<TEntity, TDbContext>>> deleting     = ImmutableArray<Action<IBeforeChangeEntry<TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IFailedEntry      <TEntity, TDbContext>>> insertFailed = ImmutableArray<Action<IFailedEntry      <TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IChangeFailedEntry<TEntity, TDbContext>>> updateFailed = ImmutableArray<Action<IChangeFailedEntry<TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IChangeFailedEntry<TEntity, TDbContext>>> deleteFailed = ImmutableArray<Action<IChangeFailedEntry<TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IAfterEntry       <TEntity, TDbContext>>> inserted     = ImmutableArray<Action<IAfterEntry       <TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IAfterChangeEntry <TEntity, TDbContext>>> updated      = ImmutableArray<Action<IAfterChangeEntry <TEntity, TDbContext>>>.Empty;
-		private static ImmutableArray<Action<IAfterChangeEntry <TEntity, TDbContext>>> deleted      = ImmutableArray<Action<IAfterChangeEntry <TEntity, TDbContext>>>.Empty;
-
-		public static event Action<IBeforeEntry      <TEntity, TDbContext>> Inserting    { add { Add(ref inserting   , value); } remove { Remove(ref inserting   , value); } }
-		public static event Action<IBeforeChangeEntry<TEntity, TDbContext>> Updating     { add { Add(ref updating    , value); } remove { Remove(ref updating    , value); } }
-		public static event Action<IBeforeChangeEntry<TEntity, TDbContext>> Deleting     { add { Add(ref deleting    , value); } remove { Remove(ref deleting    , value); } }
-		public static event Action<IFailedEntry      <TEntity, TDbContext>> InsertFailed { add { Add(ref insertFailed, value); } remove { Remove(ref insertFailed, value); } }
-		public static event Action<IChangeFailedEntry<TEntity, TDbContext>> UpdateFailed { add { Add(ref updateFailed, value); } remove { Remove(ref updateFailed, value); } }
-		public static event Action<IChangeFailedEntry<TEntity, TDbContext>> DeleteFailed { add { Add(ref deleteFailed, value); } remove { Remove(ref deleteFailed, value); } }
-		public static event Action<IAfterEntry       <TEntity, TDbContext>> Inserted     { add { Add(ref inserted    , value); } remove { Remove(ref inserted    , value); } }
-		public static event Action<IAfterChangeEntry <TEntity, TDbContext>> Updated      { add { Add(ref updated     , value); } remove { Remove(ref updated     , value); } }
-		public static event Action<IAfterChangeEntry <TEntity, TDbContext>> Deleted      { add { Add(ref deleted     , value); } remove { Remove(ref deleted     , value); } }
-
-		internal static void RaiseBeforeInsert(IBeforeEntry      <TEntity, TDbContext> entry) => Raise(ref inserting   , entry);
-		internal static void RaiseBeforeUpdate(IBeforeChangeEntry<TEntity, TDbContext> entry) => Raise(ref updating    , entry);
-		internal static void RaiseBeforeDelete(IBeforeChangeEntry<TEntity, TDbContext> entry) => Raise(ref deleting    , entry);
-		internal static void RaiseInsertFailed(IFailedEntry      <TEntity, TDbContext> entry) => Raise(ref insertFailed, entry);
-		internal static void RaiseUpdateFailed(IChangeFailedEntry<TEntity, TDbContext> entry) => Raise(ref updateFailed, entry);
-		internal static void RaiseDeleteFailed(IChangeFailedEntry<TEntity, TDbContext> entry) => Raise(ref deleteFailed, entry);
-		internal static void RaiseAfterInsert (IAfterEntry       <TEntity, TDbContext> entry) => Raise(ref inserted    , entry);
-		internal static void RaiseAfterUpdate (IAfterChangeEntry <TEntity, TDbContext> entry) => Raise(ref updated     , entry);
-		internal static void RaiseAfterDelete (IAfterChangeEntry <TEntity, TDbContext> entry) => Raise(ref deleted     , entry);
-		#endregion
+		internal static void RaiseBeforeInsert(IBeforeEntry      <TEntity, TDbContext> entry) => inserting   .Invoke(entry);
+		internal static void RaiseBeforeUpdate(IBeforeChangeEntry<TEntity, TDbContext> entry) => updating    .Invoke(entry);
+		internal static void RaiseBeforeDelete(IBeforeChangeEntry<TEntity, TDbContext> entry) => deleting    .Invoke(entry);
+		internal static void RaiseInsertFailed(IFailedEntry      <TEntity, TDbContext> entry) => insertFailed.Invoke(entry);
+		internal static void RaiseUpdateFailed(IChangeFailedEntry<TEntity, TDbContext> entry) => updateFailed.Invoke(entry);
+		internal static void RaiseDeleteFailed(IChangeFailedEntry<TEntity, TDbContext> entry) => deleteFailed.Invoke(entry);
+		internal static void RaiseAfterInsert (IAfterEntry       <TEntity, TDbContext> entry) => inserted    .Invoke(entry);
+		internal static void RaiseAfterUpdate (IAfterChangeEntry <TEntity, TDbContext> entry) => updated     .Invoke(entry);
+		internal static void RaiseAfterDelete (IAfterChangeEntry <TEntity, TDbContext> entry) => deleted     .Invoke(entry);
 	}
 }
