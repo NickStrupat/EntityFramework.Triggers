@@ -717,6 +717,15 @@ namespace EntityFramework.Triggers.Tests {
 			Action<IBeforeEntry<Thing, DbContext>> triggersOnInserting2 = entry => { };
 			Triggers<Thing, Context>.Inserting += triggersOnInserting;
 			Triggers<Thing, Context>.Inserting += triggersOnInserting2;
+
+			Action<IBeforeEntry<Thing>> triggersOnInserting3 = entry => { };
+			Action<IBeforeEntry<Thing, Context>> triggersOnInserting4 = entry => { };
+			Action<IBeforeEntry<Object>> triggersOnInserting5 = entry => { };
+			Triggers<Thing>.Inserting += triggersOnInserting3;
+			Triggers<Thing>.Inserting += triggersOnInserting5;
+			Triggers<Object>.Inserting += triggersOnInserting5;
+			Triggers<Thing, Context>.Inserting += triggersOnInserting4;
+
 			Triggers<Thing, Context>.Inserting += ObjectInserting6;
 			Triggers<Thing, Context>.Inserting += ObjectInserting5;
 			Triggers<Thing, Context>.Inserting += ObjectInserting4;
