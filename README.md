@@ -16,6 +16,7 @@ NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFramew
 
 To use triggers on your entities, simply have your DbContext inherit from DbContextWithTriggers. If your DbContext inheritance chain is unchangeable, see below the example code.
 
+```csharp
 	public abstract class Trackable {
 		public DateTime Inserted { get; private set; }
 		public DateTime Updated { get; private set; }
@@ -27,12 +28,14 @@ To use triggers on your entities, simply have your DbContext inherit from DbCont
 	}
 
 	public class Person : Trackable {
-		public Int64 Id { get; protected set; }
+		public Int64 Id { get; private set; }
 		public String Name { get; set; }
 	}
+
 	public class Context : DbContextWithTriggers {
 		public DbSet<Person> People { get; set; }
 	}
+```
 
 As you may have guessed, what we're doing above is enabling automatic insert and update stamps for any entity that inherits `Trackable`. Events are raised from the base class/interfaces, up to the events specified on the entity class being used. It's just as easy to set up soft deletes (the Deleting, Updating, and Inserting events are cancellable from within a handler, logging, auditing, and more!).
 
@@ -40,95 +43,133 @@ Check out https://github.com/NickStrupat/EntityFramework.Rx for my "Reactive Ext
 
 If you can't easily change what your DbContext inherits from (ASP.NET Identity users, for example) you can override `SaveChanges()` in your DbContext class to call the `SaveChangesWithTriggers()` extension method. For async/await functionality, override `SaveChangesAsync(CancellationToken)` to call `SaveChangesWithTriggersAsync(cancellationToken)`. Alternatively, you can call `SaveChangesWithTriggers()` directly instead of `SaveChanges()`, although that means breaking away from the usual interface provided by `DbContext`.
 
+```csharp
 	class YourContext : DbContext {
 		// Your usual properties
 
+		#region If you're targeting EF 6
 		public override Int32 SaveChanges() {
 			return this.SaveChangesWithTriggers();
 		}
 		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
 			return this.SaveChangesWithTriggersAsync(cancellationToken);
 		}
+		#endregion
+
+		#region If you're targeting EF Core
+		public override Int32 SaveChanges() {
+			return this.SaveChangesWithTriggers(acceptAllChangesOnSuccess: true);
+		}
+		public override Int32 SaveChanges(Boolean acceptAllChangesOnSuccess) {
+			return this.SaveChangesWithTriggers(acceptAllChangesOnSuccess);
+		}
+		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+			return this.SaveChangesWithTriggersAsync(acceptAllChangesOnSuccess: true, cancellationToken: cancellationToken);
+		}
+		public override Task<Int32> SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
+			return this.SaveChangesWithTriggersAsync(acceptAllChangesOnSuccess, cancellationToken);
+		}
+		#endregion
 	}
+```
 
-**`SaveChangesWithTriggers()` and `SaveChangesWithTriggersAsync()` will call base.SaveChanges internally.**
+**`SaveChangesWithTriggers()` and `SaveChangesWithTriggersAsync()` will call `base.SaveChanges` internally.**
 
-## Longer example
+## Longer example (targeting EF6 for now)
 
-	using System;
-	using System.Data.Entity;
-	using System.Threading;
-	using System.Threading.Tasks;
-	using EntityFramework.Triggers;
+```csharp
+using System;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Migrations;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using EntityFramework.Triggers;
 
-	namespace Example {
-		class Program {
-			private class Person : ITriggerable {
-				public Int64 Id { get; private set; }
-				public DateTime InsertDateTime { get; private set; }
-				public DateTime UpdateDateTime { get; private set; }
-				public String FirstName { get; set; }
-				public String LastName { get; set; }
-				public Boolean IsDeleted { get; set; }
-				public Person() {
-					this.Triggers().Inserting += entry => { entry.Entity.InsertDateTime = entry.Entity.UpdateDateTime = DateTime.Now; };
-					this.Triggers().Updating += entry => { entry.Entity.UpdateDateTime = DateTime.Now; };
-					this.Triggers().Deleting += entry => {
-						entry.Entity.IsDeleted = true;
-						entry.Cancel(); // Cancels the deletion, but will persist changes with the same effects as EntityState.Modified
-					};
-				}
+namespace Example {
+	public class Program {
+		public abstract class Trackable {
+			public virtual DateTime Inserted { get; private set; }
+			public virtual DateTime Updated { get; private set; }
+
+			static Trackable() {
+				Triggers<Trackable>.Inserting += entry => entry.Entity.Inserted = entry.Entity.Updated = DateTime.UtcNow;
+				Triggers<Trackable>.Updating += entry => entry.Entity.Updated = DateTime.UtcNow;
 			}
-			
-			private class LogEntry {
-				public Int64 Id { get; private set; }
-				public String Message { get; set; }
+		}
+
+		public class Person : Trackable {
+			public virtual Int64 Id { get; protected set; }
+			public virtual String FirstName { get; set; }
+			public virtual String LastName { get; set; }
+			public virtual DateTime? Deleted { get; set; }
+			public Boolean IsDeleted => Deleted != null;
+
+			static Person() {
+				Triggers<Person>.Deleting += entry => {
+					entry.Entity.Deleted = DateTime.UtcNow;
+					entry.Cancel(); // Cancels the deletion, but will persist changes with the same effects as EntityState.Modified
+				};
 			}
-			
-			private class Context : DbContext {
-				public DbSet<Person> People { get; set; }
-				public DbSet<LogEntry> Log { get; set; }
+		}
 
-				public override Int32 SaveChanges() {
-					return this.SaveChangesWithTriggers();
-				}
-				public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
-					return this.SaveChangesWithTriggersAsync(cancellationToken);
-				}
+		public class LogEntry {
+			public virtual Int64 Id { get; protected set; }
+			public virtual String Message { get; set; }
+		}
+
+		public class Context : DbContext {
+			public virtual DbSet<Person> People { get; set; }
+			public virtual DbSet<LogEntry> Log { get; set; }
+
+			public override Int32 SaveChanges() {
+				return this.SaveChangesWithTriggers();
 			}
-			
-			private static void Main(string[] args) {
-				var task = MainAsync(args);
-				Task.WaitAll(task);
+			public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
+				return this.SaveChangesWithTriggersAsync(cancellationToken);
 			}
-			
-			private static async Task MainAsync(string[] args) {
-				using (var context = new Context()) {
-					var nickStrupat = new Person {
-						FirstName = "Nick",
-						LastName = "Strupat"
-					};
-					nickStrupat.Triggers().Inserting += e => {
-						((Context)e.Context).Log.Add(new LogEntry { Message = "Insert trigger fired for " + e.Entity.FirstName });
-						Console.WriteLine("Inserting " + e.Entity.FirstName);
-					};
-					nickStrupat.Triggers().Updating += e => Console.WriteLine("Updating " + e.Entity.FirstName);
-					nickStrupat.Triggers().Deleting += e => Console.WriteLine("Deleting " + e.Entity.FirstName);
-					nickStrupat.Triggers().Inserted += e => Console.WriteLine("Inserted " + e.Entity.FirstName);
-					nickStrupat.Triggers().Updated += e => Console.WriteLine("Updated " + e.Entity.FirstName);
-					nickStrupat.Triggers().Deleted += e => Console.WriteLine("Deleted " + e.Entity.FirstName);
+		}
+		internal sealed class Configuration : DbMigrationsConfiguration<Context> {
+			public Configuration() {
+				AutomaticMigrationsEnabled = true;
+			}
+		}
 
-					context.People.Add(nickStrupat);
-					context.SaveChanges();
+		static Program() {
+			Triggers<Person, Context>.Inserting += e => {
+				e.Context.Log.Add(new LogEntry { Message = "Insert trigger fired for " + e.Entity.FirstName });
+				Console.WriteLine("Inserting " + e.Entity.FirstName);
+			};
+			Triggers<Person>.Updating += e => Console.WriteLine("Updating " + e.Entity.FirstName);
+			Triggers<Person>.Deleting += e => Console.WriteLine("Deleting " + e.Entity.FirstName);
+			Triggers<Person>.Inserted += e => Console.WriteLine("Inserted " + e.Entity.FirstName);
+			Triggers<Person>.Updated += e => Console.WriteLine("Updated " + e.Original.FirstName);
+			Triggers<Person>.Deleted += e => Console.WriteLine("Deleted " + e.Entity.FirstName);
+		}
+		
+		private static void Main(String[] args) => Task.WaitAll(MainAsync(args));
 
-					nickStrupat.FirstName = "Nicholas";
-					context.SaveChanges();
+		private static async Task MainAsync(String[] args) {
+			using (var context = new Context()) {
+				context.Database.Delete();
+				context.Database.Create();
 
-					context.People.Remove(nickStrupat);
-					await context.SaveChangesAsync();
+				var log = context.Log.ToList();
+				var nickStrupat = new Person {
+					FirstName = "Nick",
+					LastName = "Strupat"
+				};
 
-					context.Database.Delete();
-				}
+				context.People.Add(nickStrupat);
+				await context.SaveChangesAsync();
+
+				nickStrupat.FirstName = "Nicholas";
+				context.SaveChanges();
+				context.People.Remove(nickStrupat);
+				await context.SaveChangesAsync();
 			}
 		}
 	}
+}
+```
