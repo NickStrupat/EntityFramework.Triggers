@@ -711,26 +711,126 @@ namespace EntityFramework.Triggers.Tests {
 #endif
 	}
 
-//	public class MultiplyDeclaredInterfaces : TestBase {
-//		protected override void Setup() {}
-//		protected override void Teardown() { }
+	public class Covariance : TestBase {
+		protected override void Setup() {
+			Action<IBeforeEntry<Thing, Context>> triggersOnInserting = entry => { }; // These two will break at runtime without the `CoContra` event-backing-field
+			Action<IBeforeEntry<Thing, DbContext>> triggersOnInserting2 = entry => { };
+			Triggers<Thing, Context>.Inserting += triggersOnInserting;
+			Triggers<Thing, Context>.Inserting += triggersOnInserting2;
+			Triggers<Thing, Context>.Inserting += ObjectInserting6;
+			Triggers<Thing, Context>.Inserting += ObjectInserting5;
+			Triggers<Thing, Context>.Inserting += ObjectInserting4;
+			Triggers<Thing, Context>.Inserting += ObjectInserting3;
+			Triggers<Thing, Context>.Inserting += ObjectInserting2;
+			Triggers<Thing, Context>.Inserting += ObjectInserting;
+			Triggers<Thing, Context>.Inserting += ThingInserting6;
+			Triggers<Thing, Context>.Inserting += ThingInserting5;
+			Triggers<Thing, Context>.Inserting += ThingInserting4;
+			Triggers<Thing, Context>.Inserting += ThingInserting3;
+			Triggers<Thing, Context>.Inserting += ThingInserting2;
+			Triggers<Thing, Context>.Inserting += ThingInserting;
+		}
 
-//		[Fact]
-//		public void Sync() => DoATest(() => {
-//		});
+		protected override void Teardown() {
+			Triggers<Thing, Context>.Inserting += ThingInserting;
+			Triggers<Thing, Context>.Inserting += ThingInserting2;
+			Triggers<Thing, Context>.Inserting += ThingInserting3;
+			Triggers<Thing, Context>.Inserting += ThingInserting4;
+			Triggers<Thing, Context>.Inserting += ThingInserting5;
+			Triggers<Thing, Context>.Inserting += ThingInserting6;
+			Triggers<Thing, Context>.Inserting += ObjectInserting;
+			Triggers<Thing, Context>.Inserting += ObjectInserting2;
+			Triggers<Thing, Context>.Inserting += ObjectInserting3;
+			Triggers<Thing, Context>.Inserting += ObjectInserting4;
+			Triggers<Thing, Context>.Inserting += ObjectInserting5;
+			Triggers<Thing, Context>.Inserting += ObjectInserting6;
+		}
 
-//#if !NET40
-//		[Fact]
-//		public Task Async() => DoATestAsync(async () => {
-//		});
-//#endif
-//	}
+		private Boolean thingInsertingRan;
+		private Boolean thingInserting2Ran;
+		private Boolean thingInserting3Ran;
+		private Boolean objectInsertingRan;
+		private Boolean objectInserting2Ran;
+		private Boolean objectInserting3Ran;
 
-//	public interface ICreature { }
-//	public class Creature : ICreature {
-//		[Key]
-//		public virtual Int64 Id { get; protected set; }
-//		public virtual String Name { get; set; }
-//	}
-//	public class Dog : Creature, ICreature { }
+		private void ThingInserting(IBeforeEntry<Thing, Context> entry) => thingInsertingRan = true;
+		private void ThingInserting2(IBeforeEntry<Thing, DbContext> entry) => thingInserting2Ran = true;
+		private void ThingInserting3(IBeforeEntry<Thing> entry) => thingInserting3Ran = true;
+		private void ThingInserting4(IEntry<Thing, Context> entry)   {}
+		private void ThingInserting5(IEntry<Thing, DbContext> entry) {}
+		private void ThingInserting6(IEntry<Thing> entry)            {}
+		private void ObjectInserting(IBeforeEntry<Object, Context> beforeEntry) => objectInsertingRan = true;
+		private void ObjectInserting2(IBeforeEntry<Object, DbContext> beforeEntry) => objectInserting2Ran = true;
+		private void ObjectInserting3(IBeforeEntry<Object> beforeEntry) => objectInserting3Ran = true;
+		private void ObjectInserting4(IEntry<Object, Context> beforeEntry)   {}
+		private void ObjectInserting5(IEntry<Object, DbContext> beforeEntry) {}
+		private void ObjectInserting6(IEntry<Object> beforeEntry)            {}
+
+		[Fact]
+		public void Sync() => DoATest(() => {
+			var guid = Guid.NewGuid().ToString();
+			var thing = new Thing { Value = guid };
+			Context.Things.Add(thing);
+			Assert.False(thingInsertingRan);
+			Assert.False(thingInserting2Ran);
+			Assert.False(thingInserting3Ran);
+			Assert.False(objectInsertingRan);
+			Assert.False(objectInserting2Ran);
+			Assert.False(objectInserting3Ran);
+			Context.SaveChanges();
+			Assert.True(Context.Things.SingleOrDefault(x => x.Value == guid) != null);
+			Assert.True(thingInsertingRan);
+			Assert.True(thingInserting2Ran);
+			Assert.True(thingInserting3Ran);
+			Assert.True(objectInsertingRan);
+			Assert.True(objectInserting2Ran);
+			Assert.True(objectInserting3Ran);
+		});
+
+#if !NET40
+		[Fact]
+		public Task Async() => DoATestAsync(async () => {
+			var guid = Guid.NewGuid().ToString();
+			var thing = new Thing { Value = guid };
+			Context.Things.Add(thing);
+			Assert.False(thingInsertingRan);
+			Assert.False(thingInserting2Ran);
+			Assert.False(thingInserting3Ran);
+			Assert.False(objectInsertingRan);
+			Assert.False(objectInserting2Ran);
+			Assert.False(objectInserting3Ran);
+			await Context.SaveChangesAsync().ConfigureAwait(false);
+			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid).ConfigureAwait(false) != null);
+			Assert.True(thingInsertingRan);
+			Assert.True(thingInserting2Ran);
+			Assert.True(thingInserting3Ran);
+			Assert.True(objectInsertingRan);
+			Assert.True(objectInserting2Ran);
+			Assert.True(objectInserting3Ran);
+		});
+#endif
+	}
+
+	//	public class MultiplyDeclaredInterfaces : TestBase {
+	//		protected override void Setup() {}
+	//		protected override void Teardown() { }
+
+	//		[Fact]
+	//		public void Sync() => DoATest(() => {
+	//		});
+
+	//#if !NET40
+	//		[Fact]
+	//		public Task Async() => DoATestAsync(async () => {
+	//		});
+	//#endif
+	//	}
+
+	//	public interface ICreature { }
+	//	public class Creature : ICreature {
+	//		[Key]
+	//		public virtual Int64 Id { get; protected set; }
+	//		public virtual String Name { get; set; }
+	//	}
+	//	public class Dog : Creature, ICreature { }
 }
