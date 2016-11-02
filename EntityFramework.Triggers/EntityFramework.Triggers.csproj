@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>EntityFramework.Triggers</RootNamespace>
-    <AssemblyName>EntityFramework.Triggers</AssemblyName>
+    <AssemblyName>EntityFramework.Triggers.net451</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -31,7 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\EntityFramework.Triggers.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\EntityFramework.Triggers.net451.xml</DocumentationFile>
     <NoWarn>
     </NoWarn>
   </PropertyGroup>
