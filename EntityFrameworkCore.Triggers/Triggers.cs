@@ -23,15 +23,15 @@ namespace EntityFramework.Triggers {
 	}
 
 	public static class Triggers<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext {
-		private static CovariantAction<IInsertingEntry   <TEntity, TDbContext>> inserting    = new CovariantAction<IInsertingEntry   <TEntity, TDbContext>>();
-		private static CovariantAction<IUpdatingEntry    <TEntity, TDbContext>> updating     = new CovariantAction<IUpdatingEntry    <TEntity, TDbContext>>();
-		private static CovariantAction<IDeletingEntry    <TEntity, TDbContext>> deleting     = new CovariantAction<IDeletingEntry    <TEntity, TDbContext>>();
-		private static CovariantAction<IInsertFailedEntry<TEntity, TDbContext>> insertFailed = new CovariantAction<IInsertFailedEntry<TEntity, TDbContext>>();
-		private static CovariantAction<IUpdateFailedEntry<TEntity, TDbContext>> updateFailed = new CovariantAction<IUpdateFailedEntry<TEntity, TDbContext>>();
-		private static CovariantAction<IDeleteFailedEntry<TEntity, TDbContext>> deleteFailed = new CovariantAction<IDeleteFailedEntry<TEntity, TDbContext>>();
-		private static CovariantAction<IInsertedEntry    <TEntity, TDbContext>> inserted     = new CovariantAction<IInsertedEntry    <TEntity, TDbContext>>();
-		private static CovariantAction<IUpdatedEntry     <TEntity, TDbContext>> updated      = new CovariantAction<IUpdatedEntry     <TEntity, TDbContext>>();
-		private static CovariantAction<IDeletedEntry     <TEntity, TDbContext>> deleted      = new CovariantAction<IDeletedEntry     <TEntity, TDbContext>>();
+		private static readonly CovariantAction<IInsertingEntry   <TEntity, TDbContext>> inserting    = new CovariantAction<IInsertingEntry   <TEntity, TDbContext>>();
+		private static readonly CovariantAction<IUpdatingEntry    <TEntity, TDbContext>> updating     = new CovariantAction<IUpdatingEntry    <TEntity, TDbContext>>();
+		private static readonly CovariantAction<IDeletingEntry    <TEntity, TDbContext>> deleting     = new CovariantAction<IDeletingEntry    <TEntity, TDbContext>>();
+		private static readonly CovariantAction<IInsertFailedEntry<TEntity, TDbContext>> insertFailed = new CovariantAction<IInsertFailedEntry<TEntity, TDbContext>>();
+		private static readonly CovariantAction<IUpdateFailedEntry<TEntity, TDbContext>> updateFailed = new CovariantAction<IUpdateFailedEntry<TEntity, TDbContext>>();
+		private static readonly CovariantAction<IDeleteFailedEntry<TEntity, TDbContext>> deleteFailed = new CovariantAction<IDeleteFailedEntry<TEntity, TDbContext>>();
+		private static readonly CovariantAction<IInsertedEntry    <TEntity, TDbContext>> inserted     = new CovariantAction<IInsertedEntry    <TEntity, TDbContext>>();
+		private static readonly CovariantAction<IUpdatedEntry     <TEntity, TDbContext>> updated      = new CovariantAction<IUpdatedEntry     <TEntity, TDbContext>>();
+		private static readonly CovariantAction<IDeletedEntry     <TEntity, TDbContext>> deleted      = new CovariantAction<IDeletedEntry     <TEntity, TDbContext>>();
 
 		public static event Action<IInsertingEntry   <TEntity, TDbContext>> Inserting    { add { inserting   .Add(value); } remove { inserting   .Remove(value); } }
 		public static event Action<IUpdatingEntry    <TEntity, TDbContext>> Updating     { add { updating    .Add(value); } remove { updating    .Remove(value); } }
@@ -43,14 +43,14 @@ namespace EntityFramework.Triggers {
 		public static event Action<IUpdatedEntry     <TEntity, TDbContext>> Updated      { add { updated     .Add(value); } remove { updated     .Remove(value); } }
 		public static event Action<IDeletedEntry     <TEntity, TDbContext>> Deleted      { add { deleted     .Add(value); } remove { deleted     .Remove(value); } }
 
-		internal static void RaiseBeforeInsert(IInsertingEntry   <TEntity, TDbContext> entry) => inserting   .Invoke(entry);
-		internal static void RaiseBeforeUpdate(IUpdatingEntry    <TEntity, TDbContext> entry) => updating    .Invoke(entry);
-		internal static void RaiseBeforeDelete(IDeletingEntry    <TEntity, TDbContext> entry) => deleting    .Invoke(entry);
+		internal static void RaiseInserting   (IInsertingEntry   <TEntity, TDbContext> entry) => inserting   .Invoke(entry);
+		internal static void RaiseUpdating    (IUpdatingEntry    <TEntity, TDbContext> entry) => updating    .Invoke(entry);
+		internal static void RaiseDeleting    (IDeletingEntry    <TEntity, TDbContext> entry) => deleting    .Invoke(entry);
 		internal static void RaiseInsertFailed(IInsertFailedEntry<TEntity, TDbContext> entry) => insertFailed.Invoke(entry);
 		internal static void RaiseUpdateFailed(IUpdateFailedEntry<TEntity, TDbContext> entry) => updateFailed.Invoke(entry);
 		internal static void RaiseDeleteFailed(IDeleteFailedEntry<TEntity, TDbContext> entry) => deleteFailed.Invoke(entry);
-		internal static void RaiseAfterInsert (IInsertedEntry    <TEntity, TDbContext> entry) => inserted    .Invoke(entry);
-		internal static void RaiseAfterUpdate (IUpdatedEntry     <TEntity, TDbContext> entry) => updated     .Invoke(entry);
-		internal static void RaiseAfterDelete (IDeletedEntry     <TEntity, TDbContext> entry) => deleted     .Invoke(entry);
+		internal static void RaiseInserted    (IInsertedEntry    <TEntity, TDbContext> entry) => inserted    .Invoke(entry);
+		internal static void RaiseUpdated     (IUpdatedEntry     <TEntity, TDbContext> entry) => updated     .Invoke(entry);
+		internal static void RaiseDeleted     (IDeletedEntry     <TEntity, TDbContext> entry) => deleted     .Invoke(entry);
 	}
 }

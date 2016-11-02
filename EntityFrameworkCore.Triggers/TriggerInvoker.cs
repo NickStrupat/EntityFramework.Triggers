@@ -54,19 +54,19 @@ namespace EntityFramework.Triggers {
 			var triggers = TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType());
 			switch (entry.State) {
 				case EntityState.Added:
-					triggers.RaiseBeforeInsert(entry.Entity, tDbContext);
+					triggers.RaiseInserting(entry.Entity, tDbContext);
 					if (entry.State == EntityState.Added)
-						return context => triggers.RaiseAfterInsert(entry.Entity, (TDbContext) context);
+						return context => triggers.RaiseInserted(entry.Entity, (TDbContext) context);
 					break;
 				case EntityState.Deleted:
-					triggers.RaiseBeforeDelete(entry.Entity, tDbContext);
+					triggers.RaiseDeleting(entry.Entity, tDbContext);
 					if (entry.State == EntityState.Deleted)
-						return context => triggers.RaiseAfterDelete(entry.Entity, (TDbContext) context);
+						return context => triggers.RaiseDeleted(entry.Entity, (TDbContext) context);
 					break;
 				case EntityState.Modified:
-					triggers.RaiseBeforeUpdate(entry.Entity, tDbContext);
+					triggers.RaiseUpdating(entry.Entity, tDbContext);
 					if (entry.State == EntityState.Modified)
-						return context => triggers.RaiseAfterUpdate(entry.Entity, (TDbContext) context);
+						return context => triggers.RaiseUpdated(entry.Entity, (TDbContext) context);
 					break;
 			}
 			return null;

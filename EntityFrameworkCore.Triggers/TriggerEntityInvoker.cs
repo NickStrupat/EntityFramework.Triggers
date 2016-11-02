@@ -17,42 +17,42 @@ namespace EntityFramework.Triggers {
 		private static readonly ITriggerEntityInvoker<TDbContext> BaseTriggerEntityInvoker = BaseEntityType == null ? null : TriggerEntityInvokers<TDbContext>.Get(BaseEntityType);
 		private static readonly ITriggerEntityInvoker<TDbContext>[] DeclaredInterfaces = typeof(TEntity).GetDeclaredInterfaces().Select(TriggerEntityInvokers<TDbContext>.Get).ToArray();
 
-		public void    RaiseBeforeInsert(Object entity, TDbContext dbc)                                => RaiseBeforeInsertInner(new InsertingEntry   ((TEntity) entity, dbc));
-		public void    RaiseBeforeUpdate(Object entity, TDbContext dbc)                                => RaiseBeforeUpdateInner(new UpdatingEntry    ((TEntity) entity, dbc));
-		public void    RaiseBeforeDelete(Object entity, TDbContext dbc)                                => RaiseBeforeDeleteInner(new DeletingEntry    ((TEntity) entity, dbc));
+		public void    RaiseInserting   (Object entity, TDbContext dbc)                                => RaiseInsertingInner   (new InsertingEntry   ((TEntity) entity, dbc));
+		public void    RaiseUpdating    (Object entity, TDbContext dbc)                                => RaiseUpdatingInner    (new UpdatingEntry    ((TEntity) entity, dbc));
+		public void    RaiseDeleting    (Object entity, TDbContext dbc)                                => RaiseDeletingInner    (new DeletingEntry    ((TEntity) entity, dbc));
 		public Boolean RaiseInsertFailed(Object entity, TDbContext dbc, Exception ex, Boolean swallow) => RaiseInsertFailedInner(new InsertFailedEntry((TEntity) entity, dbc, ex, swallow));
 		public Boolean RaiseUpdateFailed(Object entity, TDbContext dbc, Exception ex, Boolean swallow) => RaiseUpdateFailedInner(new UpdateFailedEntry((TEntity) entity, dbc, ex, swallow));
 		public Boolean RaiseDeleteFailed(Object entity, TDbContext dbc, Exception ex, Boolean swallow) => RaiseDeleteFailedInner(new DeleteFailedEntry((TEntity) entity, dbc, ex, swallow));
-		public void    RaiseAfterInsert (Object entity, TDbContext dbc)                                => RaiseAfterInsertInner (new InsertedEntry    ((TEntity) entity, dbc));
-		public void    RaiseAfterUpdate (Object entity, TDbContext dbc)                                => RaiseAfterUpdateInner (new UpdatedEntry     ((TEntity) entity, dbc));
-		public void    RaiseAfterDelete (Object entity, TDbContext dbc)                                => RaiseAfterDeleteInner (new DeletedEntry     ((TEntity) entity, dbc));
+		public void    RaiseInserted    (Object entity, TDbContext dbc)                                => RaiseInsertedInner    (new InsertedEntry    ((TEntity) entity, dbc));
+		public void    RaiseUpdated     (Object entity, TDbContext dbc)                                => RaiseUpdatedInner     (new UpdatedEntry     ((TEntity) entity, dbc));
+		public void    RaiseDeleted     (Object entity, TDbContext dbc)                                => RaiseDeletedInner     (new DeletedEntry     ((TEntity) entity, dbc));
 
-		public void RaiseBeforeInsertInner(Object e) {
-			var entry = (InsertingEntry) e;
-			BaseTriggerEntityInvoker?.RaiseBeforeInsertInner(entry);
+		public void RaiseInsertingInner(Object e) {
+			var entry = (IInsertingEntry<TEntity, TDbContext>) e;
+			BaseTriggerEntityInvoker?.RaiseInsertingInner(entry);
 			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseBeforeInsertInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseBeforeInsert(entry);
+				declaredInterface.RaiseInsertingInner(entry);
+			Triggers<TEntity, TDbContext>.RaiseInserting(entry);
 		}
 
-		public void RaiseBeforeUpdateInner(Object e) {
-			var entry = (UpdatingEntry) e;
-			BaseTriggerEntityInvoker?.RaiseBeforeUpdateInner(entry);
+		public void RaiseUpdatingInner(Object e) {
+			var entry = (IUpdatingEntry<TEntity, TDbContext>) e;
+			BaseTriggerEntityInvoker?.RaiseUpdatingInner(entry);
 			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseBeforeUpdateInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseBeforeUpdate(entry);
+				declaredInterface.RaiseUpdatingInner(entry);
+			Triggers<TEntity, TDbContext>.RaiseUpdating(entry);
 		}
 
-		public void RaiseBeforeDeleteInner(Object e) {
-			var entry = (DeletingEntry) e;
-			BaseTriggerEntityInvoker?.RaiseBeforeDeleteInner(entry);
+		public void RaiseDeletingInner(Object e) {
+			var entry = (IDeletingEntry<TEntity, TDbContext>) e;
+			BaseTriggerEntityInvoker?.RaiseDeletingInner(entry);
 			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseBeforeDeleteInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseBeforeDelete(entry);
+				declaredInterface.RaiseDeletingInner(entry);
+			Triggers<TEntity, TDbContext>.RaiseDeleting(entry);
 		}
 
 		public Boolean RaiseInsertFailedInner(Object e) {
-			var entry = (InsertFailedEntry) e;
+			var entry = (IInsertFailedEntry<TEntity, TDbContext>) e;
 			BaseTriggerEntityInvoker?.RaiseInsertFailedInner(entry);
 			foreach (var declaredInterface in DeclaredInterfaces)
 				declaredInterface.RaiseInsertFailedInner(entry);
@@ -61,7 +61,7 @@ namespace EntityFramework.Triggers {
 		}
 
 		public Boolean RaiseUpdateFailedInner(Object e) {
-			var entry = (UpdateFailedEntry) e;
+			var entry = (IUpdateFailedEntry<TEntity, TDbContext>) e;
 			BaseTriggerEntityInvoker?.RaiseUpdateFailedInner(entry);
 			foreach (var declaredInterface in DeclaredInterfaces)
 				declaredInterface.RaiseUpdateFailedInner(entry);
@@ -70,7 +70,7 @@ namespace EntityFramework.Triggers {
 		}
 
 		public Boolean RaiseDeleteFailedInner(Object e) {
-			var entry = (DeleteFailedEntry) e;
+			var entry = (IDeleteFailedEntry<TEntity, TDbContext>) e;
 			BaseTriggerEntityInvoker?.RaiseDeleteFailedInner(entry);
 			foreach (var declaredInterface in DeclaredInterfaces)
 				declaredInterface.RaiseDeleteFailedInner(entry);
@@ -78,28 +78,28 @@ namespace EntityFramework.Triggers {
 			return entry.Swallow;
 		}
 
-		public void RaiseAfterInsertInner(Object e) {
-			var entry = (InsertedEntry) e;
-			BaseTriggerEntityInvoker?.RaiseAfterInsertInner(entry);
+		public void RaiseInsertedInner(Object e) {
+			var entry = (IInsertedEntry<TEntity, TDbContext>) e;
+			BaseTriggerEntityInvoker?.RaiseInsertedInner(entry);
 			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseAfterInsertInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseAfterInsert(entry);
+				declaredInterface.RaiseInsertedInner(entry);
+			Triggers<TEntity, TDbContext>.RaiseInserted(entry);
 		}
 
-		public void RaiseAfterUpdateInner(Object e) {
-			var entry = (UpdatedEntry) e;
-			BaseTriggerEntityInvoker?.RaiseAfterUpdateInner(entry);
+		public void RaiseUpdatedInner(Object e) {
+			var entry = (IUpdatedEntry<TEntity, TDbContext>) e;
+			BaseTriggerEntityInvoker?.RaiseUpdatedInner(entry);
 			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseAfterUpdateInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseAfterUpdate(entry);
+				declaredInterface.RaiseUpdatedInner(entry);
+			Triggers<TEntity, TDbContext>.RaiseUpdated(entry);
 		}
 
-		public void RaiseAfterDeleteInner(Object e) {
-			var entry = (DeletedEntry) e;
-			BaseTriggerEntityInvoker?.RaiseAfterDeleteInner(entry);
+		public void RaiseDeletedInner(Object e) {
+			var entry = (IDeletedEntry<TEntity, TDbContext>) e;
+			BaseTriggerEntityInvoker?.RaiseDeletedInner(entry);
 			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseAfterDeleteInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseAfterDelete(entry);
+				declaredInterface.RaiseDeletedInner(entry);
+			Triggers<TEntity, TDbContext>.RaiseDeleted(entry);
 		}
 
 		#region Entry implementations
