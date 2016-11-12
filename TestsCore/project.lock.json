@@ -3,6 +3,18 @@
   "version": 2,
   "targets": {
     ".NETFramework,Version=v4.5.1": {
+      "CoContra/0.2.0-prerelease": {
+        "type": "package",
+        "dependencies": {
+          "System.Collections.Immutable": "1.2.0"
+        },
+        "compile": {
+          "lib/net45/CoContra.net45.dll": {}
+        },
+        "runtime": {
+          "lib/net45/CoContra.net45.dll": {}
+        }
+      },
       "EntityFrameworkCore.TypedOriginalValues/1.0.1": {
         "type": "package",
         "dependencies": {
@@ -744,10 +756,11 @@
       "xunit.runner.visualstudio/2.2.0-beta2-build1149": {
         "type": "package"
       },
-      "EntityFrameworkCore.Triggers/1.0.0": {
+      "EntityFrameworkCore.Triggers/1.0.2": {
         "type": "project",
         "framework": ".NETFramework,Version=v4.5.1",
         "dependencies": {
+          "CoContra": "0.2.0-prerelease",
           "EntityFrameworkCore.TypedOriginalValues": "1.0.1",
           "Microsoft.EntityFrameworkCore": "1.0.1",
           "System.Reflection": "4.1.0",
@@ -764,6 +777,20 @@
       }
     },
     ".NETStandard,Version=v1.3": {
+      "CoContra/0.2.0-prerelease": {
+        "type": "package",
+        "dependencies": {
+          "System.Collections.Immutable": "1.2.0",
+          "System.Reflection.Extensions": "4.0.1",
+          "System.Runtime.InteropServices": "4.1.0"
+        },
+        "compile": {
+          "lib/netstandard1.0/CoContra.netstandard1.0.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.0/CoContra.netstandard1.0.dll": {}
+        }
+      },
       "EntityFrameworkCore.TypedOriginalValues/1.0.1": {
         "type": "package",
         "dependencies": {
@@ -2377,10 +2404,11 @@
       "xunit.runner.visualstudio/2.2.0-beta2-build1149": {
         "type": "package"
       },
-      "EntityFrameworkCore.Triggers/1.0.0": {
+      "EntityFrameworkCore.Triggers/1.0.2": {
         "type": "project",
         "framework": ".NETStandard,Version=v1.3",
         "dependencies": {
+          "CoContra": "0.2.0-prerelease",
           "EntityFrameworkCore.TypedOriginalValues": "1.0.1",
           "Microsoft.EntityFrameworkCore": "1.0.1",
           "System.Reflection": "4.1.0",
@@ -2398,6 +2426,18 @@
     }
   },
   "libraries": {
+    "CoContra/0.2.0-prerelease": {
+      "sha512": "vzs2yjSkE+64QggxckMJBUEX3ArLueaE8N0jSdbHA4OMZCtORz71cmQnz6jHZwjA/S0yo6ReY+60z63T6Nyc5Q==",
+      "type": "package",
+      "path": "CoContra/0.2.0-prerelease",
+      "files": [
+        "CoContra.0.2.0-prerelease.nupkg.sha512",
+        "CoContra.nuspec",
+        "lib/net40/CoContra.net40.dll",
+        "lib/net45/CoContra.net45.dll",
+        "lib/netstandard1.0/CoContra.netstandard1.0.dll"
+      ]
+    },
     "EntityFrameworkCore.TypedOriginalValues/1.0.1": {
       "sha512": "Stb9CTZYz6N0sz2UIsvZKVxwUAb6fBFURysXHsWN37VVQIG3aMSCCwQS2mZyj0zVXqCgL714xoL9Y9q190+w6A==",
       "type": "package",
@@ -6338,7 +6378,7 @@
         "xunit.runner.visualstudio.nuspec"
       ]
     },
-    "EntityFrameworkCore.Triggers/1.0.0": {
+    "EntityFrameworkCore.Triggers/1.0.2": {
       "type": "project",
       "path": "../EntityFrameworkCore.Triggers/project.json",
       "msbuildProject": "../EntityFrameworkCore.Triggers/EntityFrameworkCore.Triggers.xproj"
