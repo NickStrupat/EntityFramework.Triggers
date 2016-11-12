@@ -36,8 +36,8 @@
     </NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CoContra.NET45, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\CoContra.0.1.0-prerelease\lib\net45\CoContra.NET45.dll</HintPath>
+    <Reference Include="CoContra.net45, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CoContra.0.2.0-prerelease\lib\net45\CoContra.net45.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
