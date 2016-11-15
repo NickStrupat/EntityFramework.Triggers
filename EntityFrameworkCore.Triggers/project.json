@@ -30,7 +30,7 @@
 		"System.Reflection.Emit.Lightweight": "4.0.1",
 		"Microsoft.EntityFrameworkCore": "1.0.1",
 		"EntityFrameworkCore.TypedOriginalValues": "1.0.1",
-        "CoContra": "0.2.0-prerelease"
+					"CoContra": "0.2.3-prerelease"
 	},
 
 	"frameworks": {

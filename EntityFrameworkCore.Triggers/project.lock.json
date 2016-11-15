@@ -3,7 +3,7 @@
   "version": 2,
   "targets": {
     ".NETFramework,Version=v4.5.1": {
-      "CoContra/0.2.0-prerelease": {
+      "CoContra/0.2.3-prerelease": {
         "type": "package",
         "dependencies": {
           "System.Collections.Immutable": "1.2.0"
@@ -444,7 +444,7 @@
       }
     },
     ".NETStandard,Version=v1.3": {
-      "CoContra/0.2.0-prerelease": {
+      "CoContra/0.2.3-prerelease": {
         "type": "package",
         "dependencies": {
           "System.Collections.Immutable": "1.2.0",
@@ -1059,12 +1059,12 @@
     }
   },
   "libraries": {
-    "CoContra/0.2.0-prerelease": {
-      "sha512": "vzs2yjSkE+64QggxckMJBUEX3ArLueaE8N0jSdbHA4OMZCtORz71cmQnz6jHZwjA/S0yo6ReY+60z63T6Nyc5Q==",
+    "CoContra/0.2.3-prerelease": {
+      "sha512": "8hy9NysUx03/Oi7t+wm4LVwi3uOxVxFHV69+qhfcq73v5IPO+pdTeMFkbgndFtNm/zDBBQqk5nopF0+KdSCY6w==",
       "type": "package",
-      "path": "CoContra/0.2.0-prerelease",
+      "path": "CoContra/0.2.3-prerelease",
       "files": [
-        "CoContra.0.2.0-prerelease.nupkg.sha512",
+        "CoContra.0.2.3-prerelease.nupkg.sha512",
         "CoContra.nuspec",
         "lib/net40/CoContra.net40.dll",
         "lib/net45/CoContra.net45.dll",
@@ -2985,7 +2985,7 @@
   },
   "projectFileDependencyGroups": {
     "": [
-      "CoContra >= 0.2.0-prerelease",
+      "CoContra >= 0.2.3-prerelease",
       "EntityFrameworkCore.TypedOriginalValues >= 1.0.1",
       "Microsoft.EntityFrameworkCore >= 1.0.1",
       "System.Reflection >= 4.1.0",
