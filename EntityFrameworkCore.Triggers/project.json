@@ -1,5 +1,5 @@
 {
-	"version": "1.0.2-*",
+	"version": "1.0.3-*",
 	"title": "EntityFrameworkCore.Triggers",
 	"description": "Supports events for entity inserting, inserted, updating, updated, deleting, and deleted. Also events on insert failure, update failure, and delete failure.",
 	"authors": [ "Nick Strupat" ],
@@ -24,19 +24,23 @@
 	},
 
 	"dependencies": {
-		"System.Runtime": "4.1.0",
-		"System.Reflection": "4.1.0",
-		"System.Reflection.Emit": "4.0.1",
-		"System.Reflection.Emit.Lightweight": "4.0.1",
-		"Microsoft.EntityFrameworkCore": "1.0.1",
-		"EntityFrameworkCore.TypedOriginalValues": "1.0.1",
-					"CoContra": "0.2.3-prerelease"
+		"Microsoft.EntityFrameworkCore": "1.1.0",
+		"EntityFrameworkCore.TypedOriginalValues": "1.0.2",
+		"CoContra": "1.0.2"
 	},
 
 	"frameworks": {
-		"net451": { "buildOptions": { "outputName": "EntityFrameworkCore.Triggers.net451" } },
+		"net451": {
+			"buildOptions": { "outputName": "EntityFrameworkCore.Triggers.net451" }
+		},
 		"netstandard1.3": {
 			"buildOptions": { "outputName": "EntityFrameworkCore.Triggers.netstandard1.3" },
+			"dependencies": {
+				"NETStandard.Library": "1.6.1",
+				"System.Reflection.Emit": "4.3.0",
+				"System.Reflection.Emit.Lightweight": "4.3.0"
+
+			},
 			"imports": "dnxcore50"
 		}
 	}
