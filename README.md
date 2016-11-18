@@ -49,31 +49,34 @@ If you can't easily change what your DbContext inherits from (ASP.NET Identity u
 
 		#region If you're targeting EF 6
 		public override Int32 SaveChanges() {
-			return this.SaveChangesWithTriggers();
+			return this.SaveChangesWithTriggers(base.SaveChanges);
 		}
 		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
-			return this.SaveChangesWithTriggersAsync(cancellationToken);
+			return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken);
 		}
 		#endregion
 
 		#region If you're targeting EF Core
 		public override Int32 SaveChanges() {
-			return this.SaveChangesWithTriggers(acceptAllChangesOnSuccess: true);
+			return this.SaveChangesWithTriggers(base.SaveChanges, acceptAllChangesOnSuccess: true);
 		}
 		public override Int32 SaveChanges(Boolean acceptAllChangesOnSuccess) {
-			return this.SaveChangesWithTriggers(acceptAllChangesOnSuccess);
+			return this.SaveChangesWithTriggers(base.SaveChanges, acceptAllChangesOnSuccess);
 		}
 		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-			return this.SaveChangesWithTriggersAsync(acceptAllChangesOnSuccess: true, cancellationToken: cancellationToken);
+			return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess: true, cancellationToken: cancellationToken);
 		}
 		public override Task<Int32> SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
-			return this.SaveChangesWithTriggersAsync(acceptAllChangesOnSuccess, cancellationToken);
+			return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess, cancellationToken);
 		}
 		#endregion
 	}
-```
 
-**`SaveChangesWithTriggers()` and `SaveChangesWithTriggersAsync()` will call `base.SaveChanges` internally.**
+	#region If you're calling `SaveChangesWithTriggers...` directly (instead of an overridden `SaveChanges...`)
+	dbContext.SaveChangesWithTriggers(dbContext.SaveChanges);
+	dbContext.SaveChangesWithTriggersAsync(dbContext.SaveChangesAsync);
+	#endregion
+```
 
 ## Longer example (targeting EF6 for now)
 
