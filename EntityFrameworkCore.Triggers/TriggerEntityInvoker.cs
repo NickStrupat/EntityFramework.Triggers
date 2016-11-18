@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using CoContra;
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
 using EntityFrameworkCore.TypedOriginalValues;
@@ -118,11 +117,17 @@ namespace EntityFramework.Triggers {
 		}
 
 		private abstract class ChangeEntry : Entry, IChangeEntry<TEntity, TDbContext> {
-			protected ChangeEntry(TEntity entity, TDbContext context) : base(entity, context) {
+			protected ChangeEntry(TEntity entity, TDbContext context) : base(entity, context) {}
+		}
+
+		private abstract class BeforeChangeEntry : ChangeEntry, IBeforeChangeEntry<TEntity, TDbContext> {
+			protected BeforeChangeEntry(TEntity entity, TDbContext context) : base(entity, context) {
 				original = new Lazy<TEntity>(() => Context.GetOriginal(Entity));
 			}
 			private readonly Lazy<TEntity> original;
 			public TEntity Original => original.Value;
+			public abstract void Cancel();
+			public abstract Boolean Cancelled { get; set; }
 		}
 
 		private abstract class AfterChangeEntry : ChangeEntry, IAfterChangeEntry<TEntity, TDbContext> {
@@ -157,19 +162,19 @@ namespace EntityFramework.Triggers {
 			}
 		}
 
-		private class UpdatingEntry : ChangeEntry, IUpdatingEntry<TEntity, TDbContext> {
+		private class UpdatingEntry : BeforeChangeEntry, IUpdatingEntry<TEntity, TDbContext> {
 			public UpdatingEntry(TEntity entity, TDbContext context) : base(entity, context) { }
-			public void Cancel() => Cancelled = true;
-			public Boolean Cancelled {
+			public override void Cancel() => Cancelled = true;
+			public override Boolean Cancelled {
 				get { return Context.Entry(Entity).State == EntityState.Unchanged; }
 				set { Context.Entry(Entity).State = value ? EntityState.Unchanged : EntityState.Modified; }
 			}
 		}
 
-		private class DeletingEntry : ChangeEntry, IDeletingEntry<TEntity, TDbContext> {
+		private class DeletingEntry : BeforeChangeEntry, IDeletingEntry<TEntity, TDbContext> {
 			public DeletingEntry(TEntity entity, TDbContext context) : base(entity, context) { }
-			public void Cancel() => Cancelled = true;
-			public Boolean Cancelled {
+			public override void Cancel() => Cancelled = true;
+			public override Boolean Cancelled {
 				get { return Context.Entry(Entity).State == EntityState.Modified; }
 				set { Context.Entry(Entity).State = value ? EntityState.Modified : EntityState.Deleted; }
 			}

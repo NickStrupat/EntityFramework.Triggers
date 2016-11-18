@@ -27,12 +27,12 @@ namespace EntityFramework.Triggers {
 
 	public interface IAfterEntry<out TEntity> : IEntry<TEntity> where TEntity : class { }
 
-	public interface IChangeEntry<out TEntity> : IEntry<TEntity> where TEntity : class {
+	public interface IChangeEntry<out TEntity> : IEntry<TEntity> where TEntity : class {}
+
+	public interface IBeforeChangeEntry<out TEntity> : IChangeEntry<TEntity>, IBeforeEntry<TEntity> where TEntity : class {
 		/// <summary>A typed wrapper around DbEntityEntry.OriginalValues</summary>
 		TEntity Original { get; }
 	}
-
-	public interface IBeforeChangeEntry<out TEntity> : IChangeEntry<TEntity>, IBeforeEntry<TEntity> where TEntity : class { }
 	public interface IChangeFailedEntry<out TEntity> : IChangeEntry<TEntity>, IFailedEntry<TEntity> where TEntity : class { }
 	public interface IAfterChangeEntry <out TEntity> : IChangeEntry<TEntity>, IAfterEntry <TEntity> where TEntity : class { }
 
