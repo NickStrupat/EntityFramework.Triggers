@@ -15,10 +15,10 @@
           "lib/net45/CoContra.net45.dll": {}
         }
       },
-      "EntityFrameworkCore.TypedOriginalValues/1.0.2": {
+      "EntityFrameworkCore.TypedOriginalValues/1.0.3": {
         "type": "package",
         "dependencies": {
-          "Microsoft.EntityFrameworkCore": "1.0.0"
+          "Microsoft.EntityFrameworkCore": "1.1.0"
         },
         "compile": {
           "lib/net451/EntityFrameworkCore.TypedOriginalValues.dll": {}
@@ -639,13 +639,13 @@
           "lib/netstandard1.0/CoContra.netstandard1.0.dll": {}
         }
       },
-      "EntityFrameworkCore.TypedOriginalValues/1.0.2": {
+      "EntityFrameworkCore.TypedOriginalValues/1.0.3": {
         "type": "package",
         "dependencies": {
-          "Microsoft.EntityFrameworkCore": "1.0.0",
+          "Microsoft.EntityFrameworkCore": "1.1.0",
           "NETStandard.Library": "1.6.1",
-          "System.Reflection.Emit": "4.0.1",
-          "System.Reflection.TypeExtensions": "4.1.0"
+          "System.Reflection.Emit": "4.3.0",
+          "System.Reflection.TypeExtensions": "4.3.0"
         },
         "compile": {
           "lib/netstandard1.3/EntityFrameworkCore.TypedOriginalValues.dll": {}
@@ -1856,12 +1856,12 @@
         "lib/netstandard1.0/CoContra.netstandard1.0.dll"
       ]
     },
-    "EntityFrameworkCore.TypedOriginalValues/1.0.2": {
-      "sha512": "GjAga6mQ/iBcFfNhCFOovSgcNvw7pCH4fcmXoJGkQVX8XS1sZtksSwq5sb3XxDDHXpA3Kwds/5ep/5OkP2QLtA==",
+    "EntityFrameworkCore.TypedOriginalValues/1.0.3": {
+      "sha512": "NnBG9dfkhfg1m0Qz+77EA7KM4B4+7xoJvhO6KbuPlPHiAEn/7TankFbTtqluX14R5xOCMlOF7GGg+zNFNylATw==",
       "type": "package",
-      "path": "EntityFrameworkCore.TypedOriginalValues/1.0.2",
+      "path": "EntityFrameworkCore.TypedOriginalValues/1.0.3",
       "files": [
-        "EntityFrameworkCore.TypedOriginalValues.1.0.2.nupkg.sha512",
+        "EntityFrameworkCore.TypedOriginalValues.1.0.3.nupkg.sha512",
         "EntityFrameworkCore.TypedOriginalValues.nuspec",
         "lib/net451/EntityFrameworkCore.TypedOriginalValues.dll",
         "lib/netstandard1.3/EntityFrameworkCore.TypedOriginalValues.dll"
@@ -5260,7 +5260,7 @@
   "projectFileDependencyGroups": {
     "": [
       "CoContra >= 1.0.2",
-      "EntityFrameworkCore.TypedOriginalValues >= 1.0.2",
+      "EntityFrameworkCore.TypedOriginalValues >= 1.0.3",
       "Microsoft.EntityFrameworkCore >= 1.1.0"
     ],
     ".NETFramework,Version=v4.5.1": [],
