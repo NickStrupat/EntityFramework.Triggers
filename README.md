@@ -122,16 +122,9 @@ namespace Example {
 			public virtual String Message { get; set; }
 		}
 
-		public class Context : DbContext {
+		public class Context : DbContextWithTriggers {
 			public virtual DbSet<Person> People { get; set; }
 			public virtual DbSet<LogEntry> Log { get; set; }
-
-			public override Int32 SaveChanges() {
-				return this.SaveChangesWithTriggers();
-			}
-			public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
-				return this.SaveChangesWithTriggersAsync(cancellationToken);
-			}
 		}
 		internal sealed class Configuration : DbMigrationsConfiguration<Context> {
 			public Configuration() {
