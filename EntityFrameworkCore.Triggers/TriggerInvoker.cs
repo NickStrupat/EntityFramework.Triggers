@@ -33,7 +33,8 @@ namespace EntityFramework.Triggers {
 			while (entries.Any()) {
 				foreach (var entry in entries) {
 					var cancel = false;
-					RaiseTheBeforeEventInner(dbContext, entry, triggeredEntries, afterEvents, ref cancel);
+					RaiseTheBeforeEventInner(dbContext, entry, afterEvents, ref cancel);
+					triggeredEntries.Add(entry);
 					if (cancel)
 						entry.State = GetCanceledEntityState(entry.State);
 				}
@@ -58,10 +59,9 @@ namespace EntityFramework.Triggers {
 		}
 
 
-		public void RaiseTheBeforeEventInner(DbContext dbContext, EntityEntry entry, List<EntityEntry> triggeredEntries, List<Action<DbContext>> afterEvents, ref Boolean cancel) {
-			BaseTriggerInvoker?.RaiseTheBeforeEventInner(dbContext, entry, triggeredEntries, afterEvents, ref cancel);
+		public void RaiseTheBeforeEventInner(DbContext dbContext, EntityEntry entry, List<Action<DbContext>> afterEvents, ref Boolean cancel) {
+			BaseTriggerInvoker?.RaiseTheBeforeEventInner(dbContext, entry, afterEvents, ref cancel);
 			var after = RaiseTheBeforeEvent(entry, dbContext, ref cancel);
-			triggeredEntries.Add(entry);
 			if (after != null && !cancel)
 				afterEvents.Add(after);
 		}

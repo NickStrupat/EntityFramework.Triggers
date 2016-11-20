@@ -14,7 +14,7 @@ namespace EntityFramework.Triggers {
 #endif
 	internal interface ITriggerInvoker {
 		List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext);
-		void RaiseTheBeforeEventInner(DbContext dbContext, EntityEntry entry, List<EntityEntry> triggeredEntries, List<Action<DbContext>> afterEvents, ref Boolean cancel);
+		void RaiseTheBeforeEventInner(DbContext dbContext, EntityEntry entry, List<Action<DbContext>> afterEvents, ref Boolean cancel);
 
 		void RaiseTheAfterEvents(DbContext dbContext, IEnumerable<Action<DbContext>> afterEvents);
 
