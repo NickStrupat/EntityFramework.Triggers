@@ -3,27 +3,27 @@ EntityFramework.Triggers
 
 Add triggers to your entities with insert, update, and delete events. There are three events for each: before, after, and upon failure.
 
-This repo contains the code for both the `EntityFramework` (.NET 4.0 and .NET 4.5) and `EntityFrameworkCore` (.NET 4.5.1 and .NET Standard 1.3) versions.
+| EF version | .NET support                          | NuGet package                                                                                                                                              |
+|:-----------|:--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.3      | == 4.0 &#124;&#124; >= 4.5            | [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)         |
+| Core 1.1   | >= 4.5.1 &#124;&#124; >= Standard 1.3 | [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/) |
 
-| EF version | .NET support                            | NuGet package                                                                                                                                              |
-|:-----------|:----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.3      | == 4.0  &#124;&#124;  >= 4.5            | [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)         |
-| Core 1.1   | >= 4.5.1  &#124;&#124;  >= Standard 1.3 | [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/) |
+This repo contains the code for both the `EntityFramework` and `EntityFrameworkCore` projects.
 
 <strong>async/await supported</strong>
 
-## Usage
+## Basic usage
 
-To use triggers on your entities, simply have your DbContext inherit from DbContextWithTriggers. If your DbContext inheritance chain is unchangeable, see below the example code.
+To use triggers on your entities, simply have your DbContext inherit from `DbContextWithTriggers`. If you can't change your DbContext inheritance chain, you simply need to override your `SaveChanges...` as demonstrated (below)[#manual-overriding-to-enable-triggers]
 
 ```csharp
 public abstract class Trackable {
-	public DateTime Inserted { get; private set; }
+	public DateTime Inserted { get; private set; } // note that if using EF Core, these setters must be `protected` (likely a bug in EF Core)
 	public DateTime Updated { get; private set; }
 
 	static Trackable() {
-		Triggers<Trackable>.Inserting += entry => entry.Entity.Inserted = entry.Entity.Updated = DateTime.Now;
-		Triggers<Trackable>.Updating += entry => entry.Entity.Updated = DateTime.Now;
+		Triggers<Trackable>.Inserting += entry => entry.Entity.Inserted = entry.Entity.Updated = DateTime.UtcNow;
+		Triggers<Trackable>.Updating += entry => entry.Entity.Updated = DateTime.UtcNow;
 	}
 }
 
@@ -39,9 +39,9 @@ public class Context : DbContextWithTriggers {
 
 As you may have guessed, what we're doing above is enabling automatic insert and update stamps for any entity that inherits `Trackable`. Events are raised from the base class/interfaces, up to the events specified on the entity class being used. It's just as easy to set up soft deletes (the Deleting, Updating, and Inserting events are cancellable from within a handler, logging, auditing, and more!).
 
-Check out https://github.com/NickStrupat/EntityFramework.Rx for my "Reactive Extension" wrappers for even more POWER!
+### Manual overriding to enable triggers
 
-If you can't easily change what your DbContext inherits from (ASP.NET Identity users, for example) you can override `SaveChanges()` in your DbContext class to call the `SaveChangesWithTriggers()` extension method. For async/await functionality, override `SaveChangesAsync(CancellationToken)` to call `SaveChangesWithTriggersAsync(cancellationToken)`. Alternatively, you can call `SaveChangesWithTriggers()` directly instead of `SaveChanges()`, although that means breaking away from the usual interface provided by `DbContext`.
+If you can't easily change what your `DbContext` class inherits from (ASP.NET Identity users, for example), you can override your `SaveChanges...` methods to call the `SaveChangesWithTriggers...` extension methods. Alternatively, you can call `SaveChangesWithTriggers...` directly instead of `SaveChanges...` if, for example, you want to control which changes cause triggers to be fired.
 
 ```csharp
 class YourContext : DbContext {
@@ -169,3 +169,11 @@ namespace Example {
 	}
 }
 ```
+
+## See also
+
+- [https://github.com/NickStrupat/EntityFramework.Rx]() for **hot** observables of your EF operations
+- [https://github.com/NickStrupat/EntityFramework.PrimaryKey]() to easily get the primary key of any entity (including composite keys)
+- [https://github.com/NickStrupat/EntityFramework.TypedOriginalValues]() to get a proxy object of the orginal values of your entity (typed access to Property("...").OriginalValue)
+- [https://github.com/NickStrupat/EntityFramework.SoftDeletable]() for base classes which encapsulate the soft-delete pattern (including keeping a history with user id, etc.)
+- [https://github.com/NickStrupat/EntityFramework.VersionedProperties]() for a library of classes which auto-magically keep an audit history of the changes to the specified property
