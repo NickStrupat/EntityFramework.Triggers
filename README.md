@@ -14,7 +14,7 @@ This repo contains the code for both the `EntityFramework` and `EntityFrameworkC
 
 ## Basic usage
 
-To use triggers on your entities, simply have your DbContext inherit from `DbContextWithTriggers`. If you can't change your DbContext inheritance chain, you simply need to override your `SaveChanges...` as demonstrated (below)[#manual-overriding-to-enable-triggers]
+To use triggers on your entities, simply have your DbContext inherit from `DbContextWithTriggers`. If you can't change your DbContext inheritance chain, you simply need to override your `SaveChanges...` as demonstrated [below](#manual-overriding-to-enable-triggers)
 
 ```csharp
 public abstract class Trackable {
@@ -39,13 +39,13 @@ public class Context : DbContextWithTriggers {
 
 As you may have guessed, what we're doing above is enabling automatic insert and update stamps for any entity that inherits `Trackable`. Events are raised from the base class/interfaces, up to the events specified on the entity class being used. It's just as easy to set up soft deletes (the Deleting, Updating, and Inserting events are cancellable from within a handler, logging, auditing, and more!).
 
-### Manual overriding to enable triggers
+## Manual overriding to enable triggers
 
 If you can't easily change what your `DbContext` class inherits from (ASP.NET Identity users, for example), you can override your `SaveChanges...` methods to call the `SaveChangesWithTriggers...` extension methods. Alternatively, you can call `SaveChangesWithTriggers...` directly instead of `SaveChanges...` if, for example, you want to control which changes cause triggers to be fired.
 
 ```csharp
 class YourContext : DbContext {
-	// Your usual properties
+	// Your usual DbSet<> properties
 
 	#region If you're targeting EF 6
 	public override Int32 SaveChanges() {
