@@ -18,7 +18,7 @@ namespace EntityFramework.Triggers {
 	}
 
 	public interface IBeforeEntry<out TEntity> : IEntry<TEntity> where TEntity : class {
-		/// <summary>Get or set a value that marks the cancellation of the change</summary>
+		/// <summary>Get or set a value that marks the change to be canceled if true</summary>
 		Boolean Cancel { get; set; }
 	}
 
