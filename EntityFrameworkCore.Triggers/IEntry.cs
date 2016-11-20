@@ -18,7 +18,7 @@ namespace EntityFramework.Triggers {
 	}
 
 	public interface IBeforeEntry<out TEntity> : IEntry<TEntity> where TEntity : class {
-		/// <summary>Get or set a value that marks the change to be canceled if true</summary>
+		/// <summary>Get or set a value that marks the change to be cancelled if true</summary>
 		Boolean Cancel { get; set; }
 	}
 
@@ -42,9 +42,18 @@ namespace EntityFramework.Triggers {
 	public interface IAfterChangeEntry <out TEntity> : IChangeEntry<TEntity>, IAfterEntry <TEntity> where TEntity : class { }
 
 	#region Specific to events
-	public interface IInsertingEntry<out TEntity> : IBeforeEntry<TEntity> where TEntity : class { }
-	public interface IUpdatingEntry <out TEntity> : IBeforeChangeEntry<TEntity> where TEntity : class { }
-	public interface IDeletingEntry <out TEntity> : IBeforeChangeEntry<TEntity> where TEntity : class { }
+	public interface IInsertingEntry<out TEntity> : IBeforeEntry<TEntity> where TEntity : class {
+		/// <summary>Get or set a value that marks the insertion to be cancelled if true (the entity will not be persisted)</summary>
+		new Boolean Cancel { get; set; }
+	}
+	public interface IUpdatingEntry <out TEntity> : IBeforeChangeEntry<TEntity> where TEntity : class {
+		/// <summary>Get or set a value that marks the update to be cancelled if true (changes to the entity proprties will not be persisted)</summary>
+		new Boolean Cancel { get; set; }
+	}
+	public interface IDeletingEntry <out TEntity> : IBeforeChangeEntry<TEntity> where TEntity : class {
+		/// <summary>Get or set a value that marks the deletion to be cancelled if true (the entity will not be deleted, but changes to the entity properties will be persisted)</summary>
+		new Boolean Cancel { get; set; }
+	}
 
 	public interface IInsertFailedEntry<out TEntity> : IFailedEntry<TEntity> where TEntity : class { }
 	public interface IUpdateFailedEntry<out TEntity> : IChangeFailedEntry<TEntity> where TEntity : class { }
@@ -72,7 +81,7 @@ namespace EntityFramework.Triggers {
 	public interface IAfterChangeEntry <out TEntity, out TDbContext> : IAfterChangeEntry <TEntity>, IChangeEntry<TEntity, TDbContext>, IAfterEntry <TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
 	
 	#region Specific to events
-	public interface IInsertingEntry<out TEntity, out TDbContext> : IInsertingEntry<TEntity>, IBeforeEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
+	public interface IInsertingEntry<out TEntity, out TDbContext> : IInsertingEntry<TEntity>, IBeforeEntry      <TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
 	public interface IUpdatingEntry <out TEntity, out TDbContext> : IUpdatingEntry <TEntity>, IBeforeChangeEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
 	public interface IDeletingEntry <out TEntity, out TDbContext> : IDeletingEntry <TEntity>, IBeforeChangeEntry<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext { }
 
