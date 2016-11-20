@@ -18,10 +18,10 @@ namespace EntityFramework.Triggers {
 
 		void RaiseTheAfterEvents(DbContext dbContext, IEnumerable<Action<DbContext>> afterEvents);
 
-		void RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException, ref Boolean swallow);
+		Boolean RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException, ref Boolean swallow);
 #if !EF_CORE
-		void RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException, ref Boolean swallow);
+		Boolean RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException, ref Boolean swallow);
 #endif
-		void RaiseTheFailedEvents(DbContext dbContext, Exception exception, ref Boolean swallow);
+		Boolean RaiseTheFailedEvents(DbContext dbContext, Exception exception, ref Boolean swallow);
 	}
 }

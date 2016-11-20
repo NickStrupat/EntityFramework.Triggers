@@ -88,7 +88,7 @@ namespace EntityFramework.Triggers {
 				after(dbContext);
 		}
 
-		public void RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException, ref Boolean swallow) {
+		public Boolean RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException, ref Boolean swallow) {
 			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, dbUpdateException, ref swallow);
 			var context = (TDbContext) dbContext;
 
@@ -101,30 +101,32 @@ namespace EntityFramework.Triggers {
 				entries = dbContext.ChangeTracker.Entries().ToArray();
 				if (entries.Count() != 1) {
 					swallow = false;
-					return;
+					return swallow;
 				}
 			}
 			RaiseTheFailedEvents(context, entries, dbUpdateException, ref swallow);
-
+			return swallow;
 		}
 
 #if !EF_CORE
-		public void RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException, ref Boolean swallow) {
+		public Boolean RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException, ref Boolean swallow) {
 			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, dbEntityValidationException, ref swallow);
 			var context = (TDbContext) dbContext;
 			RaiseTheFailedEvents(context, dbEntityValidationException.EntityValidationErrors.Select(x => x.Entry), dbEntityValidationException, ref swallow);
+			return swallow;
 		}
 #endif
 
-		public void RaiseTheFailedEvents(DbContext dbContext, Exception exception, ref Boolean swallow) {
+		public Boolean RaiseTheFailedEvents(DbContext dbContext, Exception exception, ref Boolean swallow) {
 			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, exception, ref swallow);
 			var context = (TDbContext) dbContext;
 			var entries = dbContext.ChangeTracker.Entries().ToArray();
 			if (entries.Length != 1) {
 				swallow = false;
-				return;
+				return swallow;
 			}
 			RaiseTheFailedEvents(context, entries, exception, ref swallow);
+			return swallow;
 		}
 
 		private static void RaiseTheFailedEvents(TDbContext dbContext, IEnumerable<EntityEntry> entries, Exception exception, ref Boolean swallow) {

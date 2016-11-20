@@ -37,6 +37,7 @@ namespace EntityFramework.Triggers {
 				throw new ArgumentNullException(nameof(dbContext));
 			var dbContextType = dbContext.GetType();
 			var invoker = TriggerInvokers.Get(dbContextType);
+			var swallow = false;
 			try {
 				var afterActions = invoker.RaiseTheBeforeEvents(dbContext);
 #if EF_CORE
@@ -47,25 +48,13 @@ namespace EntityFramework.Triggers {
 				invoker.RaiseTheAfterEvents(dbContext, afterActions);
 				return result;
 			}
-			catch (DbUpdateException ex) {
-				var swallow = false;
-				invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow);
-				if (!swallow)
-					throw;
+			catch (DbUpdateException ex) when (invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
 			}
 #if !EF_CORE
-			catch (DbEntityValidationException ex) {
-				var swallow = false;
-				invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow);
-				if (!swallow)
-					throw;
+			catch (DbEntityValidationException ex) when (invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
 			}
 #endif
-			catch (Exception ex) {
-				var swallow = false;
-				invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow);
-				if (!swallow)
-					throw;
+			catch (Exception ex) when(invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
 			}
 			return 0;
 		}
@@ -93,6 +82,7 @@ namespace EntityFramework.Triggers {
 			if (dbContext == null)
 				throw new ArgumentNullException(nameof(dbContext));
 			var invoker = TriggerInvokers.Get(dbContext.GetType());
+			var swallow = false;
 			try {
 				var afterActions = invoker.RaiseTheBeforeEvents(dbContext);
 #if EF_CORE
@@ -103,25 +93,13 @@ namespace EntityFramework.Triggers {
 				invoker.RaiseTheAfterEvents(dbContext, afterActions);
 				return result;
 			}
-			catch (DbUpdateException ex) {
-				var swallow = false;
-				invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow);
-				if (!swallow)
-					throw;
+			catch (DbUpdateException ex) when(invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
 			}
 #if !EF_CORE
-			catch (DbEntityValidationException ex) {
-				var swallow = false;
-				invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow);
-				if (!swallow)
-					throw;
+			catch (DbEntityValidationException ex) when(invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
 			}
 #endif
-			catch (Exception ex) {
-				var swallow = false;
-				invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow);
-				if (!swallow)
-					throw;
+			catch (Exception ex) when (invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
 			}
 			return 0;
 		}
