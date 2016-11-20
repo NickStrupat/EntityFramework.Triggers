@@ -10,16 +10,23 @@ namespace EntityFramework.Triggers {
 	#region Without specific DbContext type
 	/// <summary>Contains the context and the instance of the changed entity</summary>
 	public interface IEntry<out TEntity> where TEntity : class {
+		/// <summary>The entity</summary>
 		TEntity Entity { get; }
+
+		/// <summary>The DbContext instance</summary>
 		DbContext Context { get; }
 	}
 
 	public interface IBeforeEntry<out TEntity> : IEntry<TEntity> where TEntity : class {
+		/// <summary>Get or set a value that marks the cancellation of the change</summary>
 		Boolean Cancel { get; set; }
 	}
 
 	public interface IFailedEntry<out TEntity> : IEntry<TEntity> where TEntity : class {
+		/// <summary>The exception raised by the attempted change</summary>
 		Exception Exception { get; }
+
+		/// <summary>Get or set a value that marks the exception to be caught and swallowed if true, or to be allowed to propagate if false</summary>
 		Boolean Swallow { get; set; }
 	}
 
@@ -28,7 +35,7 @@ namespace EntityFramework.Triggers {
 	public interface IChangeEntry<out TEntity> : IEntry<TEntity> where TEntity : class {}
 
 	public interface IBeforeChangeEntry<out TEntity> : IChangeEntry<TEntity>, IBeforeEntry<TEntity> where TEntity : class {
-		/// <summary>A typed wrapper around DbEntityEntry.OriginalValues</summary>
+		/// <summary>A proxy object representing the state of the entity before the changes</summary>
 		TEntity Original { get; }
 	}
 	public interface IChangeFailedEntry<out TEntity> : IChangeEntry<TEntity>, IFailedEntry<TEntity> where TEntity : class { }
@@ -52,6 +59,7 @@ namespace EntityFramework.Triggers {
 	#region With specific DbContext type
 	/// <summary>Contains the context and the instance of the changed entity</summary>
 	public interface IEntry<out TEntity, out TDbContext> : IEntry<TEntity> where TEntity : class where TDbContext : DbContext {
+		/// <summary>The TDbContext instance</summary>
 		new TDbContext Context { get; }
 	}
 
