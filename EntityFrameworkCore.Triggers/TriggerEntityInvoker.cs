@@ -16,9 +16,9 @@ namespace EntityFramework.Triggers {
 		private static readonly ITriggerEntityInvoker<TDbContext> BaseTriggerEntityInvoker = BaseEntityType == null ? null : TriggerEntityInvokers<TDbContext>.Get(BaseEntityType);
 		private static readonly ITriggerEntityInvoker<TDbContext>[] DeclaredInterfaces = typeof(TEntity).GetDeclaredInterfaces().Select(TriggerEntityInvokers<TDbContext>.Get).ToArray();
 
-		public void RaiseInserting   (Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new InsertingEntry   ((TEntity) entity, dbc, cancel)     ; RaiseInsertingInner   (entry); cancel = entry.Cancelled; }
-		public void RaiseUpdating    (Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new UpdatingEntry    ((TEntity) entity, dbc, cancel)     ; RaiseUpdatingInner    (entry); cancel = entry.Cancelled; }
-		public void RaiseDeleting    (Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new DeletingEntry    ((TEntity) entity, dbc, cancel)     ; RaiseDeletingInner    (entry); cancel = entry.Cancelled; }
+		public void RaiseInserting   (Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new InsertingEntry   ((TEntity) entity, dbc, cancel)     ; RaiseInsertingInner   (entry); cancel = entry.Cancel; }
+		public void RaiseUpdating    (Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new UpdatingEntry    ((TEntity) entity, dbc, cancel)     ; RaiseUpdatingInner    (entry); cancel = entry.Cancel; }
+		public void RaiseDeleting    (Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new DeletingEntry    ((TEntity) entity, dbc, cancel)     ; RaiseDeletingInner    (entry); cancel = entry.Cancel; }
 		public void RaiseInsertFailed(Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new InsertFailedEntry((TEntity) entity, dbc, ex, swallow); RaiseInsertFailedInner(entry); swallow = entry.Swallow; }
 		public void RaiseUpdateFailed(Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new UpdateFailedEntry((TEntity) entity, dbc, ex, swallow); RaiseUpdateFailedInner(entry); swallow = entry.Swallow; }
 		public void RaiseDeleteFailed(Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new DeleteFailedEntry((TEntity) entity, dbc, ex, swallow); RaiseDeleteFailedInner(entry); swallow = entry.Swallow; }
@@ -111,10 +111,9 @@ namespace EntityFramework.Triggers {
 
 		private abstract class BeforeEntry : Entry, IBeforeEntry<TEntity, TDbContext> {
 			protected BeforeEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context) {
-				Cancelled = cancel;
+				Cancel = cancel;
 			}
-			public void Cancel() => Cancelled = true;
-			public Boolean Cancelled { get; set; }
+			public Boolean Cancel { get; set; }
 		}
 
 		private abstract class BeforeChangeEntry : BeforeEntry, IBeforeChangeEntry<TEntity, TDbContext> {
@@ -148,30 +147,14 @@ namespace EntityFramework.Triggers {
 
 		private class InsertingEntry : BeforeEntry, IInsertingEntry<TEntity, TDbContext> {
 			public InsertingEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) { }
-			//public void Cancel() => Cancelled = true;
-			//public Boolean Cancelled {
-			//	get { return Context.Entry(Entity).State == EntityState.Detached; }
-			//	set { Context.Entry(Entity).State = value ? EntityState.Detached : EntityState.Added; }
-			//}
 		}
 
 		private class UpdatingEntry : BeforeChangeEntry, IUpdatingEntry<TEntity, TDbContext> {
 			public UpdatingEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) { }
-			//public override void Cancel() => Cancelled = true;
-			//private Boolean cancelled;
-			//public override Boolean Cancelled {
-			//	get { return Context.Entry(Entity).State == EntityState.Unchanged; }
-			//	set { Context.Entry(Entity).State = value ? EntityState.Unchanged : EntityState.Modified; }
-			//}
 		}
 
 		private class DeletingEntry : BeforeChangeEntry, IDeletingEntry<TEntity, TDbContext> {
 			public DeletingEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) { }
-			//public override void Cancel() => Cancelled = true;
-			//public override Boolean Cancelled {
-			//	get { return Context.Entry(Entity).State == EntityState.Modified; }
-			//	set { Context.Entry(Entity).State = value ? EntityState.Modified : EntityState.Deleted; }
-			//}
 		}
 
 		private class InsertFailedEntry : FailedEntry, IInsertFailedEntry<TEntity, TDbContext> {

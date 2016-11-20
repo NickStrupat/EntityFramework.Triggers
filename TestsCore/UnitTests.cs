@@ -42,7 +42,7 @@ namespace EntityFramework.Triggers.Tests {
 		// original values on updating
 		// firing 'before' triggers of an entity added by another's "before" trigger, all before actual SaveChanges is executed
 
-		// Cancelled property of "before" trigger
+		// Cancel property of "before" trigger
 		// Swallow proprety of "failed" trigger
 
 		// TODO:
@@ -410,7 +410,7 @@ namespace EntityFramework.Triggers.Tests {
 		protected override void Setup() {
 			base.Setup();
 			Triggers<Thing>.Inserting += Cancel;
-			Triggers<Thing, Context>.Inserting += Cancel2; // <-- Note the specified Context class (the `Cancelled` property must persist across 
+			Triggers<Thing, Context>.Inserting += Cancel2; // <-- Note the specified Context class (the `Cancel` property must persist across 
 		}
 		protected override void Teardown() {
 			Triggers<Thing, Context>.Inserting -= Cancel2;
@@ -418,12 +418,12 @@ namespace EntityFramework.Triggers.Tests {
 			base.Teardown();
 		}
 
-		protected virtual void Cancel(IBeforeEntry<Thing> e) => e.Cancel();
+		protected virtual void Cancel(IBeforeEntry<Thing> e) => e.Cancel = true;
 
 		private Boolean cancel2Ran;
 		protected void Cancel2(IBeforeEntry<Thing> e) {
 			cancel2Ran = true;
-			Assert.True(e.Cancelled, nameof(e.Cancelled) + ": " + e.Cancelled);
+			Assert.True(e.Cancel, nameof(e.Cancel) + ": " + e.Cancel);
 		}
 
 		[Fact]
@@ -453,23 +453,11 @@ namespace EntityFramework.Triggers.Tests {
 #endif
 	}
 
-	public class InsertingCancelledTrue : InsertingCancel {
-		protected override void Cancel(IBeforeEntry<Thing> e) => e.Cancelled = true;
-
-		[Fact]
-		public new void Sync() => base.Sync();
-
-#if !NET40
-		[Fact]
-		public new Task Async() => base.Async();
-#endif
-	}
-
 	public class UpdatingCancel : ThingTestBase {
 		protected override void Setup() {
 			base.Setup();
 			Triggers<Thing>.Updating += Cancel;
-			Triggers<Thing, Context>.Updating += Cancel2; // <-- Note the specified Context class (the `Cancelled` property must persist across 
+			Triggers<Thing, Context>.Updating += Cancel2; // <-- Note the specified Context class (the `Cancel` property must persist across 
 		}
 		protected override void Teardown() {
 			Triggers<Thing, Context>.Updating -= Cancel2;
@@ -477,12 +465,12 @@ namespace EntityFramework.Triggers.Tests {
 			base.Teardown();
 		}
 
-		protected virtual void Cancel(IBeforeChangeEntry<Thing, DbContext> e) => e.Cancel();
+		protected virtual void Cancel(IBeforeChangeEntry<Thing, DbContext> e) => e.Cancel = true;
 
 		private Boolean cancel2Ran;
 		protected void Cancel2(IBeforeEntry<Thing> e) {
 			cancel2Ran = true;
-			Assert.True(e.Cancelled, nameof(e.Cancelled) + ": " + e.Cancelled);
+			Assert.True(e.Cancel, nameof(e.Cancel) + ": " + e.Cancel);
 		}
 
 		[Fact]
@@ -518,23 +506,11 @@ namespace EntityFramework.Triggers.Tests {
 #endif
 	}
 
-	public class UpdatingCancelledTrue : UpdatingCancel {
-		protected override void Cancel(IBeforeChangeEntry<Thing, DbContext> e) => e.Cancelled = true;
-
-		[Fact]
-		public new void Sync() => base.Sync();
-
-#if !NET40
-		[Fact]
-		public new Task Async() => base.Async();
-#endif
-	}
-
 	public class DeletingCancel : ThingTestBase {
 		protected override void Setup() {
 			base.Setup();
 			Triggers<Thing>.Deleting += Cancel;
-			Triggers<Thing, Context>.Updating += Cancel2; // <-- Note the specified Context class (the `Cancelled` property must persist across 
+			Triggers<Thing, Context>.Updating += Cancel2; // <-- Note the specified Context class (the `Cancel` property must persist across 
 		}
 		protected override void Teardown() {
 			Triggers<Thing, Context>.Updating -= Cancel2;
@@ -542,12 +518,12 @@ namespace EntityFramework.Triggers.Tests {
 			base.Teardown();
 		}
 
-		protected virtual void Cancel(IBeforeChangeEntry<Thing, DbContext> e) => e.Cancel();
+		protected virtual void Cancel(IBeforeChangeEntry<Thing, DbContext> e) => e.Cancel = true;
 
 		private Boolean cancel2Ran;
 		protected void Cancel2(IBeforeEntry<Thing> e) {
 			cancel2Ran = true;
-			Assert.True(e.Cancelled, nameof(e.Cancelled) + ": " + e.Cancelled);
+			Assert.True(e.Cancel, nameof(e.Cancel) + ": " + e.Cancel);
 		}
 
 		[Fact]
@@ -576,18 +552,6 @@ namespace EntityFramework.Triggers.Tests {
 			DeletingCheckFlags(thing);
 			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid).ConfigureAwait(false) != null);
 		});
-#endif
-	}
-
-	public class DeletingCancelledTrue : DeletingCancel {
-		protected override void Cancel(IBeforeChangeEntry<Thing, DbContext> e) => e.Cancelled = true;
-
-		[Fact]
-		public new void Sync() => base.Sync();
-
-#if !NET40
-		[Fact]
-		public new Task Async() => base.Async();
 #endif
 	}
 

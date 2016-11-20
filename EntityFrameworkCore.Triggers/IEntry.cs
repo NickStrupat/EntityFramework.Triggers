@@ -15,9 +15,7 @@ namespace EntityFramework.Triggers {
 	}
 
 	public interface IBeforeEntry<out TEntity> : IEntry<TEntity> where TEntity : class {
-		[Obsolete("This method is being deprecated in favour of the `Cancelled` Boolean property. It will likely be removed in a future version.")]
-		void Cancel();
-		Boolean Cancelled { get; set; }
+		Boolean Cancel { get; set; }
 	}
 
 	public interface IFailedEntry<out TEntity> : IEntry<TEntity> where TEntity : class {
