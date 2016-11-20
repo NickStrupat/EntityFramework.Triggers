@@ -469,13 +469,21 @@ namespace EntityFramework.Triggers.Tests {
 		protected override void Setup() {
 			base.Setup();
 			Triggers<Thing>.Updating += Cancel;
+			Triggers<Thing, Context>.Updating += Cancel2; // <-- Note the specified Context class (the `Cancelled` property must persist across 
 		}
 		protected override void Teardown() {
+			Triggers<Thing, Context>.Updating -= Cancel2;
 			Triggers<Thing>.Updating -= Cancel;
 			base.Teardown();
 		}
 
 		protected virtual void Cancel(IBeforeChangeEntry<Thing, DbContext> e) => e.Cancel();
+
+		private Boolean cancel2Ran;
+		protected void Cancel2(IBeforeEntry<Thing> e) {
+			cancel2Ran = true;
+			Assert.True(e.Cancelled, nameof(e.Cancelled) + ": " + e.Cancelled);
+		}
 
 		[Fact]
 		public void Sync() => DoATest(() => {
@@ -526,13 +534,21 @@ namespace EntityFramework.Triggers.Tests {
 		protected override void Setup() {
 			base.Setup();
 			Triggers<Thing>.Deleting += Cancel;
+			Triggers<Thing, Context>.Updating += Cancel2; // <-- Note the specified Context class (the `Cancelled` property must persist across 
 		}
 		protected override void Teardown() {
+			Triggers<Thing, Context>.Updating -= Cancel2;
 			Triggers<Thing>.Deleting -= Cancel;
 			base.Teardown();
 		}
 
 		protected virtual void Cancel(IBeforeChangeEntry<Thing, DbContext> e) => e.Cancel();
+
+		private Boolean cancel2Ran;
+		protected void Cancel2(IBeforeEntry<Thing> e) {
+			cancel2Ran = true;
+			Assert.True(e.Cancelled, nameof(e.Cancelled) + ": " + e.Cancelled);
+		}
 
 		[Fact]
 		public void Sync() => DoATest(() => {
