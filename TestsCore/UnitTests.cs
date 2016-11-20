@@ -325,7 +325,7 @@ namespace EntityFramework.Triggers.Tests {
 			base.Teardown();
 		}
 
-		private static void OnDeleting(IBeforeChangeEntry<Thing, DbContext> e) {
+		private static void OnDeleting(IBeforeChangeEntry<Thing> e) {
 			throw new Exception();
 		}
 
@@ -410,21 +410,31 @@ namespace EntityFramework.Triggers.Tests {
 		protected override void Setup() {
 			base.Setup();
 			Triggers<Thing>.Inserting += Cancel;
+			Triggers<Thing, Context>.Inserting += Cancel2; // <-- Note the specified Context class (the `Cancelled` property must persist across 
 		}
 		protected override void Teardown() {
+			Triggers<Thing, Context>.Inserting -= Cancel2;
 			Triggers<Thing>.Inserting -= Cancel;
 			base.Teardown();
 		}
 
 		protected virtual void Cancel(IBeforeEntry<Thing> e) => e.Cancel();
 
+		private Boolean cancel2Ran;
+		protected void Cancel2(IBeforeEntry<Thing> e) {
+			cancel2Ran = true;
+			Assert.True(e.Cancelled, nameof(e.Cancelled) + ": " + e.Cancelled);
+		}
+
 		[Fact]
 		public void Sync() => DoATest(() => {
 			var guid = Guid.NewGuid().ToString();
 			var thing = new Thing { Value = guid };
 			Context.Things.Add(thing);
+			Assert.False(cancel2Ran, nameof(cancel2Ran) + ": " + cancel2Ran);
 			Context.SaveChanges();
 			InsertingCheckFlags(thing);
+			Assert.True(cancel2Ran, nameof(cancel2Ran) + ": " + cancel2Ran);
 			Assert.True(Context.Things.SingleOrDefault(x => x.Value == guid) == null);
 		});
 
@@ -434,8 +444,10 @@ namespace EntityFramework.Triggers.Tests {
 			var guid = Guid.NewGuid().ToString();
 			var thing = new Thing { Value = guid };
 			Context.Things.Add(thing);
+			Assert.False(cancel2Ran, nameof(cancel2Ran) + ": " + cancel2Ran);
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 			InsertingCheckFlags(thing);
+			Assert.True(cancel2Ran, nameof(cancel2Ran) + ": " + cancel2Ran);
 			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid).ConfigureAwait(false) == null);
 		});
 #endif
@@ -677,6 +689,8 @@ namespace EntityFramework.Triggers.Tests {
 		protected override void Teardown() => Triggers<Thing>.Deleting -= TriggersOnDeleting;
 
 		private void TriggersOnDeleting(IBeforeChangeEntry<Thing, DbContext> beforeChangeEntry) {
+			Assert.True(guid != null);
+			Assert.True(guid2 != null);
 			Assert.True(beforeChangeEntry.Original.Value == guid);
 			Assert.True(beforeChangeEntry.Entity.Value == guid2);
 		}
