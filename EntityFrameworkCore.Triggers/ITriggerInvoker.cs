@@ -14,12 +14,14 @@ namespace EntityFramework.Triggers {
 #endif
 	internal interface ITriggerInvoker {
 		List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext);
-		void RaiseTheBeforeEventsInner(DbContext dbContext, List<EntityEntry> entries, List<EntityEntry> triggeredEntries, List<Action<DbContext>> afterEvents);
+		void RaiseTheBeforeEventInner(DbContext dbContext, EntityEntry entry, List<EntityEntry> triggeredEntries, List<Action<DbContext>> afterEvents, ref Boolean cancel);
+
 		void RaiseTheAfterEvents(DbContext dbContext, IEnumerable<Action<DbContext>> afterEvents);
-		Boolean RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException, Boolean swallow = false);
+
+		void RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException, ref Boolean swallow);
 #if !EF_CORE
-		Boolean RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException, Boolean swallow = false);
+		void RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException, ref Boolean swallow);
 #endif
-		Boolean RaiseTheFailedEvents(DbContext dbContext, Exception exception, Boolean swallow = false);
+		void RaiseTheFailedEvents(DbContext dbContext, Exception exception, ref Boolean swallow);
 	}
 }

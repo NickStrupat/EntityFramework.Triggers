@@ -48,19 +48,22 @@ namespace EntityFramework.Triggers {
 				return result;
 			}
 			catch (DbUpdateException ex) {
-				var swallow = invoker.RaiseTheFailedEvents(dbContext, ex);
+				var swallow = false;
+				invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow);
 				if (!swallow)
 					throw;
 			}
 #if !EF_CORE
 			catch (DbEntityValidationException ex) {
-				var swallow = invoker.RaiseTheFailedEvents(dbContext, ex);
+				var swallow = false;
+				invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow);
 				if (!swallow)
 					throw;
 			}
 #endif
 			catch (Exception ex) {
-				var swallow = invoker.RaiseTheFailedEvents(dbContext, ex);
+				var swallow = false;
+				invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow);
 				if (!swallow)
 					throw;
 			}
@@ -101,19 +104,22 @@ namespace EntityFramework.Triggers {
 				return result;
 			}
 			catch (DbUpdateException ex) {
-				var swallow = invoker.RaiseTheFailedEvents(dbContext, ex);
+				var swallow = false;
+				invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow);
 				if (!swallow)
 					throw;
 			}
 #if !EF_CORE
 			catch (DbEntityValidationException ex) {
-				var swallow = invoker.RaiseTheFailedEvents(dbContext, ex);
+				var swallow = false;
+				invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow);
 				if (!swallow)
 					throw;
 			}
 #endif
 			catch (Exception ex) {
-				var swallow = invoker.RaiseTheFailedEvents(dbContext, ex);
+				var swallow = false;
+				invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow);
 				if (!swallow)
 					throw;
 			}

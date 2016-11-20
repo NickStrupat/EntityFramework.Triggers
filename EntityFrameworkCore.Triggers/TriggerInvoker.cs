@@ -14,24 +14,29 @@ using System.Data.Entity.Validation;
 using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
 namespace EntityFramework.Triggers {
 #endif
+	internal class EntityEntryComparer : IEqualityComparer<EntityEntry> {
+		private EntityEntryComparer() {}
+		public Boolean Equals(EntityEntry x, EntityEntry y) => ReferenceEquals(x.Entity, y.Entity);
+		public Int32 GetHashCode(EntityEntry obj) => obj.Entity.GetHashCode();
+		public static readonly EntityEntryComparer Default = new EntityEntryComparer();
+	}
+
 	internal class TriggerInvoker<TDbContext> : ITriggerInvoker where TDbContext : DbContext {
 		private static readonly Type BaseDbContextType = typeof(TDbContext).GetTypeInfo().BaseType;
 		private static readonly Boolean IsADbContextType = typeof(DbContext).IsAssignableFrom(BaseDbContextType);
 		private static readonly ITriggerInvoker BaseTriggerInvoker = IsADbContextType ? TriggerInvokers.Get(BaseDbContextType) : null;
 
-		private class EntityEntryComparer : IEqualityComparer<EntityEntry> {
-			private EntityEntryComparer() {}
-			public Boolean Equals(EntityEntry x, EntityEntry y) => ReferenceEquals(x.Entity, y.Entity);
-			public Int32 GetHashCode(EntityEntry obj) => obj.Entity.GetHashCode();
-			public static readonly EntityEntryComparer Default = new EntityEntryComparer();
-		}
-
 		public List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext) {
 			var entries = dbContext.ChangeTracker.Entries().ToList();
-			var triggeredEntries = new List<EntityEntry>();
-			var afterEvents = new List<Action<DbContext>>();
+			var triggeredEntries = new List<EntityEntry>(entries.Count);
+			var afterEvents = new List<Action<DbContext>>(entries.Count);
 			while (entries.Any()) {
-				RaiseTheBeforeEventsInner(dbContext, entries, triggeredEntries, afterEvents);
+				foreach (var entry in entries) {
+					var cancel = false;
+					RaiseTheBeforeEventInner(dbContext, entry, triggeredEntries, afterEvents, ref cancel);
+					if (cancel)
+						entry.State = GetCanceledEntityState(entry.State);
+				}
 				var newEntries = dbContext.ChangeTracker.Entries().Except(triggeredEntries, EntityEntryComparer.Default);
 				entries.Clear();
 				entries.AddRange(newEntries);
@@ -39,35 +44,41 @@ namespace EntityFramework.Triggers {
 			return afterEvents;
 		}
 
-		public void RaiseTheBeforeEventsInner(DbContext dbContext, List<EntityEntry> entries, List<EntityEntry> triggeredEntries, List<Action<DbContext>> afterEvents) {
-			BaseTriggerInvoker?.RaiseTheBeforeEventsInner(dbContext, entries, triggeredEntries, afterEvents);
-			foreach (var entry in entries) {
-				var after = RaiseTheBeforeEvent(entry, dbContext);
-				triggeredEntries.Add(entry);
-				if (after != null)
-					afterEvents.Add(after);
+		private static EntityState GetCanceledEntityState(EntityState entityState) {
+			switch (entityState) {
+				case EntityState.Added:
+					return EntityState.Detached;
+				case EntityState.Deleted:
+					return EntityState.Modified;
+				case EntityState.Modified:
+					return EntityState.Unchanged;
+				default:
+					return entityState;
 			}
 		}
 
-		private Action<DbContext> RaiseTheBeforeEvent(EntityEntry entry, DbContext dbContext) {
+
+		public void RaiseTheBeforeEventInner(DbContext dbContext, EntityEntry entry, List<EntityEntry> triggeredEntries, List<Action<DbContext>> afterEvents, ref Boolean cancel) {
+			BaseTriggerInvoker?.RaiseTheBeforeEventInner(dbContext, entry, triggeredEntries, afterEvents, ref cancel);
+			var after = RaiseTheBeforeEvent(entry, dbContext, ref cancel);
+			triggeredEntries.Add(entry);
+			if (after != null && !cancel)
+				afterEvents.Add(after);
+		}
+
+		private static Action<DbContext> RaiseTheBeforeEvent(EntityEntry entry, DbContext dbContext, ref Boolean cancel) {
 			var tDbContext = (TDbContext)dbContext;
 			var triggers = TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType());
 			switch (entry.State) {
 				case EntityState.Added:
-					triggers.RaiseInserting(entry.Entity, tDbContext);
-					if (entry.State == EntityState.Added)
-						return context => triggers.RaiseInserted(entry.Entity, (TDbContext) context);
-					break;
+					triggers.RaiseInserting(entry.Entity, tDbContext, ref cancel);
+					return context => triggers.RaiseInserted(entry.Entity, (TDbContext) context);
 				case EntityState.Deleted:
-					triggers.RaiseDeleting(entry.Entity, tDbContext);
-					if (entry.State == EntityState.Deleted)
-						return context => triggers.RaiseDeleted(entry.Entity, (TDbContext) context);
-					break;
+					triggers.RaiseDeleting(entry.Entity, tDbContext, ref cancel);
+					return context => triggers.RaiseDeleted(entry.Entity, (TDbContext) context);
 				case EntityState.Modified:
-					triggers.RaiseUpdating(entry.Entity, tDbContext);
-					if (entry.State == EntityState.Modified)
-						return context => triggers.RaiseUpdated(entry.Entity, (TDbContext) context);
-					break;
+					triggers.RaiseUpdating(entry.Entity, tDbContext, ref cancel);
+					return context => triggers.RaiseUpdated(entry.Entity, (TDbContext) context);
 			}
 			return null;
 		}
@@ -77,9 +88,8 @@ namespace EntityFramework.Triggers {
 				after(dbContext);
 		}
 
-		public Boolean RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException, Boolean swallow) {
-			if (BaseTriggerInvoker != null)
-				swallow = BaseTriggerInvoker.RaiseTheFailedEvents(dbContext, dbUpdateException, swallow);
+		public void RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException, ref Boolean swallow) {
+			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, dbUpdateException, ref swallow);
 			var context = (TDbContext) dbContext;
 
 			IEnumerable<EntityEntry> entries;
@@ -89,48 +99,50 @@ namespace EntityFramework.Triggers {
 			}
 			else {
 				entries = dbContext.ChangeTracker.Entries().ToArray();
-				if (entries.Count() != 1)
-					return false;
+				if (entries.Count() != 1) {
+					swallow = false;
+					return;
+				}
 			}
-			return RaiseTheFailedEvents(context, entries, dbUpdateException, swallow);
+			RaiseTheFailedEvents(context, entries, dbUpdateException, ref swallow);
 
 		}
 
 #if !EF_CORE
-		public Boolean RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException, Boolean swallow) {
-			if (BaseTriggerInvoker != null)
-				swallow = BaseTriggerInvoker.RaiseTheFailedEvents(dbContext, dbEntityValidationException, swallow);
+		public void RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException, ref Boolean swallow) {
+			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, dbEntityValidationException, ref swallow);
 			var context = (TDbContext) dbContext;
-			return RaiseTheFailedEvents(context, dbEntityValidationException.EntityValidationErrors.Select(x => x.Entry), dbEntityValidationException, swallow);
+			RaiseTheFailedEvents(context, dbEntityValidationException.EntityValidationErrors.Select(x => x.Entry), dbEntityValidationException, ref swallow);
 		}
 #endif
 
-		public Boolean RaiseTheFailedEvents(DbContext dbContext, Exception exception, Boolean swallow) {
-			if (BaseTriggerInvoker != null)
-				swallow = BaseTriggerInvoker.RaiseTheFailedEvents(dbContext, exception, swallow);
+		public void RaiseTheFailedEvents(DbContext dbContext, Exception exception, ref Boolean swallow) {
+			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, exception, ref swallow);
 			var context = (TDbContext) dbContext;
 			var entries = dbContext.ChangeTracker.Entries().ToArray();
-			if (entries.Length != 1)
-				return false;
-			return RaiseTheFailedEvents(context, entries, exception, swallow);
+			if (entries.Length != 1) {
+				swallow = false;
+				return;
+			}
+			RaiseTheFailedEvents(context, entries, exception, ref swallow);
 		}
 
-		private static Boolean RaiseTheFailedEvents(TDbContext dbContext, IEnumerable<EntityEntry> entries, Exception exception, Boolean swallow) {
+		private static void RaiseTheFailedEvents(TDbContext dbContext, IEnumerable<EntityEntry> entries, Exception exception, ref Boolean swallow) {
 			foreach (var entry in entries)
-				swallow = RaiseTheFailedEvents(dbContext, entry, exception, swallow);
-			return swallow;
+				RaiseTheFailedEvents(dbContext, entry, exception, ref swallow);
 		}
 
-		private static Boolean RaiseTheFailedEvents(TDbContext dbContext, EntityEntry entry, Exception exception, Boolean swallow) {
+		private static void RaiseTheFailedEvents(TDbContext dbContext, EntityEntry entry, Exception exception, ref Boolean swallow) {
 			switch (entry.State) {
 				case EntityState.Added:
-					return TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseInsertFailed(entry.Entity, dbContext, exception, swallow);
+					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseInsertFailed(entry.Entity, dbContext, exception, ref swallow);
+					break;
 				case EntityState.Modified:
-					return TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseUpdateFailed(entry.Entity, dbContext, exception, swallow);
+					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseUpdateFailed(entry.Entity, dbContext, exception, ref swallow);
+					break;
 				case EntityState.Deleted:
-					return TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseDeleteFailed(entry.Entity, dbContext, exception, swallow);
-				default:
-					return swallow;
+					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseDeleteFailed(entry.Entity, dbContext, exception, ref swallow);
+					break;
 			}
 		}
 	}
