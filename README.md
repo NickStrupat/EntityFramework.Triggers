@@ -5,11 +5,10 @@ Add triggers to your entities with insert, update, and delete events. There are 
 
 This repo contains the code for both the `EntityFramework` (.NET 4.0 and .NET 4.5) and `EntityFrameworkCore` (.NET 4.5.1 and .NET Standard 1.3) versions.
 
-NuGet package listed on nuget.org at https://www.nuget.org/packages/EntityFramework.Triggers/ and https://www.nuget.org/packages/EntityFrameworkCore.Triggers/
-
-Triggers for Entity Framework 6 (.NET 4.0 && >= .NET 4.5) [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)
-
-Triggers for Entity Framework Core (>= .NET 4.5.1 && >= .NET Standard 1.3) [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/)
+| EF version | .NET support                          | NuGet package                                                                                                                                              |
+|:-----------|:--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6          | == 4.0 &#124;&#124; >= 4.5            | [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)         |
+| Core       | >= 4.5.1 &#124;&#124; >= Standard 1.3 | [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/) |
 
 <strong>async/await supported</strong>
 
@@ -18,24 +17,24 @@ Triggers for Entity Framework Core (>= .NET 4.5.1 && >= .NET Standard 1.3) [![Nu
 To use triggers on your entities, simply have your DbContext inherit from DbContextWithTriggers. If your DbContext inheritance chain is unchangeable, see below the example code.
 
 ```csharp
-	public abstract class Trackable {
-		public DateTime Inserted { get; private set; }
-		public DateTime Updated { get; private set; }
+public abstract class Trackable {
+	public DateTime Inserted { get; private set; }
+	public DateTime Updated { get; private set; }
 
-		static Trackable() {
-			Triggers<Trackable>.Inserting += entry => entry.Entity.Inserted = entry.Entity.Updated = DateTime.Now;
-			Triggers<Trackable>.Updating += entry => entry.Entity.Updated = DateTime.Now;
-		}
+	static Trackable() {
+		Triggers<Trackable>.Inserting += entry => entry.Entity.Inserted = entry.Entity.Updated = DateTime.Now;
+		Triggers<Trackable>.Updating += entry => entry.Entity.Updated = DateTime.Now;
 	}
+}
 
-	public class Person : Trackable {
-		public Int64 Id { get; private set; }
-		public String Name { get; set; }
-	}
+public class Person : Trackable {
+	public Int64 Id { get; private set; }
+	public String Name { get; set; }
+}
 
-	public class Context : DbContextWithTriggers {
-		public DbSet<Person> People { get; set; }
-	}
+public class Context : DbContextWithTriggers {
+	public DbSet<Person> People { get; set; }
+}
 ```
 
 As you may have guessed, what we're doing above is enabling automatic insert and update stamps for any entity that inherits `Trackable`. Events are raised from the base class/interfaces, up to the events specified on the entity class being used. It's just as easy to set up soft deletes (the Deleting, Updating, and Inserting events are cancellable from within a handler, logging, auditing, and more!).
@@ -45,38 +44,38 @@ Check out https://github.com/NickStrupat/EntityFramework.Rx for my "Reactive Ext
 If you can't easily change what your DbContext inherits from (ASP.NET Identity users, for example) you can override `SaveChanges()` in your DbContext class to call the `SaveChangesWithTriggers()` extension method. For async/await functionality, override `SaveChangesAsync(CancellationToken)` to call `SaveChangesWithTriggersAsync(cancellationToken)`. Alternatively, you can call `SaveChangesWithTriggers()` directly instead of `SaveChanges()`, although that means breaking away from the usual interface provided by `DbContext`.
 
 ```csharp
-	class YourContext : DbContext {
-		// Your usual properties
+class YourContext : DbContext {
+	// Your usual properties
 
-		#region If you're targeting EF 6
-		public override Int32 SaveChanges() {
-			return this.SaveChangesWithTriggers(base.SaveChanges);
-		}
-		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
-			return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken);
-		}
-		#endregion
-
-		#region If you're targeting EF Core
-		public override Int32 SaveChanges() {
-			return this.SaveChangesWithTriggers(base.SaveChanges, acceptAllChangesOnSuccess: true);
-		}
-		public override Int32 SaveChanges(Boolean acceptAllChangesOnSuccess) {
-			return this.SaveChangesWithTriggers(base.SaveChanges, acceptAllChangesOnSuccess);
-		}
-		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-			return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess: true, cancellationToken: cancellationToken);
-		}
-		public override Task<Int32> SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
-			return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess, cancellationToken);
-		}
-		#endregion
+	#region If you're targeting EF 6
+	public override Int32 SaveChanges() {
+		return this.SaveChangesWithTriggers(base.SaveChanges);
 	}
-
-	#region If you're calling `SaveChangesWithTriggers...` directly (instead of an overridden `SaveChanges...`)
-	dbContext.SaveChangesWithTriggers(dbContext.SaveChanges);
-	dbContext.SaveChangesWithTriggersAsync(dbContext.SaveChangesAsync);
+	public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
+		return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken);
+	}
 	#endregion
+
+	#region If you're targeting EF Core
+	public override Int32 SaveChanges() {
+		return this.SaveChangesWithTriggers(base.SaveChanges, acceptAllChangesOnSuccess: true);
+	}
+	public override Int32 SaveChanges(Boolean acceptAllChangesOnSuccess) {
+		return this.SaveChangesWithTriggers(base.SaveChanges, acceptAllChangesOnSuccess);
+	}
+	public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+		return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess: true, cancellationToken: cancellationToken);
+	}
+	public override Task<Int32> SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
+		return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess, cancellationToken);
+	}
+	#endregion
+}
+
+#region If you're calling `SaveChangesWithTriggers...` directly (instead of an overridden `SaveChanges...`)
+dbContext.SaveChangesWithTriggers(dbContext.SaveChanges);
+dbContext.SaveChangesWithTriggersAsync(dbContext.SaveChangesAsync);
+#endregion
 ```
 
 ## Longer example (targeting EF6 for now)
