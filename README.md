@@ -173,7 +173,7 @@ namespace Example {
 ## See also
 
 - [https://github.com/NickStrupat/EntityFramework.Rx](https://github.com/NickStrupat/EntityFramework.Rx) for **hot** observables of your EF operations
-- [https://github.com/NickStrupat/EntityFramework.PrimaryKey](https://github.com/NickStrupat/EntityFramework.Rx) to easily get the primary key of any entity (including composite keys)
+- [https://github.com/NickStrupat/EntityFramework.PrimaryKey](https://github.com/NickStrupat/EntityFramework.PrimaryKey) to easily get the primary key of any entity (including composite keys)
 - [https://github.com/NickStrupat/EntityFramework.TypedOriginalValues](https://github.com/NickStrupat/EntityFramework.TypedOriginalValues) to get a proxy object of the orginal values of your entity (typed access to Property("...").OriginalValue)
 - [https://github.com/NickStrupat/EntityFramework.SoftDeletable](https://github.com/NickStrupat/EntityFramework.SoftDeletable) for base classes which encapsulate the soft-delete pattern (including keeping a history with user id, etc.)
 - [https://github.com/NickStrupat/EntityFramework.VersionedProperties](https://github.com/NickStrupat/EntityFramework.VersionedProperties) for a library of classes which auto-magically keep an audit history of the changes to the specified property
