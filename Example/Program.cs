@@ -10,8 +10,8 @@ using EntityFramework.Triggers;
 namespace Example {
 	public class Program {
 		public abstract class Trackable {
-			public virtual DateTime Inserted { get; private set; }
-			public virtual DateTime Updated { get; private set; }
+			public virtual DateTime Inserted { get; private set; } // protected set; if EF Core
+			public virtual DateTime Updated { get; private set; } // protected set; if EF Core
 
 			static Trackable() {
 				Triggers<Trackable>.Inserting += entry => entry.Entity.Inserted = entry.Entity.Updated = DateTime.UtcNow;
@@ -19,30 +19,32 @@ namespace Example {
 			}
 		}
 
-		public class Person : Trackable {
-			public virtual Int64 Id { get; protected set; }
-			public virtual String FirstName { get; set; }
-			public virtual String LastName { get; set; }
-			public virtual DateTime? Deleted { get; set; }
-			public Boolean IsDeleted => Deleted != null;
+		public abstract class SoftDeletable : Trackable {
+			public virtual DateTime? Deleted { get; private set; } // protected set; if EF Core
 
-			public override String ToString() => $"{Inserted}\t{LastName}, {FirstName}";
-
-			static Person() {
-				Triggers<Person>.Deleting += entry => {
+			static SoftDeletable() {
+				Triggers<SoftDeletable>.Deleting += entry => {
 					entry.Entity.Deleted = DateTime.UtcNow;
 					entry.Cancel = true; // Cancels the deletion, but will persist changes with the same effects as EntityState.Modified
 				};
 			}
 		}
+
+		public class Person : SoftDeletable {
+			public virtual Int64 Id { get; private set; }
+			public virtual String FirstName { get; set; }
+			public virtual String LastName { get; set; }
+
+			public override String ToString() => $"{Inserted}\t{LastName}, {FirstName}";
+		}
 		public class LogEntry {
-			public virtual Int64 Id { get; protected set; }
+			public virtual Int64 Id { get; private set; }
 			public virtual String Message { get; set; }
 		}
 
 		public class Context : DbContext {// WithTriggers {
-			public virtual DbSet<Person> People { get; set; }
-			public virtual DbSet<LogEntry> Log { get; set; }
+			public virtual DbSet<Person> People { get; protected set; }
+			public virtual DbSet<LogEntry> Log { get; protected set; }
 
 			public override Int32 SaveChanges() => this.SaveChangesWithTriggers(base.SaveChanges);
 			public override Task<Int32> SaveChangesAsync(CancellationToken ct) => this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, ct);
@@ -94,7 +96,7 @@ namespace Example {
 				Console.WriteLine(await context.SaveChangesAsync());
 				
 				var peeps = context.People.ToList();
-				peeps.ForEach(Console.Write);
+				peeps.ForEach(Console.WriteLine);
 			}
 		}
 	}
