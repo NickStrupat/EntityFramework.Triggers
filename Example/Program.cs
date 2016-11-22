@@ -26,10 +26,12 @@ namespace Example {
 			public virtual DateTime? Deleted { get; set; }
 			public Boolean IsDeleted => Deleted != null;
 
+			public override String ToString() => $"{Inserted}\t{LastName}, {FirstName}";
+
 			static Person() {
 				Triggers<Person>.Deleting += entry => {
 					entry.Entity.Deleted = DateTime.UtcNow;
-					entry.Cancel(); // Cancels the deletion, but will persist changes with the same effects as EntityState.Modified
+					entry.Cancel = true; // Cancels the deletion, but will persist changes with the same effects as EntityState.Modified
 				};
 			}
 		}
@@ -62,8 +64,8 @@ namespace Example {
 			Triggers<Person>.Updating += e => Console.WriteLine("Updating " + e.Original.FirstName + " to " + e.Entity.FirstName);
 			Triggers<Person>.Deleting += e => Console.WriteLine("Deleting " + e.Original.FirstName + " to " + e.Entity.FirstName);
 			Triggers<Person>.Inserted += e => Console.WriteLine("Inserted " + e.Entity.FirstName);
-			Triggers<Person>.Updated  += e => Console.WriteLine("Updated " + e.Original.FirstName + " to " + e.Entity.FirstName);
-			Triggers<Person>.Deleted  += e => Console.WriteLine("Deleted " + e.Original.FirstName + " to " + e.Entity.FirstName);
+			Triggers<Person>.Updated  += e => Console.WriteLine("Updated " + e.Entity.FirstName);
+			Triggers<Person>.Deleted  += e => Console.WriteLine("Deleted " + e.Entity.FirstName);
 		}
 
 		private static void Main(String[] args) => Task.WaitAll(MainAsync(args));
@@ -90,6 +92,9 @@ namespace Example {
 				nickStrupat.FirstName = "N.";
 				context.People.Remove(nickStrupat);
 				Console.WriteLine(await context.SaveChangesAsync());
+				
+				var peeps = context.People.ToList();
+				peeps.ForEach(Console.Write);
 			}
 		}
 	}
