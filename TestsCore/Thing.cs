@@ -9,8 +9,22 @@ namespace EntityFrameworkCore.Triggers.Tests {
 #else
 namespace EntityFramework.Triggers.Tests {
 #endif
+	public interface IThing {
+		Int64 Id             { get; }
+		String Value         { get; set; }
+		Boolean Inserting    { get; set; }
+		Boolean InsertFailed { get; set; }
+		Boolean Inserted     { get; set; }
+		Boolean Updating     { get; set; }
+		Boolean UpdateFailed { get; set; }
+		Boolean Updated      { get; set; }
+		Boolean Deleting     { get; set; }
+		Boolean DeleteFailed { get; set; }
+		Boolean Deleted      { get; set; }
+		List<Int32> Numbers  { get; }
+	}
 
-	public class Thing {
+	public class Thing : IThing {
 		[Key]
         public virtual Int64 Id             { get; private set; }
 
@@ -30,6 +44,15 @@ namespace EntityFramework.Triggers.Tests {
 		[NotMapped] public virtual List<Int32> Numbers { get; } = new List<Int32>();
 	}
 
-	public class Apple : Thing { }
-	public class RoyalGala : Apple { }
+	public interface IApple {
+		List<Int32> Numbers { get; }
+	}
+
+	public class Apple : Thing, IApple { }
+
+	public interface IRoyalGala {
+		List<Int32> Numbers { get; }
+	}
+
+	public class RoyalGala : Apple, IRoyalGala { }
 }
