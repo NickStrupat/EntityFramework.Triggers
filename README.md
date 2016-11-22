@@ -107,12 +107,12 @@ namespace Example {
 			public virtual String FirstName { get; set; }
 			public virtual String LastName { get; set; }
 			public virtual DateTime? Deleted { get; set; }
-			public Boolean IsDeleted => Deleted != null;
+			public virtual Boolean IsDeleted => Deleted != null;
 
 			static Person() {
 				Triggers<Person>.Deleting += entry => {
 					entry.Entity.Deleted = DateTime.UtcNow;
-					entry.Cancel(); // Cancels the deletion, but will persist changes with the same effects as EntityState.Modified
+					entry.Cancel = true; // Cancels the deletion, but will persist changes with the same effects as EntityState.Modified
 				};
 			}
 		}
@@ -172,8 +172,26 @@ namespace Example {
 
 ## See also
 
-- [https://github.com/NickStrupat/EntityFramework.Rx]() for **hot** observables of your EF operations
-- [https://github.com/NickStrupat/EntityFramework.PrimaryKey]() to easily get the primary key of any entity (including composite keys)
-- [https://github.com/NickStrupat/EntityFramework.TypedOriginalValues]() to get a proxy object of the orginal values of your entity (typed access to Property("...").OriginalValue)
-- [https://github.com/NickStrupat/EntityFramework.SoftDeletable]() for base classes which encapsulate the soft-delete pattern (including keeping a history with user id, etc.)
-- [https://github.com/NickStrupat/EntityFramework.VersionedProperties]() for a library of classes which auto-magically keep an audit history of the changes to the specified property
+- [https://github.com/NickStrupat/EntityFramework.Rx](https://github.com/NickStrupat/EntityFramework.Rx) for **hot** observables of your EF operations
+- [https://github.com/NickStrupat/EntityFramework.PrimaryKey](https://github.com/NickStrupat/EntityFramework.Rx) to easily get the primary key of any entity (including composite keys)
+- [https://github.com/NickStrupat/EntityFramework.TypedOriginalValues](https://github.com/NickStrupat/EntityFramework.TypedOriginalValues) to get a proxy object of the orginal values of your entity (typed access to Property("...").OriginalValue)
+- [https://github.com/NickStrupat/EntityFramework.SoftDeletable](https://github.com/NickStrupat/EntityFramework.SoftDeletable) for base classes which encapsulate the soft-delete pattern (including keeping a history with user id, etc.)
+- [https://github.com/NickStrupat/EntityFramework.VersionedProperties](https://github.com/NickStrupat/EntityFramework.VersionedProperties) for a library of classes which auto-magically keep an audit history of the changes to the specified property
+
+## Contributing
+
+1. [Create an issue](https://github.com/NickStrupat/EntityFramework.Triggers/issues/new)
+2. Let's find some point of agreement on your suggestion.
+3. Fork it!
+4. Create your feature branch: `git checkout -b my-new-feature`
+5. Commit your changes: `git commit -am 'Add some feature'`
+6. Push to the branch: `git push origin my-new-feature`
+7. Submit a pull request :D
+
+## History
+
+[Commit history](https://github.com/NickStrupat/EntityFramework.Triggers/commits/master)
+
+## License
+
+[MIT License](https://github.com/NickStrupat/EntityFramework.Triggers/blob/master/README.md)
