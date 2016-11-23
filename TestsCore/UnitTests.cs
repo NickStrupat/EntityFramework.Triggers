@@ -56,6 +56,47 @@ namespace EntityFramework.Triggers.Tests {
 		//     All other exceptions raises failed triggers and is swallowable if changetracker has only one entry
 	}
 
+	public class TriggersEnabled : TestBase {
+		protected override void Setup() => Triggers<Thing>.Inserting += OnTriggersOnInserting;
+		protected override void Teardown() => Triggers<Thing>.Inserting -= OnTriggersOnInserting;
+
+		private void OnTriggersOnInserting(IInsertingEntry<Thing, DbContext> e) => e.Entity.Value = "changed";
+
+		[Fact]
+		public void Sync() => DoATest(() => {
+			var thing = new Thing {Value = "okay"};
+			Context.Things.Add(thing);
+			Assert.True(Context.TriggersEnabled);
+			Context.TriggersEnabled = false;
+			Context.SaveChanges();
+			Assert.True(thing.Value == "okay");
+
+			var thing2 = new Thing {Value = "yep"};
+			Context.Things.Add(thing2);
+			Context.TriggersEnabled = true;
+			Context.SaveChanges();
+			Assert.True(thing2.Value == "changed");
+		});
+
+#if !NET40
+		[Fact]
+		public Task Async() => DoATestAsync(async () => {
+			var thing = new Thing { Value = "okay" };
+			Context.Things.Add(thing);
+			Assert.True(Context.TriggersEnabled);
+			Context.TriggersEnabled = false;
+			await Context.SaveChangesAsync().ConfigureAwait(false);
+			Assert.True(thing.Value == "okay");
+
+			var thing2 = new Thing { Value = "yep" };
+			Context.Things.Add(thing2);
+			Context.TriggersEnabled = true;
+			await Context.SaveChangesAsync().ConfigureAwait(false);
+			Assert.True(thing2.Value == "changed");
+		});
+#endif
+	}
+
 	public class AddRemoveEventHandler : TestBase {
 		protected override void Setup() => Triggers<Thing, Context>.Inserting += TriggersOnInserting;
 		protected override void Teardown() => Triggers<Thing, Context>.Inserting -= TriggersOnInserting;
