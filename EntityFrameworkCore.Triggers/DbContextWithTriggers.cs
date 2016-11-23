@@ -16,7 +16,7 @@ namespace EntityFramework.Triggers.Tests {
 	/// A <see cref="DbContext"/>-derived class with trigger functionality called automatically
 	/// </summary>
 	public abstract class DbContextWithTriggers : DbContext {
-		private Boolean TriggersEnabled { get; set; } = true;
+		public Boolean TriggersEnabled { get; set; } = true;
 #if EF_CORE
 		protected DbContextWithTriggers() : base() { }
 		protected DbContextWithTriggers(DbContextOptions options) : base(options) { }
