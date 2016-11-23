@@ -102,19 +102,25 @@ namespace Example {
 			}
 		}
 
-		public class Person : Trackable {
-			public virtual Int64 Id { get; private set; }
-			public virtual String FirstName { get; set; }
-			public virtual String LastName { get; set; }
+		public abstract class SoftDeletable : Trackable {
 			public virtual DateTime? Deleted { get; private set; }
-			public virtual Boolean IsDeleted => Deleted != null;
 
-			static Person() {
-				Triggers<Person>.Deleting += entry => {
-					entry.Entity.Deleted = DateTime.UtcNow;
+			public Boolean IsSoftDeleted => Deleted != null;
+			public void SoftDelete() => Deleted = DateTime.UtcNow;
+			public void SoftRestore() => Deleted = null;
+
+			static SoftDeletable() {
+				Triggers<SoftDeletable>.Deleting += entry => {
+					entry.Entity.SoftDelete();
 					entry.Cancel = true; // Cancels the deletion, but will persist changes with the same effects as EntityState.Modified
 				};
 			}
+		}
+
+		public class Person : SoftDeletable {
+			public virtual Int64 Id { get; private set; }
+			public virtual String FirstName { get; set; }
+			public virtual String LastName { get; set; }
 		}
 
 		public class LogEntry {

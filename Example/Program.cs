@@ -10,8 +10,8 @@ using EntityFramework.Triggers;
 namespace Example {
 	public class Program {
 		public abstract class Trackable {
-			public virtual DateTime Inserted { get; private set; } // protected set; if EF Core
-			public virtual DateTime Updated { get; private set; } // protected set; if EF Core
+			public virtual DateTime Inserted { get; private set; }
+			public virtual DateTime Updated { get; private set; }
 
 			static Trackable() {
 				Triggers<Trackable>.Inserting += entry => entry.Entity.Inserted = entry.Entity.Updated = DateTime.UtcNow;
@@ -20,11 +20,15 @@ namespace Example {
 		}
 
 		public abstract class SoftDeletable : Trackable {
-			public virtual DateTime? Deleted { get; private set; } // protected set; if EF Core
+			public virtual DateTime? Deleted { get; private set; }
+
+			public Boolean IsSoftDeleted => Deleted != null;
+			public void SoftDelete() => Deleted = DateTime.UtcNow;
+			public void SoftRestore() => Deleted = null;
 
 			static SoftDeletable() {
 				Triggers<SoftDeletable>.Deleting += entry => {
-					entry.Entity.Deleted = DateTime.UtcNow;
+					entry.Entity.SoftDelete();
 					entry.Cancel = true; // Cancels the deletion, but will persist changes with the same effects as EntityState.Modified
 				};
 			}
