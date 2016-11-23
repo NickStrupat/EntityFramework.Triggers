@@ -2,114 +2,57 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+#if EF_CORE
 using Microsoft.EntityFrameworkCore;
-namespace EntityFrameworkCore.Triggers {
-
+namespace EntityFrameworkCore.Triggers.Tests {
+#else
+using System.Data.Entity;
+using System.Data.Common;
+using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Infrastructure;
+namespace EntityFramework.Triggers.Tests {
+#endif
 	/// <summary>
 	/// A <see cref="DbContext"/>-derived class with trigger functionality called automatically
 	/// </summary>
 	public abstract class DbContextWithTriggers : DbContext {
-		/// <summary>
-		///     Saves all changes made in this context to the database.
-		/// </summary>
-		/// <remarks>
-		///     This method will automatically call <see cref="M:Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.DetectChanges" /> to discover any
-		///     changes to entity instances before saving to the underlying database. This can be disabled via
-		///     <see cref="P:Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.AutoDetectChangesEnabled" />.
-		/// </remarks>
-		/// <returns>
-		///     The number of state entries written to the database.
-		/// </returns>
-		public override Int32 SaveChanges() {
-			return this.SaveChangesWithTriggers(base.SaveChanges, acceptAllChangesOnSuccess: true);
-		}
-
-		/// <summary>
-		///     Saves all changes made in this context to the database.
-		/// </summary>
-		/// <param name="acceptAllChangesOnSuccess">
-		///     Indicates whether <see cref="M:Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.AcceptAllChanges" /> is called after the changes have
-		///     been sent successfully to the database.
-		/// </param>
-		/// <remarks>
-		///     This method will automatically call <see cref="M:Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.DetectChanges" /> to discover any
-		///     changes to entity instances before saving to the underlying database. This can be disabled via
-		///     <see cref="P:Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.AutoDetectChangesEnabled" />.
-		/// </remarks>
-		/// <returns>
-		///     The number of state entries written to the database.
-		/// </returns>
-		public override Int32 SaveChanges(Boolean acceptAllChangesOnSuccess) {
-			return this.SaveChangesWithTriggers(base.SaveChanges, acceptAllChangesOnSuccess);
-		}
-
-		/// <summary>
-		///     Asynchronously saves all changes made in this context to the database.
-		/// </summary>
-		/// <remarks>
-		///     <para>
-		///         This method will automatically call <see cref="M:Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.DetectChanges" /> to discover any
-		///         changes to entity instances before saving to the underlying database. This can be disabled via
-		///         <see cref="P:Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.AutoDetectChangesEnabled" />.
-		///     </para>
-		///     <para>
-		///         Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
-		///         that any asynchronous operations have completed before calling another method on this context.
-		///     </para>
-		/// </remarks>
-		/// <param name="cancellationToken">A <see cref="T:System.Threading.CancellationToken" /> to observe while waiting for the task to complete.</param>
-		/// <returns>
-		///     A task that represents the asynchronous save operation. The task result contains the
-		///     number of state entries written to the database.
-		/// </returns>
-		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-			return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess: true, cancellationToken: cancellationToken);
-		}
-
-		/// <summary>
-		///     Asynchronously saves all changes made in this context to the database.
-		/// </summary>
-		/// <param name="acceptAllChangesOnSuccess">
-		///     Indicates whether <see cref="M:Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.AcceptAllChanges" /> is called after the changes have
-		///     been sent successfully to the database.
-		/// </param>
-		/// <remarks>
-		///     <para>
-		///         This method will automatically call <see cref="M:Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.DetectChanges" /> to discover any
-		///         changes to entity instances before saving to the underlying database. This can be disabled via
-		///         <see cref="P:Microsoft.EntityFrameworkCore.ChangeTracking.ChangeTracker.AutoDetectChangesEnabled" />.
-		///     </para>
-		///     <para>
-		///         Multiple active operations on the same context instance are not supported.  Use 'await' to ensure
-		///         that any asynchronous operations have completed before calling another method on this context.
-		///     </para>
-		/// </remarks>
-		/// <param name="cancellationToken">A <see cref="T:System.Threading.CancellationToken" /> to observe while waiting for the task to complete.</param>
-		/// <returns>
-		///     A task that represents the asynchronous save operation. The task result contains the
-		///     number of state entries written to the database.
-		/// </returns>
-		public override Task<Int32> SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
-			return this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess, cancellationToken);
-		}
-
-		/// <summary>
-		///     <para>
-		///         Initializes a new instance of the <see cref="T:EntityFrameworkCore.Triggers.DbContextWithTriggers" /> class. The
-		///         <see cref="M:Microsoft.EntityFrameworkCore.DbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)" />
-		///         method will be called to configure the database (and other options) to be used for this context.
-		///     </para>
-		/// </summary>
+		private Boolean TriggersEnabled { get; set; } = true;
+#if EF_CORE
 		protected DbContextWithTriggers() : base() { }
-
-		/// <summary>
-		///     <para>
-		///         Initializes a new instance of the <see cref="T:EntityFrameworkCore.Triggers.DbContextWithTriggers" /> class using the specified options.
-		///         The <see cref="M:Microsoft.EntityFrameworkCore.DbContext.OnConfiguring(Microsoft.EntityFrameworkCore.DbContextOptionsBuilder)" /> method will still be called to allow further
-		///         configuration of the options.
-		///     </para>
-		/// </summary>
-		/// <param name="options">The options for this context.</param>
 		protected DbContextWithTriggers(DbContextOptions options) : base(options) { }
+
+		public override Int32 SaveChanges() {
+			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges) : base.SaveChanges();
+		}
+		
+		public override Int32 SaveChanges(Boolean acceptAllChangesOnSuccess) {
+			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges, acceptAllChangesOnSuccess) : base.SaveChanges(acceptAllChangesOnSuccess);
+		}
+		
+		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken) : base.SaveChangesAsync(cancellationToken);
+		}
+		
+		public override Task<Int32> SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
+			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess, cancellationToken) : base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+		}
+#else
+		protected DbContextWithTriggers() : base() { }
+		protected DbContextWithTriggers(DbCompiledModel model) : base(model) { }
+		protected DbContextWithTriggers(String nameOrConnectionString) : base(nameOrConnectionString) { }
+		protected DbContextWithTriggers(DbConnection existingConnection, Boolean contextOwnsConnection) : base(existingConnection, contextOwnsConnection) { }
+		protected DbContextWithTriggers(ObjectContext objectContext, Boolean dbContextOwnsObjectContext) : base(objectContext, dbContextOwnsObjectContext) { }
+		protected DbContextWithTriggers(String nameOrConnectionString, DbCompiledModel model) : base(nameOrConnectionString, model) { }
+		protected DbContextWithTriggers(DbConnection existingConnection, DbCompiledModel model, Boolean contextOwnsConnection) : base(existingConnection, model, contextOwnsConnection) { }
+		
+		public override Int32 SaveChanges() {
+			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges) : base.SaveChanges();
+		}
+#if !NET40
+		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
+			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken) : base.SaveChangesAsync(cancellationToken);
+		}
+#endif
+#endif
 	}
 }

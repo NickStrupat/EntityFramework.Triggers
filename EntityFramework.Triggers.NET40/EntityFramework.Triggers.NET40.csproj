@@ -63,11 +63,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\EntityFramework.Triggers\DbContextWithTriggers.cs">
-      <Link>DbContextWithTriggers.cs</Link>
-    </Compile>
     <Compile Include="..\EntityFramework.Triggers\Properties\AssemblyInfo.cs">
       <Link>Properties\AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFrameworkCore.Triggers\DbContextWithTriggers.cs">
+      <Link>DbContextWithTriggers.cs</Link>
     </Compile>
     <Compile Include="..\EntityFrameworkCore.Triggers\Extensions.cs">
       <Link>Extensions.cs</Link>

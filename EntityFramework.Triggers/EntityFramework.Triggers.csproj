@@ -67,6 +67,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\EntityFrameworkCore.Triggers\DbContextWithTriggers.cs">
+      <Link>DbContextWithTriggers.cs</Link>
+    </Compile>
     <Compile Include="..\EntityFrameworkCore.Triggers\Extensions.cs">
       <Link>Extensions.cs</Link>
     </Compile>
@@ -97,7 +100,6 @@
     <Compile Include="..\EntityFrameworkCore.Triggers\TypeInfoExtensions.cs">
       <Link>TypeInfoExtensions.cs</Link>
     </Compile>
-    <Compile Include="DbContextWithTriggers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
