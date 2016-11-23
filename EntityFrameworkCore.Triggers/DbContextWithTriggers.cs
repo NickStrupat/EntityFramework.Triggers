@@ -4,13 +4,13 @@ using System.Threading.Tasks;
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
-namespace EntityFrameworkCore.Triggers.Tests {
+namespace EntityFrameworkCore.Triggers {
 #else
 using System.Data.Entity;
 using System.Data.Common;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
-namespace EntityFramework.Triggers.Tests {
+namespace EntityFramework.Triggers {
 #endif
 	/// <summary>
 	/// A <see cref="DbContext"/>-derived class with trigger functionality called automatically
