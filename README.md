@@ -18,7 +18,7 @@ To use triggers on your entities, simply have your DbContext inherit from `DbCon
 
 ```csharp
 public abstract class Trackable {
-	public DateTime Inserted { get; private set; } // note that if using EF Core, these setters must be `protected` (likely a bug in EF Core)
+	public DateTime Inserted { get; private set; }
 	public DateTime Updated { get; private set; }
 
 	static Trackable() {
@@ -103,10 +103,10 @@ namespace Example {
 		}
 
 		public class Person : Trackable {
-			public virtual Int64 Id { get; protected set; }
+			public virtual Int64 Id { get; private set; }
 			public virtual String FirstName { get; set; }
 			public virtual String LastName { get; set; }
-			public virtual DateTime? Deleted { get; set; }
+			public virtual DateTime? Deleted { get; private set; }
 			public virtual Boolean IsDeleted => Deleted != null;
 
 			static Person() {
@@ -118,7 +118,7 @@ namespace Example {
 		}
 
 		public class LogEntry {
-			public virtual Int64 Id { get; protected set; }
+			public virtual Int64 Id { get; private set; }
 			public virtual String Message { get; set; }
 		}
 
