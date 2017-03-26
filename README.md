@@ -3,10 +3,15 @@ EntityFramework.Triggers
 
 Add triggers to your entities with insert, update, and delete events. There are three events for each: before, after, and upon failure.
 
-| EF version | .NET support                          | NuGet package                                                                                                                                              |
-|:-----------|:--------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.3      | == 4.0 &#124;&#124; >= 4.5            | [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)         |
-| Core 1.1   | >= 4.5.1 &#124;&#124; >= Standard 1.3 | [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/) |
+#### Entity Framework 6.1.3
+`.NET 4.5+`
+
+[![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)
+
+#### Entity Framework Core 1.1.1
+`.NET 4.5.1+` || `.NET Standard 1.3
+
+[![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/)
 
 This repo contains the code for both the `EntityFramework` and `EntityFrameworkCore` projects.
 
