@@ -4,7 +4,7 @@ EntityFramework.Triggers
 Add triggers to your entities with insert, update, and delete events. There are three events for each: before, after, and upon failure.
 
 #### Entity Framework 6.1.3
-`.NET 4.5+`
+`.NET 4.0+`
 
 [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)
 
