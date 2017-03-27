@@ -9,7 +9,7 @@ Add triggers to your entities with insert, update, and delete events. There are 
 [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)
 
 #### Entity Framework Core 1.1.1
-`.NET 4.5.1+` || `.NET Standard 1.3
+`.NET 4.5.1+` || `.NET Standard 1.3`
 
 [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/)
 
