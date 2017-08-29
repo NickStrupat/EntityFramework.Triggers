@@ -1,50 +1,33 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Supports events for entity inserting, inserted, updating, updated, deleting, and deleted. Also events on insert failure, update failure, and delete failure.</Description>
     <AssemblyTitle>EntityFrameworkCore.Triggers</AssemblyTitle>
-    <VersionPrefix>1.0.3</VersionPrefix>
-    <Authors>Nick Strupat</Authors>
-    <TargetFrameworks>net451;netstandard1.3</TargetFrameworks>
     <AssemblyName>EntityFrameworkCore.Triggers</AssemblyName>
+    <Authors>Nick Strupat</Authors>
     <PackageId>EntityFrameworkCore.Triggers</PackageId>
     <PackageTags>entity-framework-core;entityframeworkcore;triggers</PackageTags>
     <PackageProjectUrl>https://github.com/NickStrupat/EntityFramework.Triggers</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/NickStrupat/EntityFramework.Triggers/master/LICENSE</PackageLicenseUrl>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.3' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.3' ">1.6.1</NetStandardImplicitPackageVersion>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
+    <Version>1.1.0</Version>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;NETSTANDARD2_0;EF_CORE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;RELEASE;NETSTANDARD2_0;EF_CORE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="1.1.1" />
-    <PackageReference Include="EntityFrameworkCore.TypedOriginalValues" Version="1.0.3" />
     <PackageReference Include="CoContra" Version="1.0.2" />
-    <PackageReference Include="NETStandard.Library" Version="1.6.1" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
-  </ItemGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <AssemblyName>EntityFrameworkCore.Triggers.net451</AssemblyName>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <AssemblyName>EntityFrameworkCore.Triggers.netstandard1.3</AssemblyName>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>$(DefineConstants);EF_CORE</DefineConstants>
-  </PropertyGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+    <PackageReference Include="EntityFrameworkCore.TypedOriginalValues" Version="1.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.0" />
   </ItemGroup>
 
 </Project>

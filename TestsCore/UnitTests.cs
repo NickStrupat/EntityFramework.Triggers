@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-#if NET40
-using NUnit.Framework;
-using Fact = NUnit.Framework.TestAttribute;
-#else
 using Xunit;
-#endif
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +13,6 @@ namespace EntityFramework.Triggers.Tests {
 #endif
 
 	public class UnitTests {
-		public static void Main(String[] args) { }
 		// inserting
 		// insertfailed
 		// inserted
@@ -77,8 +71,7 @@ namespace EntityFramework.Triggers.Tests {
 			Context.SaveChanges();
 			Assert.True(thing2.Value == "changed");
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "okay" };
@@ -94,7 +87,6 @@ namespace EntityFramework.Triggers.Tests {
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 			Assert.True(thing2.Value == "changed");
 		});
-#endif
 	}
 
 	public class AddRemoveEventHandler : TestBase {
@@ -115,8 +107,7 @@ namespace EntityFramework.Triggers.Tests {
 			Context.SaveChanges();
 			Assert.True(1 == triggerCount);
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			Context.Things.Add(new Thing { Value = "Foo" });
@@ -128,7 +119,6 @@ namespace EntityFramework.Triggers.Tests {
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 			Assert.True(1 == triggerCount);
 		});
-#endif
 	}
 
 	public class Insert : ThingTestBase {
@@ -141,8 +131,7 @@ namespace EntityFramework.Triggers.Tests {
 			InsertedCheckFlags(thing);
 			Assert.True(Context.Things.SingleOrDefault(x => x.Value == guid) != null);
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var guid = Guid.NewGuid().ToString();
@@ -152,7 +141,6 @@ namespace EntityFramework.Triggers.Tests {
 			InsertedCheckFlags(thing);
 			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid).ConfigureAwait(false) != null);
 		});
-#endif
 	}
 
 	public class InsertFail : ThingTestBase {
@@ -173,8 +161,7 @@ namespace EntityFramework.Triggers.Tests {
 			}
 			Assert.True(false, "Exception not caught");
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = null };
@@ -192,7 +179,6 @@ namespace EntityFramework.Triggers.Tests {
 			}
 			Assert.True(false, "Exception not caught");
 		});
-#endif
 	}
 
 	public class InsertFailSwallow : TestBase {
@@ -213,14 +199,12 @@ namespace EntityFramework.Triggers.Tests {
 			Context.Things.Add(new Thing { Value = null });
 			Context.SaveChanges();
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			Context.Things.Add(new Thing { Value = null });
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 		});
-#endif
 	}
 
 	public class Update : ThingTestBase {
@@ -234,8 +218,7 @@ namespace EntityFramework.Triggers.Tests {
 			Context.SaveChanges();
 			UpdatedCheckFlags(thing);
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
@@ -246,7 +229,6 @@ namespace EntityFramework.Triggers.Tests {
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 			UpdatedCheckFlags(thing);
 		});
-#endif
 	}
 
 	public class UpdateFail : ThingTestBase {
@@ -270,8 +252,7 @@ namespace EntityFramework.Triggers.Tests {
 			}
 			Assert.True(false, "Exception not caught");
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
@@ -292,7 +273,6 @@ namespace EntityFramework.Triggers.Tests {
 			}
 			Assert.True(false, "Exception not caught");
 		});
-#endif
 	}
 
 	public class UpdateFailSwallow : TestBase {
@@ -316,8 +296,7 @@ namespace EntityFramework.Triggers.Tests {
 			thing.Value = null;
 			Context.SaveChanges();
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
@@ -326,7 +305,6 @@ namespace EntityFramework.Triggers.Tests {
 			thing.Value = null;
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 		});
-#endif
 	}
 
 	public class Delete : ThingTestBase {
@@ -340,8 +318,7 @@ namespace EntityFramework.Triggers.Tests {
 			Context.SaveChanges();
 			DeletedCheckFlags(thing);
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
@@ -352,7 +329,6 @@ namespace EntityFramework.Triggers.Tests {
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 			DeletedCheckFlags(thing);
 		});
-#endif
 	}
 
 	public class DeleteFail : ThingTestBase {
@@ -386,8 +362,7 @@ namespace EntityFramework.Triggers.Tests {
 			}
 			Assert.True(false, "Exception not caught");
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
@@ -404,7 +379,6 @@ namespace EntityFramework.Triggers.Tests {
 			}
 			Assert.True(false, "Exception not caught");
 		});
-#endif
 	}
 
 	public class DeleteFailSwallow : TestBase {
@@ -434,8 +408,7 @@ namespace EntityFramework.Triggers.Tests {
 			Context.Things.Remove(thing);
 			Context.SaveChanges();
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = "Foo" };
@@ -444,7 +417,6 @@ namespace EntityFramework.Triggers.Tests {
 			Context.Things.Remove(thing);
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 		});
-#endif
 	}
 
 	public class InsertingCancel : ThingTestBase {
@@ -478,8 +450,7 @@ namespace EntityFramework.Triggers.Tests {
 			Assert.True(cancel2Ran, nameof(cancel2Ran) + ": " + cancel2Ran);
 			Assert.True(Context.Things.SingleOrDefault(x => x.Value == guid) == null);
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var guid = Guid.NewGuid().ToString();
@@ -491,7 +462,6 @@ namespace EntityFramework.Triggers.Tests {
 			Assert.True(cancel2Ran, nameof(cancel2Ran) + ": " + cancel2Ran);
 			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid).ConfigureAwait(false) == null);
 		});
-#endif
 	}
 
 	public class UpdatingCancel : ThingTestBase {
@@ -525,11 +495,11 @@ namespace EntityFramework.Triggers.Tests {
 			thing.Value = updatedGuid;
 			Context.SaveChanges();
 			UpdatingCheckFlags(thing);
+            Assert.True(cancel2Ran);
 			Assert.True(Context.Things.SingleOrDefault(x => x.Value == guid) != null);
 			Assert.True(Context.Things.SingleOrDefault(x => x.Value == updatedGuid) == null);
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var guid = Guid.NewGuid().ToString();
@@ -541,10 +511,10 @@ namespace EntityFramework.Triggers.Tests {
 			thing.Value = updatedGuid;
 			await Context.SaveChangesAsync();
 			UpdatingCheckFlags(thing);
+            Assert.True(cancel2Ran);
 			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid).ConfigureAwait(false) != null);
 			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == updatedGuid).ConfigureAwait(false) == null);
 		});
-#endif
 	}
 
 	public class DeletingCancel : ThingTestBase {
@@ -577,10 +547,10 @@ namespace EntityFramework.Triggers.Tests {
 			Context.Things.Remove(thing);
 			Context.SaveChanges();
 			DeletingCheckFlags(thing);
+            Assert.False(cancel2Ran);
 			Assert.True(Context.Things.SingleOrDefault(x => x.Value == guid) != null);
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var guid = Guid.NewGuid().ToString();
@@ -591,9 +561,9 @@ namespace EntityFramework.Triggers.Tests {
 			Context.Things.Remove(thing);
 			await Context.SaveChangesAsync();
 			DeletingCheckFlags(thing);
+            Assert.False(cancel2Ran);
 			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid).ConfigureAwait(false) != null);
 		});
-#endif
 	}
 
 	public class EventFiringOrderRelativeToAttachment : TestBase {
@@ -620,8 +590,7 @@ namespace EntityFramework.Triggers.Tests {
 			Context.SaveChanges();
 			Assert.True(thing.Numbers.SequenceEqual(new [] { 1, 2, 3 }));
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var thing = new Thing { Value = Guid.NewGuid().ToString() };
@@ -629,7 +598,6 @@ namespace EntityFramework.Triggers.Tests {
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 			Assert.True(thing.Numbers.SequenceEqual(new[] { 1, 2, 3 }));
 		});
-#endif
 	}
 
 	public class EventFiringOrderRelativeToClassHierarchy : TestBase {
@@ -656,8 +624,7 @@ namespace EntityFramework.Triggers.Tests {
 			Context.SaveChanges();
 			Assert.True(royalGala.Numbers.SequenceEqual(new[] { 1, 2, 3 }));
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var royalGala = new RoyalGala { Value = Guid.NewGuid().ToString() };
@@ -665,7 +632,6 @@ namespace EntityFramework.Triggers.Tests {
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 			Assert.True(royalGala.Numbers.SequenceEqual(new[] { 1, 2, 3 }));
 		});
-#endif
 	}
 
 	public class EventFiringOrderRelativeToClassInterfaceAndDbContextHierarchy : TestBase {
@@ -743,8 +709,7 @@ namespace EntityFramework.Triggers.Tests {
 			Context.SaveChanges();
 			Assert.True(royalGala.Numbers.SequenceEqual(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ,16, 17, 18 }));
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var royalGala = new RoyalGala { Value = Guid.NewGuid().ToString() };
@@ -752,7 +717,6 @@ namespace EntityFramework.Triggers.Tests {
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 			Assert.True(royalGala.Numbers.SequenceEqual(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 }));
 		});
-#endif
 	}
 
 	public class OriginalValuesOnUpdating : TestBase {
@@ -777,8 +741,7 @@ namespace EntityFramework.Triggers.Tests {
 			thing.Value = guid2;
 			Context.SaveChanges();
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			guid = Guid.NewGuid().ToString();
@@ -789,7 +752,6 @@ namespace EntityFramework.Triggers.Tests {
 			thing.Value = guid2;
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 		});
-#endif
 	}
 
 	public class OriginalValuesOnDeleting : TestBase {
@@ -817,8 +779,7 @@ namespace EntityFramework.Triggers.Tests {
 			Context.Things.Remove(thing);
 			Context.SaveChanges();
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			guid = Guid.NewGuid().ToString();
@@ -830,7 +791,6 @@ namespace EntityFramework.Triggers.Tests {
 			Context.Things.Remove(thing);
 			await Context.SaveChangesAsync().ConfigureAwait(false);
 		});
-#endif
 	}
 
 	public class Covariance : TestBase {
@@ -917,8 +877,7 @@ namespace EntityFramework.Triggers.Tests {
 			Assert.True(objectInserting2Ran);
 			Assert.True(objectInserting3Ran);
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var guid = Guid.NewGuid().ToString();
@@ -939,7 +898,6 @@ namespace EntityFramework.Triggers.Tests {
 			Assert.True(objectInserting2Ran);
 			Assert.True(objectInserting3Ran);
 		});
-#endif
 	}
 
 	//	public class MultiplyDeclaredInterfaces : TestBase {
@@ -949,12 +907,10 @@ namespace EntityFramework.Triggers.Tests {
 	//		[Fact]
 	//		public void Sync() => DoATest(() => {
 	//		});
-
-	//#if !NET40
+    
 	//		[Fact]
 	//		public Task Async() => DoATestAsync(async () => {
 	//		});
-	//#endif
 	//	}
 
 	//	public interface ICreature { }

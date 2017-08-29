@@ -48,11 +48,9 @@ namespace EntityFramework.Triggers {
 		public override Int32 SaveChanges() {
 			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges) : base.SaveChanges();
 		}
-#if !NET40
 		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
 			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken) : base.SaveChangesAsync(cancellationToken);
 		}
-#endif
 #endif
 	}
 }

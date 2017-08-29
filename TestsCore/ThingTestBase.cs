@@ -2,13 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
-#if NET40
-using NUnit.Framework;
-using Fact = NUnit.Framework.TestAttribute;
-#else
 using Xunit;
-#endif
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;

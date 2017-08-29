@@ -8,10 +8,6 @@ namespace EntityFrameworkCore.Triggers {
 namespace EntityFramework.Triggers {
 #endif
 	public static class TypeInfoExtensions {
-#if NET40
-		public static Type GetTypeInfo(this Type type) => type;
-#endif
-
 		public static Type[] GetDeclaredInterfaces(this Type t) {
 			var allInterfaces = t.GetInterfaces();
 			var baseInterfaces = t.GetTypeInfo().BaseType?.GetInterfaces();

@@ -59,7 +59,6 @@ namespace EntityFramework.Triggers {
 			return 0;
 		}
 
-#if !NET40
 		/// <summary>
 		/// Asynchronously saves all changes made in this context to the underlying database, firing trigger events accordingly.
 		/// </summary>
@@ -86,11 +85,11 @@ namespace EntityFramework.Triggers {
 			try {
 				var afterActions = invoker.RaiseTheBeforeEvents(dbContext);
 #if EF_CORE
-				var result = await baseSaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+				var result = await baseSaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
 #else
-				var result = await baseSaveChangesAsync(cancellationToken);
+				var result = await baseSaveChangesAsync(cancellationToken).ConfigureAwait(false);
 #endif
-				invoker.RaiseTheAfterEvents(dbContext, afterActions);
+                invoker.RaiseTheAfterEvents(dbContext, afterActions);
 				return result;
 			}
 			catch (DbUpdateException ex) when(invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
@@ -108,7 +107,6 @@ namespace EntityFramework.Triggers {
 		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken = default(CancellationToken)) {
 			return dbContext.SaveChangesWithTriggersAsync(baseSaveChangesAsync, true, cancellationToken);
 		}
-#endif
 #endif
 	}
 }

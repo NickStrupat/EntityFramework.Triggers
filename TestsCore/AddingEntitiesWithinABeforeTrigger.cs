@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
-#if NET40
-using NUnit.Framework;
-using Fact = NUnit.Framework.TestAttribute;
-#else
 using Xunit;
-#endif
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
@@ -43,8 +34,7 @@ namespace EntityFramework.Triggers.Tests {
 			Assert.True(Context.Things.SingleOrDefault(x => x.Value == guid) != null);
 			Assert.True(Context.People.SingleOrDefault(x => x.LastName == lastName) != null);
 		});
-
-#if !NET40
+        
 		[Fact]
 		public Task Async() => DoATestAsync(async () => {
 			var guid = Guid.NewGuid().ToString();
@@ -53,6 +43,5 @@ namespace EntityFramework.Triggers.Tests {
 			Assert.True(await Context.Things.SingleOrDefaultAsync(x => x.Value == guid).ConfigureAwait(false) != null);
 			Assert.True(await Context.People.SingleOrDefaultAsync(x => x.LastName == lastName).ConfigureAwait(false) != null);
 		});
-#endif
 	}
 }
