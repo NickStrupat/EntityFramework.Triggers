@@ -10,23 +10,23 @@ namespace EntityFramework.Triggers {
 
 	public static class Triggers<TEntity> where TEntity : class {
 		/// <summary>The triggers fired before an entity is inserted</summary>
-		public static event Action<IInsertingEntry   <TEntity, DbContext>> Inserting    { add { Triggers<TEntity, DbContext>.Inserting    += value; } remove { Triggers<TEntity, DbContext>.Inserting    -= value; } }
+		public static event Action<IInsertingEntry   <TEntity, DbContext>> Inserting    { add => Triggers<TEntity, DbContext>.Inserting    += value; remove => Triggers<TEntity, DbContext>.Inserting    -= value; }
 		/// <summary>The triggers fired before an entity is updated</summary>
-		public static event Action<IUpdatingEntry    <TEntity, DbContext>> Updating     { add { Triggers<TEntity, DbContext>.Updating     += value; } remove { Triggers<TEntity, DbContext>.Updating     -= value; } }
+		public static event Action<IUpdatingEntry    <TEntity, DbContext>> Updating     { add => Triggers<TEntity, DbContext>.Updating     += value; remove => Triggers<TEntity, DbContext>.Updating     -= value; }
 		/// <summary>The triggers fired before an entity is deleted</summary>
-		public static event Action<IDeletingEntry    <TEntity, DbContext>> Deleting     { add { Triggers<TEntity, DbContext>.Deleting     += value; } remove { Triggers<TEntity, DbContext>.Deleting     -= value; } }
+		public static event Action<IDeletingEntry    <TEntity, DbContext>> Deleting     { add => Triggers<TEntity, DbContext>.Deleting     += value; remove => Triggers<TEntity, DbContext>.Deleting     -= value; }
 		/// <summary>The triggers fired when an insertion throws an exception</summary>
-		public static event Action<IInsertFailedEntry<TEntity, DbContext>> InsertFailed { add { Triggers<TEntity, DbContext>.InsertFailed += value; } remove { Triggers<TEntity, DbContext>.InsertFailed -= value; } }
+		public static event Action<IInsertFailedEntry<TEntity, DbContext>> InsertFailed { add => Triggers<TEntity, DbContext>.InsertFailed += value; remove => Triggers<TEntity, DbContext>.InsertFailed -= value; }
 		/// <summary>The triggers fired when an update throws an exception</summary>
-		public static event Action<IUpdateFailedEntry<TEntity, DbContext>> UpdateFailed { add { Triggers<TEntity, DbContext>.UpdateFailed += value; } remove { Triggers<TEntity, DbContext>.UpdateFailed -= value; } }
+		public static event Action<IUpdateFailedEntry<TEntity, DbContext>> UpdateFailed { add => Triggers<TEntity, DbContext>.UpdateFailed += value; remove => Triggers<TEntity, DbContext>.UpdateFailed -= value; }
 		/// <summary>The triggers fired when an deletion throws an exception</summary>
-		public static event Action<IDeleteFailedEntry<TEntity, DbContext>> DeleteFailed { add { Triggers<TEntity, DbContext>.DeleteFailed += value; } remove { Triggers<TEntity, DbContext>.DeleteFailed -= value; } }
+		public static event Action<IDeleteFailedEntry<TEntity, DbContext>> DeleteFailed { add => Triggers<TEntity, DbContext>.DeleteFailed += value; remove => Triggers<TEntity, DbContext>.DeleteFailed -= value; }
 		/// <summary>The triggers fired after an entity is inserted</summary>
-		public static event Action<IInsertedEntry    <TEntity, DbContext>> Inserted     { add { Triggers<TEntity, DbContext>.Inserted     += value; } remove { Triggers<TEntity, DbContext>.Inserted     -= value; } }
+		public static event Action<IInsertedEntry    <TEntity, DbContext>> Inserted     { add => Triggers<TEntity, DbContext>.Inserted     += value; remove => Triggers<TEntity, DbContext>.Inserted     -= value; }
 		/// <summary>The triggers fired after an entity is updated</summary>
-		public static event Action<IUpdatedEntry     <TEntity, DbContext>> Updated      { add { Triggers<TEntity, DbContext>.Updated      += value; } remove { Triggers<TEntity, DbContext>.Updated      -= value; } }
+		public static event Action<IUpdatedEntry     <TEntity, DbContext>> Updated      { add => Triggers<TEntity, DbContext>.Updated      += value; remove => Triggers<TEntity, DbContext>.Updated      -= value; }
 		/// <summary>The triggers fired after an entity is deleted</summary>
-		public static event Action<IDeletedEntry     <TEntity, DbContext>> Deleted      { add { Triggers<TEntity, DbContext>.Deleted      += value; } remove { Triggers<TEntity, DbContext>.Deleted      -= value; } }
+		public static event Action<IDeletedEntry     <TEntity, DbContext>> Deleted      { add => Triggers<TEntity, DbContext>.Deleted      += value; remove => Triggers<TEntity, DbContext>.Deleted      -= value; }
 	}
 
 	public static class Triggers<TEntity, TDbContext> where TEntity : class where TDbContext : DbContext {
@@ -41,23 +41,23 @@ namespace EntityFramework.Triggers {
 		private static readonly CovariantAction<IDeletedEntry     <TEntity, TDbContext>> deleted      = new CovariantAction<IDeletedEntry     <TEntity, TDbContext>>();
 
 		/// <summary>The triggers fired before an entity is inserted</summary>
-		public static event Action<IInsertingEntry   <TEntity, TDbContext>> Inserting    { add { inserting   .Add(value); } remove { inserting   .Remove(value); } }
+		public static event Action<IInsertingEntry   <TEntity, TDbContext>> Inserting    { add => inserting   .Add(value); remove => inserting   .Remove(value); }
 		/// <summary>The triggers fired before an entity is updated</summary>
-		public static event Action<IUpdatingEntry    <TEntity, TDbContext>> Updating     { add { updating    .Add(value); } remove { updating    .Remove(value); } }
+		public static event Action<IUpdatingEntry    <TEntity, TDbContext>> Updating     { add => updating    .Add(value); remove => updating    .Remove(value); }
 		/// <summary>The triggers fired before an entity is deleted</summary>
-		public static event Action<IDeletingEntry    <TEntity, TDbContext>> Deleting     { add { deleting    .Add(value); } remove { deleting    .Remove(value); } }
+		public static event Action<IDeletingEntry    <TEntity, TDbContext>> Deleting     { add => deleting    .Add(value); remove => deleting    .Remove(value); }
 		/// <summary>The triggers fired when an insertion throws an exception</summary>
-		public static event Action<IInsertFailedEntry<TEntity, TDbContext>> InsertFailed { add { insertFailed.Add(value); } remove { insertFailed.Remove(value); } }
+		public static event Action<IInsertFailedEntry<TEntity, TDbContext>> InsertFailed { add => insertFailed.Add(value); remove => insertFailed.Remove(value); }
 		/// <summary>The triggers fired when an update throws an exception</summary>
-		public static event Action<IUpdateFailedEntry<TEntity, TDbContext>> UpdateFailed { add { updateFailed.Add(value); } remove { updateFailed.Remove(value); } }
+		public static event Action<IUpdateFailedEntry<TEntity, TDbContext>> UpdateFailed { add => updateFailed.Add(value); remove => updateFailed.Remove(value); }
 		/// <summary>The triggers fired when an deletion throws an exception</summary>
-		public static event Action<IDeleteFailedEntry<TEntity, TDbContext>> DeleteFailed { add { deleteFailed.Add(value); } remove { deleteFailed.Remove(value); } }
+		public static event Action<IDeleteFailedEntry<TEntity, TDbContext>> DeleteFailed { add => deleteFailed.Add(value); remove => deleteFailed.Remove(value); }
 		/// <summary>The triggers fired after an entity is inserted</summary>
-		public static event Action<IInsertedEntry    <TEntity, TDbContext>> Inserted     { add { inserted    .Add(value); } remove { inserted    .Remove(value); } }
+		public static event Action<IInsertedEntry    <TEntity, TDbContext>> Inserted     { add => inserted    .Add(value); remove => inserted    .Remove(value); }
 		/// <summary>The triggers fired after an entity is updated</summary>
-		public static event Action<IUpdatedEntry     <TEntity, TDbContext>> Updated      { add { updated     .Add(value); } remove { updated     .Remove(value); } }
+		public static event Action<IUpdatedEntry     <TEntity, TDbContext>> Updated      { add => updated     .Add(value); remove => updated     .Remove(value); }
 		/// <summary>The triggers fired after an entity is deleted</summary>
-		public static event Action<IDeletedEntry     <TEntity, TDbContext>> Deleted      { add { deleted     .Add(value); } remove { deleted     .Remove(value); } }
+		public static event Action<IDeletedEntry     <TEntity, TDbContext>> Deleted      { add => deleted     .Add(value); remove => deleted     .Remove(value); }
 
 		internal static void RaiseInserting   (IInsertingEntry   <TEntity, TDbContext> entry) => inserting   .Invoke(entry);
 		internal static void RaiseUpdating    (IUpdatingEntry    <TEntity, TDbContext> entry) => updating    .Invoke(entry);
