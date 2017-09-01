@@ -5,14 +5,19 @@ using Xunit;
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
-namespace EntityFrameworkCore.Triggers.Tests {
+# if NETCOREAPP2_0
+namespace EntityFrameworkCore.Triggers.Tests
+{
+# else
+namespace EntityFrameworkCore.Triggers.Tests.Net461 {
+# endif
 #else
 using System.Data.Entity;
 using System.Data.Entity.Validation;
 namespace EntityFramework.Triggers.Tests {
 #endif
 
-	public class UnitTests {
+    public class UnitTests {
 		// inserting
 		// insertfailed
 		// inserted

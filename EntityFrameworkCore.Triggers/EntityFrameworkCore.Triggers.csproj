@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <Description>Supports events for entity inserting, inserted, updating, updated, deleting, and deleted. Also events on insert failure, update failure, and delete failure.</Description>
     <AssemblyTitle>EntityFrameworkCore.Triggers</AssemblyTitle>
     <AssemblyName>EntityFrameworkCore.Triggers</AssemblyName>
@@ -25,7 +25,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CoContra" Version="1.0.2" />
+    <PackageReference Include="CoContra" Version="1.1.0" />
     <PackageReference Include="EntityFrameworkCore.TypedOriginalValues" Version="1.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.0" />
   </ItemGroup>

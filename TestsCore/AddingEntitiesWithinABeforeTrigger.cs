@@ -5,14 +5,18 @@ using Xunit;
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
+# if NETCOREAPP2_0
 namespace EntityFrameworkCore.Triggers.Tests {
+# else
+namespace EntityFrameworkCore.Triggers.Tests.Net461 {
+# endif
 #else
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 namespace EntityFramework.Triggers.Tests {
 #endif
-	public class InsideAnInsertingTriggerInsertAnEntityWhichHasInsertingTriggers : ThingTestBase {
+    public class InsideAnInsertingTriggerInsertAnEntityWhichHasInsertingTriggers : ThingTestBase {
 		// Note that `Person` has triggers via its base classes `EntityWithTracking` and `EntityWithInsertTracking`
 		private readonly String lastName = Guid.NewGuid().ToString();
 		private void TriggersOnInserting(IBeforeEntry<Thing, Context> beforeEntry) => beforeEntry.Context.People.Add(new Person { LastName = lastName });

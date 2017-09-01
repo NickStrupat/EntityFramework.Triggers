@@ -1,20 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.10
+VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C641D16F-6B2F-42C2-81AE-ABBF7C1D4A85}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkCore.Triggers", "EntityFrameworkCore.Triggers\EntityFrameworkCore.Triggers.csproj", "{8A37C5E0-C635-4324-ABD8-572E3C68438A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFrameworkCore.Triggers", "EntityFrameworkCore.Triggers\EntityFrameworkCore.Triggers.csproj", "{8A37C5E0-C635-4324-ABD8-572E3C68438A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Triggers", "EntityFramework.Triggers\EntityFramework.Triggers.csproj", "{C1C9F07E-DE27-41B2-9099-6E7D22803003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsCore", "TestsCore\TestsCore.csproj", "{CF705273-E7AE-47A2-B545-2DED5DD96427}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestsCore", "TestsCore\TestsCore.csproj", "{CF705273-E7AE-47A2-B545-2DED5DD96427}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{C32D9005-85D3-4384-AEF8-2853C2A3C6B1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestsCore.net461", "TestsCore.net461\TestsCore.net461.csproj", "{45E55231-9EB6-4734-9444-C6F970B1A0BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{C32D9005-85D3-4384-AEF8-2853C2A3C6B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C32D9005-85D3-4384-AEF8-2853C2A3C6B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C32D9005-85D3-4384-AEF8-2853C2A3C6B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45E55231-9EB6-4734-9444-C6F970B1A0BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45E55231-9EB6-4734-9444-C6F970B1A0BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45E55231-9EB6-4734-9444-C6F970B1A0BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45E55231-9EB6-4734-9444-C6F970B1A0BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
