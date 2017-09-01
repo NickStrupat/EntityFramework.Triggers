@@ -10,10 +10,11 @@
     <PackageTags>entity-framework-core;entityframeworkcore;triggers</PackageTags>
     <PackageProjectUrl>https://github.com/NickStrupat/EntityFramework.Triggers</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/NickStrupat/EntityFramework.Triggers/master/LICENSE</PackageLicenseUrl>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
-    <Version>1.1.0</Version>
+    <AssemblyVersion>1.1.1.0</AssemblyVersion>
+    <FileVersion>1.1.1.0</FileVersion>
+    <Version>1.1.1</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageReleaseNotes>fix for net461</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
