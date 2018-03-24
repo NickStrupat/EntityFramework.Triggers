@@ -13,7 +13,7 @@ using System.Data.Entity.Migrations;
 namespace EntityFramework.Triggers.Tests {
 #endif
 
-	public class Context : DbContextWithTriggers {
+	public class Context : IdentityDbContextWithTriggers {
 #if EF_CORE
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
 			optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=EntityFrameworkCore.Triggers.Tests;Trusted_Connection=True;");
