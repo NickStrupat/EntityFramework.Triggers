@@ -18,8 +18,8 @@ namespace EntityFramework.Triggers {
 	public abstract class DbContextWithTriggers : DbContext {
 		public Boolean TriggersEnabled { get; set; } = true;
 #if EF_CORE
-		protected DbContextWithTriggers() : base() { }
-		protected DbContextWithTriggers(DbContextOptions options) : base(options) { }
+		protected DbContextWithTriggers() : base() {}
+		protected DbContextWithTriggers(DbContextOptions options) : base(options) {}
 
 		public override Int32 SaveChanges() {
 			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges) : base.SaveChanges();
@@ -37,13 +37,14 @@ namespace EntityFramework.Triggers {
 			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess, cancellationToken) : base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 		}
 #else
-		protected DbContextWithTriggers() : base() { }
-		protected DbContextWithTriggers(DbCompiledModel model) : base(model) { }
-		protected DbContextWithTriggers(String nameOrConnectionString) : base(nameOrConnectionString) { }
-		protected DbContextWithTriggers(DbConnection existingConnection, Boolean contextOwnsConnection) : base(existingConnection, contextOwnsConnection) { }
-		protected DbContextWithTriggers(ObjectContext objectContext, Boolean dbContextOwnsObjectContext) : base(objectContext, dbContextOwnsObjectContext) { }
-		protected DbContextWithTriggers(String nameOrConnectionString, DbCompiledModel model) : base(nameOrConnectionString, model) { }
-		protected DbContextWithTriggers(DbConnection existingConnection, DbCompiledModel model, Boolean contextOwnsConnection) : base(existingConnection, model, contextOwnsConnection) { }
+		private readonly IServiceProvider serviceProvider;
+		protected DbContextWithTriggers(IServiceProvider serviceProvider) : base() => this.serviceProvider = serviceProvider;
+		protected DbContextWithTriggers(IServiceProvider serviceProvider, DbCompiledModel model) : base(model) => this.serviceProvider = serviceProvider;
+		protected DbContextWithTriggers(IServiceProvider serviceProvider, String nameOrConnectionString) : base(nameOrConnectionString) => this.serviceProvider = serviceProvider;
+		protected DbContextWithTriggers(IServiceProvider serviceProvider, DbConnection existingConnection, Boolean contextOwnsConnection) : base(existingConnection, contextOwnsConnection) => this.serviceProvider = serviceProvider;
+		protected DbContextWithTriggers(IServiceProvider serviceProvider, ObjectContext objectContext, Boolean dbContextOwnsObjectContext) : base(objectContext, dbContextOwnsObjectContext) => this.serviceProvider = serviceProvider;
+		protected DbContextWithTriggers(IServiceProvider serviceProvider, String nameOrConnectionString, DbCompiledModel model) : base(nameOrConnectionString, model) => this.serviceProvider = serviceProvider;
+		protected DbContextWithTriggers(IServiceProvider serviceProvider, DbConnection existingConnection, DbCompiledModel model, Boolean contextOwnsConnection) : base(existingConnection, model, contextOwnsConnection) => this.serviceProvider = serviceProvider;
 		
 		public override Int32 SaveChanges() {
 			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges) : base.SaveChanges();

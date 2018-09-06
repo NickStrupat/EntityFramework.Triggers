@@ -35,7 +35,7 @@ namespace EntityFramework.Triggers {
 	public interface IChangeEntry<out TEntity> : IEntry<TEntity> where TEntity : class {}
 
 	public interface IBeforeChangeEntry<out TEntity> : IChangeEntry<TEntity>, IBeforeEntry<TEntity> where TEntity : class {
-		/// <summary>A proxy object representing the state of the entity before the changes</summary>
+		/// <summary>An object representing the state of the entity before the changes</summary>
 		TEntity Original { get; }
 	}
 	public interface IChangeFailedEntry<out TEntity> : IChangeEntry<TEntity>, IFailedEntry<TEntity> where TEntity : class { }

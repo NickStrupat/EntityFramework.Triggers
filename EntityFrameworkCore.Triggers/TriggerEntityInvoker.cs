@@ -26,78 +26,26 @@ namespace EntityFramework.Triggers {
 		public void RaiseUpdated     (Object entity, TDbContext dbc)                                    { var entry = new UpdatedEntry     ((TEntity) entity, dbc)             ; RaiseUpdatedInner     (entry); }
 		public void RaiseDeleted     (Object entity, TDbContext dbc)                                    { var entry = new DeletedEntry     ((TEntity) entity, dbc)             ; RaiseDeletedInner     (entry); }
 
-		public void RaiseInsertingInner(Object e) {
-			var entry = (IInsertingEntry<TEntity, TDbContext>) e;
-			BaseTriggerEntityInvoker?.RaiseInsertingInner(entry);
-			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseInsertingInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseInserting(entry);
-		}
+		public void RaiseInsertingInner   (Object e) => RaiseInner<IInsertingEntry   <TEntity, TDbContext>>(e, i => i.RaiseInsertingInner   , Triggers<TEntity, TDbContext>.RaiseInserting   );
+		public void RaiseUpdatingInner    (Object e) => RaiseInner<IUpdatingEntry    <TEntity, TDbContext>>(e, i => i.RaiseUpdatingInner    , Triggers<TEntity, TDbContext>.RaiseUpdating    );
+		public void RaiseDeletingInner    (Object e) => RaiseInner<IDeletingEntry    <TEntity, TDbContext>>(e, i => i.RaiseDeletingInner    , Triggers<TEntity, TDbContext>.RaiseDeleting    );
+		public void RaiseInsertFailedInner(Object e) => RaiseInner<IInsertFailedEntry<TEntity, TDbContext>>(e, i => i.RaiseInsertFailedInner, Triggers<TEntity, TDbContext>.RaiseInsertFailed);
+		public void RaiseUpdateFailedInner(Object e) => RaiseInner<IUpdateFailedEntry<TEntity, TDbContext>>(e, i => i.RaiseUpdateFailedInner, Triggers<TEntity, TDbContext>.RaiseUpdateFailed);
+		public void RaiseDeleteFailedInner(Object e) => RaiseInner<IDeleteFailedEntry<TEntity, TDbContext>>(e, i => i.RaiseDeleteFailedInner, Triggers<TEntity, TDbContext>.RaiseDeleteFailed);
+		public void RaiseInsertedInner    (Object e) => RaiseInner<IInsertedEntry    <TEntity, TDbContext>>(e, i => i.RaiseInsertedInner    , Triggers<TEntity, TDbContext>.RaiseInserted    );
+		public void RaiseUpdatedInner     (Object e) => RaiseInner<IUpdatedEntry     <TEntity, TDbContext>>(e, i => i.RaiseUpdatedInner     , Triggers<TEntity, TDbContext>.RaiseUpdated     );
+		public void RaiseDeletedInner     (Object e) => RaiseInner<IDeletedEntry     <TEntity, TDbContext>>(e, i => i.RaiseDeletedInner     , Triggers<TEntity, TDbContext>.RaiseDeleted     );
 
-		public void RaiseUpdatingInner(Object e) {
-			var entry = (IUpdatingEntry<TEntity, TDbContext>) e;
-			BaseTriggerEntityInvoker?.RaiseUpdatingInner(entry);
+		private void RaiseInner<TEntry>(Object e, Func<ITriggerEntityInvoker<TDbContext>, Action<TEntry>> getRaiseInner, Action<TEntry> raise) where TEntry : IEntry<TEntity, TDbContext>
+		{
+			var entry = (TEntry) e;
+			if (BaseTriggerEntityInvoker != null)
+				getRaiseInner(BaseTriggerEntityInvoker).Invoke(entry);
 			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseUpdatingInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseUpdating(entry);
+				getRaiseInner(declaredInterface).Invoke(entry);
+			raise(entry);
 		}
-
-		public void RaiseDeletingInner(Object e) {
-			var entry = (IDeletingEntry<TEntity, TDbContext>) e;
-			BaseTriggerEntityInvoker?.RaiseDeletingInner(entry);
-			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseDeletingInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseDeleting(entry);
-		}
-
-		public void RaiseInsertFailedInner(Object e) {
-			var entry = (IInsertFailedEntry<TEntity, TDbContext>) e;
-			BaseTriggerEntityInvoker?.RaiseInsertFailedInner(entry);
-			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseInsertFailedInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseInsertFailed(entry);
-		}
-
-		public void RaiseUpdateFailedInner(Object e) {
-			var entry = (IUpdateFailedEntry<TEntity, TDbContext>) e;
-			BaseTriggerEntityInvoker?.RaiseUpdateFailedInner(entry);
-			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseUpdateFailedInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseUpdateFailed(entry);
-		}
-
-		public void RaiseDeleteFailedInner(Object e) {
-			var entry = (IDeleteFailedEntry<TEntity, TDbContext>) e;
-			BaseTriggerEntityInvoker?.RaiseDeleteFailedInner(entry);
-			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseDeleteFailedInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseDeleteFailed(entry);
-		}
-
-		public void RaiseInsertedInner(Object e) {
-			var entry = (IInsertedEntry<TEntity, TDbContext>) e;
-			BaseTriggerEntityInvoker?.RaiseInsertedInner(entry);
-			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseInsertedInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseInserted(entry);
-		}
-
-		public void RaiseUpdatedInner(Object e) {
-			var entry = (IUpdatedEntry<TEntity, TDbContext>) e;
-			BaseTriggerEntityInvoker?.RaiseUpdatedInner(entry);
-			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseUpdatedInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseUpdated(entry);
-		}
-
-		public void RaiseDeletedInner(Object e) {
-			var entry = (IDeletedEntry<TEntity, TDbContext>) e;
-			BaseTriggerEntityInvoker?.RaiseDeletedInner(entry);
-			foreach (var declaredInterface in DeclaredInterfaces)
-				declaredInterface.RaiseDeletedInner(entry);
-			Triggers<TEntity, TDbContext>.RaiseDeleted(entry);
-		}
-
+		
 		#region Entry implementations
 		private abstract class Entry : IEntry<TEntity, TDbContext> {
 			protected Entry(TEntity entity, TDbContext context) {
@@ -117,11 +65,9 @@ namespace EntityFramework.Triggers {
 		}
 
 		private abstract class BeforeChangeEntry : BeforeEntry, IBeforeChangeEntry<TEntity, TDbContext> {
-			protected BeforeChangeEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) {
-				original = new Lazy<TEntity>(() => Context.GetOriginal(Entity));
-			}
-			private readonly Lazy<TEntity> original;
-			public TEntity Original => original.Value;
+			protected BeforeChangeEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) {}
+			private TEntity original;
+			public TEntity Original => original ?? (original = (TEntity)Context.Entry(Entity).OriginalValues.ToObject());
 		}
 
 		private abstract class FailedEntry : Entry, IFailedEntry<TEntity, TDbContext> {
@@ -142,8 +88,7 @@ namespace EntityFramework.Triggers {
 				Swallow = swallow;
 			}
 		}
-
-
+		
 
 		private class InsertingEntry : BeforeEntry, IInsertingEntry<TEntity, TDbContext> {
 			public InsertingEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) { }
