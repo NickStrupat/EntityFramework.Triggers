@@ -16,34 +16,36 @@ namespace EntityFramework.Triggers {
 		private static readonly ITriggerEntityInvoker<TDbContext> BaseTriggerEntityInvoker = BaseEntityType == null ? null : TriggerEntityInvokers<TDbContext>.Get(BaseEntityType);
 		private static readonly ITriggerEntityInvoker<TDbContext>[] DeclaredInterfaces = typeof(TEntity).GetDeclaredInterfaces().Select(TriggerEntityInvokers<TDbContext>.Get).ToArray();
 
-		public void RaiseInserting   (Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new InsertingEntry   ((TEntity) entity, dbc, cancel)     ; RaiseInsertingInner   (entry); cancel = entry.Cancel; }
-		public void RaiseUpdating    (Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new UpdatingEntry    ((TEntity) entity, dbc, cancel)     ; RaiseUpdatingInner    (entry); cancel = entry.Cancel; }
-		public void RaiseDeleting    (Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new DeletingEntry    ((TEntity) entity, dbc, cancel)     ; RaiseDeletingInner    (entry); cancel = entry.Cancel; }
-		public void RaiseInsertFailed(Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new InsertFailedEntry((TEntity) entity, dbc, ex, swallow); RaiseInsertFailedInner(entry); swallow = entry.Swallow; }
-		public void RaiseUpdateFailed(Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new UpdateFailedEntry((TEntity) entity, dbc, ex, swallow); RaiseUpdateFailedInner(entry); swallow = entry.Swallow; }
-		public void RaiseDeleteFailed(Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new DeleteFailedEntry((TEntity) entity, dbc, ex, swallow); RaiseDeleteFailedInner(entry); swallow = entry.Swallow; }
-		public void RaiseInserted    (Object entity, TDbContext dbc)                                    { var entry = new InsertedEntry    ((TEntity) entity, dbc)             ; RaiseInsertedInner    (entry); }
-		public void RaiseUpdated     (Object entity, TDbContext dbc)                                    { var entry = new UpdatedEntry     ((TEntity) entity, dbc)             ; RaiseUpdatedInner     (entry); }
-		public void RaiseDeleted     (Object entity, TDbContext dbc)                                    { var entry = new DeletedEntry     ((TEntity) entity, dbc)             ; RaiseDeletedInner     (entry); }
+		private static Triggerz<TEntity> GetTriggers(IServiceProvider serviceProvider) => (Triggerz<TEntity>) serviceProvider.GetService(typeof(Triggerz<TEntity>));
 
-		public void RaiseInsertingInner   (Object e) => RaiseInner<IInsertingEntry   <TEntity, TDbContext>>(e, i => i.RaiseInsertingInner   , Triggers<TEntity, TDbContext>.RaiseInserting   );
-		public void RaiseUpdatingInner    (Object e) => RaiseInner<IUpdatingEntry    <TEntity, TDbContext>>(e, i => i.RaiseUpdatingInner    , Triggers<TEntity, TDbContext>.RaiseUpdating    );
-		public void RaiseDeletingInner    (Object e) => RaiseInner<IDeletingEntry    <TEntity, TDbContext>>(e, i => i.RaiseDeletingInner    , Triggers<TEntity, TDbContext>.RaiseDeleting    );
-		public void RaiseInsertFailedInner(Object e) => RaiseInner<IInsertFailedEntry<TEntity, TDbContext>>(e, i => i.RaiseInsertFailedInner, Triggers<TEntity, TDbContext>.RaiseInsertFailed);
-		public void RaiseUpdateFailedInner(Object e) => RaiseInner<IUpdateFailedEntry<TEntity, TDbContext>>(e, i => i.RaiseUpdateFailedInner, Triggers<TEntity, TDbContext>.RaiseUpdateFailed);
-		public void RaiseDeleteFailedInner(Object e) => RaiseInner<IDeleteFailedEntry<TEntity, TDbContext>>(e, i => i.RaiseDeleteFailedInner, Triggers<TEntity, TDbContext>.RaiseDeleteFailed);
-		public void RaiseInsertedInner    (Object e) => RaiseInner<IInsertedEntry    <TEntity, TDbContext>>(e, i => i.RaiseInsertedInner    , Triggers<TEntity, TDbContext>.RaiseInserted    );
-		public void RaiseUpdatedInner     (Object e) => RaiseInner<IUpdatedEntry     <TEntity, TDbContext>>(e, i => i.RaiseUpdatedInner     , Triggers<TEntity, TDbContext>.RaiseUpdated     );
-		public void RaiseDeletedInner     (Object e) => RaiseInner<IDeletedEntry     <TEntity, TDbContext>>(e, i => i.RaiseDeletedInner     , Triggers<TEntity, TDbContext>.RaiseDeleted     );
+		public void RaiseInserting   (IServiceProvider sp, Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new InsertingEntry   ((TEntity) entity, dbc, cancel)     ; RaiseInsertingInner   (sp, entry); cancel = entry.Cancel; }
+		public void RaiseUpdating    (IServiceProvider sp, Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new UpdatingEntry    ((TEntity) entity, dbc, cancel)     ; RaiseUpdatingInner    (sp, entry); cancel = entry.Cancel; }
+		public void RaiseDeleting    (IServiceProvider sp, Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new DeletingEntry    ((TEntity) entity, dbc, cancel)     ; RaiseDeletingInner    (sp, entry); cancel = entry.Cancel; }
+		public void RaiseInsertFailed(IServiceProvider sp, Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new InsertFailedEntry((TEntity) entity, dbc, ex, swallow); RaiseInsertFailedInner(sp, entry); swallow = entry.Swallow; }
+		public void RaiseUpdateFailed(IServiceProvider sp, Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new UpdateFailedEntry((TEntity) entity, dbc, ex, swallow); RaiseUpdateFailedInner(sp, entry); swallow = entry.Swallow; }
+		public void RaiseDeleteFailed(IServiceProvider sp, Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new DeleteFailedEntry((TEntity) entity, dbc, ex, swallow); RaiseDeleteFailedInner(sp, entry); swallow = entry.Swallow; }
+		public void RaiseInserted    (IServiceProvider sp, Object entity, TDbContext dbc)                                    { var entry = new InsertedEntry    ((TEntity) entity, dbc)             ; RaiseInsertedInner    (sp, entry); }
+		public void RaiseUpdated     (IServiceProvider sp, Object entity, TDbContext dbc)                                    { var entry = new UpdatedEntry     ((TEntity) entity, dbc)             ; RaiseUpdatedInner     (sp, entry); }
+		public void RaiseDeleted     (IServiceProvider sp, Object entity, TDbContext dbc)                                    { var entry = new DeletedEntry     ((TEntity) entity, dbc)             ; RaiseDeletedInner     (sp, entry); }
 
-		private void RaiseInner<TEntry>(Object e, Func<ITriggerEntityInvoker<TDbContext>, Action<TEntry>> getRaiseInner, Action<TEntry> raise) where TEntry : IEntry<TEntity, TDbContext>
+		public void RaiseInsertingInner   (IServiceProvider sp, Object e) => RaiseInner<IInsertingEntry   <TEntity, TDbContext>>(sp, e, i => i.RaiseInsertingInner   , t => t.RaiseInserting   );
+		public void RaiseUpdatingInner    (IServiceProvider sp, Object e) => RaiseInner<IUpdatingEntry    <TEntity, TDbContext>>(sp, e, i => i.RaiseUpdatingInner    , t => t.RaiseUpdating    );
+		public void RaiseDeletingInner    (IServiceProvider sp, Object e) => RaiseInner<IDeletingEntry    <TEntity, TDbContext>>(sp, e, i => i.RaiseDeletingInner    , t => t.RaiseDeleting    );
+		public void RaiseInsertFailedInner(IServiceProvider sp, Object e) => RaiseInner<IInsertFailedEntry<TEntity, TDbContext>>(sp, e, i => i.RaiseInsertFailedInner, t => t.RaiseInsertFailed);
+		public void RaiseUpdateFailedInner(IServiceProvider sp, Object e) => RaiseInner<IUpdateFailedEntry<TEntity, TDbContext>>(sp, e, i => i.RaiseUpdateFailedInner, t => t.RaiseUpdateFailed);
+		public void RaiseDeleteFailedInner(IServiceProvider sp, Object e) => RaiseInner<IDeleteFailedEntry<TEntity, TDbContext>>(sp, e, i => i.RaiseDeleteFailedInner, t => t.RaiseDeleteFailed);
+		public void RaiseInsertedInner    (IServiceProvider sp, Object e) => RaiseInner<IInsertedEntry    <TEntity, TDbContext>>(sp, e, i => i.RaiseInsertedInner    , t => t.RaiseInserted    );
+		public void RaiseUpdatedInner     (IServiceProvider sp, Object e) => RaiseInner<IUpdatedEntry     <TEntity, TDbContext>>(sp, e, i => i.RaiseUpdatedInner     , t => t.RaiseUpdated     );
+		public void RaiseDeletedInner     (IServiceProvider sp, Object e) => RaiseInner<IDeletedEntry     <TEntity, TDbContext>>(sp, e, i => i.RaiseDeletedInner     , t => t.RaiseDeleted     );
+
+		private void RaiseInner<TEntry>(IServiceProvider sp, Object e, Func<ITriggerEntityInvoker<TDbContext>, Action<IServiceProvider, Object>> getRaiseInner, Func<Triggerz<TEntity>, Action<TEntry>> getRaise) where TEntry : IEntry<TEntity, TDbContext>
 		{
 			var entry = (TEntry) e;
 			if (BaseTriggerEntityInvoker != null)
-				getRaiseInner(BaseTriggerEntityInvoker).Invoke(entry);
+				getRaiseInner(BaseTriggerEntityInvoker).Invoke(sp, entry);
 			foreach (var declaredInterface in DeclaredInterfaces)
-				getRaiseInner(declaredInterface).Invoke(entry);
-			raise(entry);
+				getRaiseInner(declaredInterface).Invoke(sp, entry);
+			getRaise.Invoke(GetTriggers(sp)).Invoke(entry);
 		}
 		
 		#region Entry implementations

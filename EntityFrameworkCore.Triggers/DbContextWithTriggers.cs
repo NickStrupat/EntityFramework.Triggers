@@ -17,27 +17,27 @@ namespace EntityFramework.Triggers {
 	/// </summary>
 	public abstract class DbContextWithTriggers : DbContext {
 		public Boolean TriggersEnabled { get; set; } = true;
+		private readonly IServiceProvider serviceProvider;
 #if EF_CORE
-		protected DbContextWithTriggers() : base() {}
-		protected DbContextWithTriggers(DbContextOptions options) : base(options) {}
+		protected DbContextWithTriggers(IServiceProvider serviceProvider) : base() => this.serviceProvider = serviceProvider;
+		protected DbContextWithTriggers(IServiceProvider serviceProvider, DbContextOptions options) : base(options) => this.serviceProvider = serviceProvider;
 
 		public override Int32 SaveChanges() {
-			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges) : base.SaveChanges();
+			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges, serviceProvider) : base.SaveChanges();
 		}
 		
 		public override Int32 SaveChanges(Boolean acceptAllChangesOnSuccess) {
-			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges, acceptAllChangesOnSuccess) : base.SaveChanges(acceptAllChangesOnSuccess);
+			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges, serviceProvider, acceptAllChangesOnSuccess) : base.SaveChanges(acceptAllChangesOnSuccess);
 		}
 		
 		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken) : base.SaveChangesAsync(cancellationToken);
+			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, serviceProvider, cancellationToken) : base.SaveChangesAsync(cancellationToken);
 		}
 		
 		public override Task<Int32> SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
-			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, acceptAllChangesOnSuccess, cancellationToken) : base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, serviceProvider, acceptAllChangesOnSuccess, cancellationToken) : base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 		}
 #else
-		private readonly IServiceProvider serviceProvider;
 		protected DbContextWithTriggers(IServiceProvider serviceProvider) : base() => this.serviceProvider = serviceProvider;
 		protected DbContextWithTriggers(IServiceProvider serviceProvider, DbCompiledModel model) : base(model) => this.serviceProvider = serviceProvider;
 		protected DbContextWithTriggers(IServiceProvider serviceProvider, String nameOrConnectionString) : base(nameOrConnectionString) => this.serviceProvider = serviceProvider;
@@ -47,10 +47,10 @@ namespace EntityFramework.Triggers {
 		protected DbContextWithTriggers(IServiceProvider serviceProvider, DbConnection existingConnection, DbCompiledModel model, Boolean contextOwnsConnection) : base(existingConnection, model, contextOwnsConnection) => this.serviceProvider = serviceProvider;
 		
 		public override Int32 SaveChanges() {
-			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges) : base.SaveChanges();
+			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges, serviceProvider) : base.SaveChanges();
 		}
 		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken) {
-			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, cancellationToken) : base.SaveChangesAsync(cancellationToken);
+			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, serviceProvider, cancellationToken) : base.SaveChangesAsync(cancellationToken);
 		}
 #endif
 	}

@@ -13,15 +13,15 @@ using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
 namespace EntityFramework.Triggers {
 #endif
 	internal interface ITriggerInvoker {
-		List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext);
-		void RaiseTheBeforeEventInner(DbContext dbContext, EntityEntry entry, List<Action<DbContext>> afterEvents, ref Boolean cancel);
+		List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext, IServiceProvider serviceProvider);
+		void RaiseTheBeforeEventInner(DbContext dbContext, IServiceProvider serviceProvider, EntityEntry entry, List<Action<DbContext>> afterEvents, ref Boolean cancel);
 
-		void RaiseTheAfterEvents(DbContext dbContext, IEnumerable<Action<DbContext>> afterEvents);
+		void RaiseTheAfterEvents(DbContext dbContext, IServiceProvider serviceProvider, IEnumerable<Action<DbContext>> afterEvents);
 
-		Boolean RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException, ref Boolean swallow);
+		Boolean RaiseTheFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, DbUpdateException dbUpdateException, ref Boolean swallow);
 #if !EF_CORE
-		Boolean RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException, ref Boolean swallow);
+		Boolean RaiseTheFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, DbEntityValidationException dbEntityValidationException, ref Boolean swallow);
 #endif
-		Boolean RaiseTheFailedEvents(DbContext dbContext, Exception exception, ref Boolean swallow);
+		Boolean RaiseTheFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, Exception exception, ref Boolean swallow);
 	}
 }

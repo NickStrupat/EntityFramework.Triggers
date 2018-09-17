@@ -8,24 +8,24 @@ using System.Data.Entity;
 namespace EntityFramework.Triggers {
 #endif
 	internal interface ITriggerEntityInvoker<TDbContext> where TDbContext : DbContext {
-		void RaiseInserting(Object entity, TDbContext dbc, ref Boolean cancel);
-		void RaiseUpdating(Object entity, TDbContext dbc, ref Boolean cancel);
-		void RaiseDeleting(Object entity, TDbContext dbc, ref Boolean cancel);
-		void RaiseInsertFailed(Object entity, TDbContext dbc, Exception ex, ref Boolean swallow);
-		void RaiseUpdateFailed(Object entity, TDbContext dbc, Exception ex, ref Boolean swallow);
-		void RaiseDeleteFailed(Object entity, TDbContext dbc, Exception ex, ref Boolean swallow);
-		void RaiseInserted (Object entity, TDbContext dbc);
-		void RaiseUpdated (Object entity, TDbContext dbc);
-		void RaiseDeleted (Object entity, TDbContext dbc);
+		void RaiseInserting   (IServiceProvider serviceProvider, Object entity, TDbContext dbc, ref Boolean cancel);
+		void RaiseUpdating    (IServiceProvider serviceProvider, Object entity, TDbContext dbc, ref Boolean cancel);
+		void RaiseDeleting    (IServiceProvider serviceProvider, Object entity, TDbContext dbc, ref Boolean cancel);
+		void RaiseInsertFailed(IServiceProvider serviceProvider, Object entity, TDbContext dbc, Exception ex, ref Boolean swallow);
+		void RaiseUpdateFailed(IServiceProvider serviceProvider, Object entity, TDbContext dbc, Exception ex, ref Boolean swallow);
+		void RaiseDeleteFailed(IServiceProvider serviceProvider, Object entity, TDbContext dbc, Exception ex, ref Boolean swallow);
+		void RaiseInserted    (IServiceProvider serviceProvider, Object entity, TDbContext dbc);
+		void RaiseUpdated     (IServiceProvider serviceProvider, Object entity, TDbContext dbc);
+		void RaiseDeleted     (IServiceProvider serviceProvider, Object entity, TDbContext dbc);
 
-		void RaiseInsertingInner(Object entry);
-		void RaiseUpdatingInner(Object entry);
-		void RaiseDeletingInner(Object entry);
-		void RaiseInsertFailedInner(Object entry);
-		void RaiseUpdateFailedInner(Object entry);
-		void RaiseDeleteFailedInner(Object entry);
-		void RaiseInsertedInner(Object entry);
-		void RaiseUpdatedInner(Object entry);
-		void RaiseDeletedInner(Object entry);
+		void RaiseInsertingInner   (IServiceProvider serviceProvider, Object entry);
+		void RaiseUpdatingInner    (IServiceProvider serviceProvider, Object entry);
+		void RaiseDeletingInner    (IServiceProvider serviceProvider, Object entry);
+		void RaiseInsertFailedInner(IServiceProvider serviceProvider, Object entry);
+		void RaiseUpdateFailedInner(IServiceProvider serviceProvider, Object entry);
+		void RaiseDeleteFailedInner(IServiceProvider serviceProvider, Object entry);
+		void RaiseInsertedInner    (IServiceProvider serviceProvider, Object entry);
+		void RaiseUpdatedInner     (IServiceProvider serviceProvider, Object entry);
+		void RaiseDeletedInner     (IServiceProvider serviceProvider, Object entry);
 	}
 }

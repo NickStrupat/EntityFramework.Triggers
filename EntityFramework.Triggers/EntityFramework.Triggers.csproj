@@ -78,6 +78,9 @@
     <Compile Include="..\EntityFrameworkCore.Triggers\Triggers.cs">
       <Link>Triggers.cs</Link>
     </Compile>
+    <Compile Include="..\EntityFrameworkCore.Triggers\Triggerz.cs">
+      <Link>Triggerz.cs</Link>
+    </Compile>
     <Compile Include="..\EntityFrameworkCore.Triggers\TypeInfoExtensions.cs">
       <Link>TypeInfoExtensions.cs</Link>
     </Compile>

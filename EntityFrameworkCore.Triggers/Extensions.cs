@@ -29,9 +29,9 @@ namespace EntityFramework.Triggers {
 #endif
 		/// <returns>The number of objects written to the underlying database.</returns>
 #if EF_CORE
-		public static Int32 SaveChangesWithTriggers(this DbContext dbContext, Func<Boolean, Int32> baseSaveChanges, Boolean acceptAllChangesOnSuccess = true) {
+		public static Int32 SaveChangesWithTriggers(this DbContext dbContext, Func<Boolean, Int32> baseSaveChanges, IServiceProvider serviceProvider, Boolean acceptAllChangesOnSuccess = true) {
 #else
-		public static Int32 SaveChangesWithTriggers(this DbContext dbContext, Func<Int32> baseSaveChanges) {
+		public static Int32 SaveChangesWithTriggers(this DbContext dbContext, Func<Int32> baseSaveChanges, IServiceProvider serviceProvider) {
 #endif
 			if (dbContext == null)
 				throw new ArgumentNullException(nameof(dbContext));
@@ -39,22 +39,22 @@ namespace EntityFramework.Triggers {
 			var invoker = TriggerInvokers.Get(dbContextType);
 			var swallow = false;
 			try {
-				var afterActions = invoker.RaiseTheBeforeEvents(dbContext);
+				var afterActions = invoker.RaiseTheBeforeEvents(dbContext, serviceProvider);
 #if EF_CORE
 				var result = baseSaveChanges(acceptAllChangesOnSuccess);
 #else
 				var result = baseSaveChanges();
 #endif
-				invoker.RaiseTheAfterEvents(dbContext, afterActions);
+				invoker.RaiseTheAfterEvents(dbContext, serviceProvider, afterActions);
 				return result;
 			}
-			catch (DbUpdateException ex) when (invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
+			catch (DbUpdateException ex) when (invoker.RaiseTheFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
 			}
 #if !EF_CORE
-			catch (DbEntityValidationException ex) when (invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
+			catch (DbEntityValidationException ex) when (invoker.RaiseTheFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
 			}
 #endif
-			catch (Exception ex) when(invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
+			catch (Exception ex) when(invoker.RaiseTheFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
 			}
 			return 0;
 		}
@@ -74,38 +74,38 @@ namespace EntityFramework.Triggers {
 		/// <example>this.SaveChangesWithTriggersAsync();</example>
 		/// <returns>A task that represents the asynchronous save operation. The task result contains the number of objects written to the underlying database.</returns>
 #if EF_CORE
-		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
+		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, IServiceProvider serviceProvider, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
 #else
-		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken = default(CancellationToken)) {
+		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync, IServiceProvider serviceProvider, CancellationToken cancellationToken = default(CancellationToken)) {
 #endif
 			if (dbContext == null)
 				throw new ArgumentNullException(nameof(dbContext));
 			var invoker = TriggerInvokers.Get(dbContext.GetType());
 			var swallow = false;
 			try {
-				var afterActions = invoker.RaiseTheBeforeEvents(dbContext);
+				var afterActions = invoker.RaiseTheBeforeEvents(dbContext, serviceProvider);
 #if EF_CORE
 				var result = await baseSaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
 #else
 				var result = await baseSaveChangesAsync(cancellationToken).ConfigureAwait(false);
 #endif
-                invoker.RaiseTheAfterEvents(dbContext, afterActions);
+                invoker.RaiseTheAfterEvents(dbContext, serviceProvider, afterActions);
 				return result;
 			}
-			catch (DbUpdateException ex) when(invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
+			catch (DbUpdateException ex) when(invoker.RaiseTheFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
 			}
 #if !EF_CORE
-			catch (DbEntityValidationException ex) when(invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
+			catch (DbEntityValidationException ex) when(invoker.RaiseTheFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
 			}
 #endif
-			catch (Exception ex) when (invoker.RaiseTheFailedEvents(dbContext, ex, ref swallow)) {
+			catch (Exception ex) when (invoker.RaiseTheFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
 			}
 			return 0;
 		}
 
 #if EF_CORE
-		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken = default(CancellationToken)) {
-			return dbContext.SaveChangesWithTriggersAsync(baseSaveChangesAsync, true, cancellationToken);
+		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, IServiceProvider serviceProvider, CancellationToken cancellationToken = default(CancellationToken)) {
+			return dbContext.SaveChangesWithTriggersAsync(baseSaveChangesAsync, serviceProvider, true, cancellationToken);
 		}
 #endif
 	}

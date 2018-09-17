@@ -26,14 +26,14 @@ namespace EntityFramework.Triggers {
 		private static readonly Boolean IsADbContextType = typeof(DbContext).IsAssignableFrom(BaseDbContextType);
 		private static readonly ITriggerInvoker BaseTriggerInvoker = IsADbContextType ? TriggerInvokers.Get(BaseDbContextType) : null;
 
-		public List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext) {
+		public List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext, IServiceProvider serviceProvider) {
 			var entries = dbContext.ChangeTracker.Entries().ToList();
 			var triggeredEntries = new List<EntityEntry>(entries.Count);
 			var afterEvents = new List<Action<DbContext>>(entries.Count);
 			while (entries.Any()) {
 				foreach (var entry in entries) {
 					var cancel = false;
-					RaiseTheBeforeEventInner(dbContext, entry, afterEvents, ref cancel);
+					RaiseTheBeforeEventInner(dbContext, serviceProvider, entry, afterEvents, ref cancel);
 					triggeredEntries.Add(entry);
 					if (cancel)
 						entry.State = GetCanceledEntityState(entry.State);
@@ -59,37 +59,37 @@ namespace EntityFramework.Triggers {
 		}
 
 
-		public void RaiseTheBeforeEventInner(DbContext dbContext, EntityEntry entry, List<Action<DbContext>> afterEvents, ref Boolean cancel) {
-			BaseTriggerInvoker?.RaiseTheBeforeEventInner(dbContext, entry, afterEvents, ref cancel);
-			var after = RaiseTheBeforeEvent(entry, dbContext, ref cancel);
+		public void RaiseTheBeforeEventInner(DbContext dbContext, IServiceProvider serviceProvider, EntityEntry entry, List<Action<DbContext>> afterEvents, ref Boolean cancel) {
+			BaseTriggerInvoker?.RaiseTheBeforeEventInner(dbContext, serviceProvider, entry, afterEvents, ref cancel);
+			var after = RaiseTheBeforeEvent(entry, dbContext, serviceProvider, ref cancel);
 			if (after != null && !cancel)
 				afterEvents.Add(after);
 		}
 
-		private static Action<DbContext> RaiseTheBeforeEvent(EntityEntry entry, DbContext dbContext, ref Boolean cancel) {
+		private static Action<DbContext> RaiseTheBeforeEvent(EntityEntry entry, DbContext dbContext, IServiceProvider serviceProvider, ref Boolean cancel) {
 			var tDbContext = (TDbContext)dbContext;
 			var triggers = TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType());
 			switch (entry.State) {
 				case EntityState.Added:
-					triggers.RaiseInserting(entry.Entity, tDbContext, ref cancel);
-					return context => triggers.RaiseInserted(entry.Entity, (TDbContext) context);
+					triggers.RaiseInserting(serviceProvider, entry.Entity, tDbContext, ref cancel);
+					return context => triggers.RaiseInserted(serviceProvider, entry.Entity, (TDbContext) context);
 				case EntityState.Deleted:
-					triggers.RaiseDeleting(entry.Entity, tDbContext, ref cancel);
-					return context => triggers.RaiseDeleted(entry.Entity, (TDbContext) context);
+					triggers.RaiseDeleting(serviceProvider, entry.Entity, tDbContext, ref cancel);
+					return context => triggers.RaiseDeleted(serviceProvider, entry.Entity, (TDbContext) context);
 				case EntityState.Modified:
-					triggers.RaiseUpdating(entry.Entity, tDbContext, ref cancel);
-					return context => triggers.RaiseUpdated(entry.Entity, (TDbContext) context);
+					triggers.RaiseUpdating(serviceProvider, entry.Entity, tDbContext, ref cancel);
+					return context => triggers.RaiseUpdated(serviceProvider, entry.Entity, (TDbContext) context);
 			}
 			return null;
 		}
 
-		public void RaiseTheAfterEvents(DbContext dbContext, IEnumerable<Action<DbContext>> afterEvents) {
+		public void RaiseTheAfterEvents(DbContext dbContext, IServiceProvider serviceProvider, IEnumerable<Action<DbContext>> afterEvents) {
 			foreach (var after in afterEvents)
 				after(dbContext);
 		}
 
-		public Boolean RaiseTheFailedEvents(DbContext dbContext, DbUpdateException dbUpdateException, ref Boolean swallow) {
-			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, dbUpdateException, ref swallow);
+		public Boolean RaiseTheFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, DbUpdateException dbUpdateException, ref Boolean swallow) {
+			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, serviceProvider, dbUpdateException, ref swallow);
 			var context = (TDbContext) dbContext;
 
 			IEnumerable<EntityEntry> entries;
@@ -104,46 +104,46 @@ namespace EntityFramework.Triggers {
 					return swallow;
 				}
 			}
-			RaiseTheFailedEvents(context, entries, dbUpdateException, ref swallow);
+			RaiseTheFailedEvents(context, serviceProvider, entries, dbUpdateException, ref swallow);
 			return swallow;
 		}
 
 #if !EF_CORE
-		public Boolean RaiseTheFailedEvents(DbContext dbContext, DbEntityValidationException dbEntityValidationException, ref Boolean swallow) {
-			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, dbEntityValidationException, ref swallow);
+		public Boolean RaiseTheFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, DbEntityValidationException dbEntityValidationException, ref Boolean swallow) {
+			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, serviceProvider, dbEntityValidationException, ref swallow);
 			var context = (TDbContext) dbContext;
-			RaiseTheFailedEvents(context, dbEntityValidationException.EntityValidationErrors.Select(x => x.Entry), dbEntityValidationException, ref swallow);
+			RaiseTheFailedEvents(context, serviceProvider, dbEntityValidationException.EntityValidationErrors.Select(x => x.Entry), dbEntityValidationException, ref swallow);
 			return swallow;
 		}
 #endif
 
-		public Boolean RaiseTheFailedEvents(DbContext dbContext, Exception exception, ref Boolean swallow) {
-			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, exception, ref swallow);
+		public Boolean RaiseTheFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, Exception exception, ref Boolean swallow) {
+			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, serviceProvider, exception, ref swallow);
 			var context = (TDbContext) dbContext;
 			var entries = dbContext.ChangeTracker.Entries().ToArray();
 			if (entries.Length != 1) {
 				swallow = false;
 				return swallow;
 			}
-			RaiseTheFailedEvents(context, entries, exception, ref swallow);
+			RaiseTheFailedEvents(context, serviceProvider, entries, exception, ref swallow);
 			return swallow;
 		}
 
-		private static void RaiseTheFailedEvents(TDbContext dbContext, IEnumerable<EntityEntry> entries, Exception exception, ref Boolean swallow) {
+		private static void RaiseTheFailedEvents(TDbContext dbContext, IServiceProvider serviceProvider, IEnumerable<EntityEntry> entries, Exception exception, ref Boolean swallow) {
 			foreach (var entry in entries)
-				RaiseTheFailedEvents(dbContext, entry, exception, ref swallow);
+				RaiseTheFailedEvents(dbContext, serviceProvider, entry, exception, ref swallow);
 		}
 
-		private static void RaiseTheFailedEvents(TDbContext dbContext, EntityEntry entry, Exception exception, ref Boolean swallow) {
+		private static void RaiseTheFailedEvents(TDbContext dbContext, IServiceProvider serviceProvider, EntityEntry entry, Exception exception, ref Boolean swallow) {
 			switch (entry.State) {
 				case EntityState.Added:
-					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseInsertFailed(entry.Entity, dbContext, exception, ref swallow);
+					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseInsertFailed(serviceProvider, entry.Entity, dbContext, exception, ref swallow);
 					break;
 				case EntityState.Modified:
-					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseUpdateFailed(entry.Entity, dbContext, exception, ref swallow);
+					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseUpdateFailed(serviceProvider, entry.Entity, dbContext, exception, ref swallow);
 					break;
 				case EntityState.Deleted:
-					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseDeleteFailed(entry.Entity, dbContext, exception, ref swallow);
+					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseDeleteFailed(serviceProvider, entry.Entity, dbContext, exception, ref swallow);
 					break;
 			}
 		}

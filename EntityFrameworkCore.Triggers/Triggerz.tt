@@ -64,6 +64,13 @@ foreach (var @event in new [] { "Inserting", "InsertFailed", "Inserted", "Deleti
 #>
 		private ImmutableArray<WrappedHandler<I<#= @event #>Entry<TEntity>>> <#= camelCase #> = ImmutableArray<WrappedHandler<I<#= @event #>Entry<TEntity>>>.Empty;
 		
+		internal void Raise<#= @event #>(I<#= @event #>Entry<TEntity> entry)
+		{
+			var latestHandlers = ImmutableInterlockedRead(ref <#= camelCase #>);
+			foreach (var wrappedHandler in latestHandlers)
+				wrappedHandler.Invoke(entry);
+		}
+		
 		public void <#= @event #>Add(Action<I<#= @event #>Entry<TEntity>> handler) =>
 			Add(ref <#=camelCase#>, handler, handler);
 

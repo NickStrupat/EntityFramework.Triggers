@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Immutable;
-using Microsoft.Extensions.DependencyInjection;
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
 namespace EntityFrameworkCore.Triggers {
@@ -12,7 +11,7 @@ namespace EntityFramework.Triggers {
 	{
 		private readonly IServiceProvider serviceProvider;
 		public Triggerz(IServiceProvider serviceProvider) => this.serviceProvider = serviceProvider;
-		private TService S<TService>() => serviceProvider.GetService<TService>();
+		private TService S<TService>() => (TService) serviceProvider.GetService(typeof(TService));
 
 		struct WrappedHandler<TEntry> : IEquatable<WrappedHandler<TEntry>> where TEntry : IEntry<TEntity>
 		{
@@ -53,6 +52,13 @@ namespace EntityFramework.Triggers {
 
 		private ImmutableArray<WrappedHandler<IInsertingEntry<TEntity>>> inserting = ImmutableArray<WrappedHandler<IInsertingEntry<TEntity>>>.Empty;
 		
+		internal void RaiseInserting(IInsertingEntry<TEntity> entry)
+		{
+			var latestHandlers = ImmutableInterlockedRead(ref inserting);
+			foreach (var wrappedHandler in latestHandlers)
+				wrappedHandler.Invoke(entry);
+		}
+		
 		public void InsertingAdd(Action<IInsertingEntry<TEntity>> handler) =>
 			Add(ref inserting, handler, handler);
 
@@ -70,6 +76,13 @@ namespace EntityFramework.Triggers {
 
 
 		private ImmutableArray<WrappedHandler<IInsertFailedEntry<TEntity>>> insertFailed = ImmutableArray<WrappedHandler<IInsertFailedEntry<TEntity>>>.Empty;
+		
+		internal void RaiseInsertFailed(IInsertFailedEntry<TEntity> entry)
+		{
+			var latestHandlers = ImmutableInterlockedRead(ref insertFailed);
+			foreach (var wrappedHandler in latestHandlers)
+				wrappedHandler.Invoke(entry);
+		}
 		
 		public void InsertFailedAdd(Action<IInsertFailedEntry<TEntity>> handler) =>
 			Add(ref insertFailed, handler, handler);
@@ -89,6 +102,13 @@ namespace EntityFramework.Triggers {
 
 		private ImmutableArray<WrappedHandler<IInsertedEntry<TEntity>>> inserted = ImmutableArray<WrappedHandler<IInsertedEntry<TEntity>>>.Empty;
 		
+		internal void RaiseInserted(IInsertedEntry<TEntity> entry)
+		{
+			var latestHandlers = ImmutableInterlockedRead(ref inserted);
+			foreach (var wrappedHandler in latestHandlers)
+				wrappedHandler.Invoke(entry);
+		}
+		
 		public void InsertedAdd(Action<IInsertedEntry<TEntity>> handler) =>
 			Add(ref inserted, handler, handler);
 
@@ -106,6 +126,13 @@ namespace EntityFramework.Triggers {
 
 
 		private ImmutableArray<WrappedHandler<IDeletingEntry<TEntity>>> deleting = ImmutableArray<WrappedHandler<IDeletingEntry<TEntity>>>.Empty;
+		
+		internal void RaiseDeleting(IDeletingEntry<TEntity> entry)
+		{
+			var latestHandlers = ImmutableInterlockedRead(ref deleting);
+			foreach (var wrappedHandler in latestHandlers)
+				wrappedHandler.Invoke(entry);
+		}
 		
 		public void DeletingAdd(Action<IDeletingEntry<TEntity>> handler) =>
 			Add(ref deleting, handler, handler);
@@ -125,6 +152,13 @@ namespace EntityFramework.Triggers {
 
 		private ImmutableArray<WrappedHandler<IDeleteFailedEntry<TEntity>>> deleteFailed = ImmutableArray<WrappedHandler<IDeleteFailedEntry<TEntity>>>.Empty;
 		
+		internal void RaiseDeleteFailed(IDeleteFailedEntry<TEntity> entry)
+		{
+			var latestHandlers = ImmutableInterlockedRead(ref deleteFailed);
+			foreach (var wrappedHandler in latestHandlers)
+				wrappedHandler.Invoke(entry);
+		}
+		
 		public void DeleteFailedAdd(Action<IDeleteFailedEntry<TEntity>> handler) =>
 			Add(ref deleteFailed, handler, handler);
 
@@ -142,6 +176,13 @@ namespace EntityFramework.Triggers {
 
 
 		private ImmutableArray<WrappedHandler<IDeletedEntry<TEntity>>> deleted = ImmutableArray<WrappedHandler<IDeletedEntry<TEntity>>>.Empty;
+		
+		internal void RaiseDeleted(IDeletedEntry<TEntity> entry)
+		{
+			var latestHandlers = ImmutableInterlockedRead(ref deleted);
+			foreach (var wrappedHandler in latestHandlers)
+				wrappedHandler.Invoke(entry);
+		}
 		
 		public void DeletedAdd(Action<IDeletedEntry<TEntity>> handler) =>
 			Add(ref deleted, handler, handler);
@@ -161,6 +202,13 @@ namespace EntityFramework.Triggers {
 
 		private ImmutableArray<WrappedHandler<IUpdatingEntry<TEntity>>> updating = ImmutableArray<WrappedHandler<IUpdatingEntry<TEntity>>>.Empty;
 		
+		internal void RaiseUpdating(IUpdatingEntry<TEntity> entry)
+		{
+			var latestHandlers = ImmutableInterlockedRead(ref updating);
+			foreach (var wrappedHandler in latestHandlers)
+				wrappedHandler.Invoke(entry);
+		}
+		
 		public void UpdatingAdd(Action<IUpdatingEntry<TEntity>> handler) =>
 			Add(ref updating, handler, handler);
 
@@ -179,6 +227,13 @@ namespace EntityFramework.Triggers {
 
 		private ImmutableArray<WrappedHandler<IUpdateFailedEntry<TEntity>>> updateFailed = ImmutableArray<WrappedHandler<IUpdateFailedEntry<TEntity>>>.Empty;
 		
+		internal void RaiseUpdateFailed(IUpdateFailedEntry<TEntity> entry)
+		{
+			var latestHandlers = ImmutableInterlockedRead(ref updateFailed);
+			foreach (var wrappedHandler in latestHandlers)
+				wrappedHandler.Invoke(entry);
+		}
+		
 		public void UpdateFailedAdd(Action<IUpdateFailedEntry<TEntity>> handler) =>
 			Add(ref updateFailed, handler, handler);
 
@@ -196,6 +251,13 @@ namespace EntityFramework.Triggers {
 
 
 		private ImmutableArray<WrappedHandler<IUpdatedEntry<TEntity>>> updated = ImmutableArray<WrappedHandler<IUpdatedEntry<TEntity>>>.Empty;
+		
+		internal void RaiseUpdated(IUpdatedEntry<TEntity> entry)
+		{
+			var latestHandlers = ImmutableInterlockedRead(ref updated);
+			foreach (var wrappedHandler in latestHandlers)
+				wrappedHandler.Invoke(entry);
+		}
 		
 		public void UpdatedAdd(Action<IUpdatedEntry<TEntity>> handler) =>
 			Add(ref updated, handler, handler);
