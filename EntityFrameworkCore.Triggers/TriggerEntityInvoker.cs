@@ -4,11 +4,9 @@ using System.Reflection;
 using System.Collections.Generic;
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
-using EntityFrameworkCore.TypedOriginalValues;
 namespace EntityFrameworkCore.Triggers {
 #else
 using System.Data.Entity;
-using EntityFramework.TypedOriginalValues;
 namespace EntityFramework.Triggers {
 #endif
 
