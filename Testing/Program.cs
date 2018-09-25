@@ -11,7 +11,7 @@ namespace Testing
 	{
 		public Int64 Id { get; private set; }
 		public DateTime Inserted { get; set; }
-		public DateTime Updated { get; set; }
+		public DateTime? Updated { get; set; }
 		public String Name { get; set; }
 	}
 
@@ -38,18 +38,18 @@ namespace Testing
 
 	class Program
 	{
-		static void Main(string[] args)
+		static void Main(String[] args)
 		{
 			var container = new Container();
 			container.Register<IServiceProvider>(() => container, Lifestyle.Singleton);
 			container.Register<Context>(Lifestyle.Transient);
 			container.Register<Foo>(Lifestyle.Transient);
-			container.Register(typeof(Triggerz<>), typeof(Triggerz<>), Lifestyle.Singleton);
+			container.Register(typeof(Triggers<,>), typeof(Triggers<,>), Lifestyle.Singleton);
 
-			container.GetInstance<Triggerz<Entity>>().InsertingAdd<Foo>((entry, foo) => entry.Entity.Inserted = DateTime.UtcNow);
-			container.GetInstance<Triggerz<Entity>>().UpdatingAdd<Foo>((entry, foo) => entry.Entity.Updated = DateTime.UtcNow);
-
-			container.GetInstance<Triggerz<Entity>>().InsertingAdd<Foo>((entry, foo) => entry.Entity.Name = foo.Count.ToString());
+			var triggers = container.GetInstance<Triggers<Entity, Context>>();
+			triggers.InsertingAdd<Foo>((entry, foo) => entry.Entity.Inserted = DateTime.UtcNow);
+			triggers.UpdatingAdd<Foo>((entry, foo) => entry.Entity.Updated = DateTime.UtcNow);
+			triggers.InsertingAdd<Foo>((entry, foo) => entry.Entity.Name = foo.Count.ToString());
 
 			using (var context = container.GetInstance<Context>())
 			{
@@ -58,12 +58,14 @@ namespace Testing
 				context.Add(a);
 				context.Add(b);
 				context.SaveChanges();
+				a.Name = "Test";
+				context.SaveChanges();
 			}
 		}
 	}
 
-	public static class TriggerzExtensions
+	public static class TriggersExtensions
 	{
-		public static IServiceCollection AddDbContextWithTriggers(this IServiceCollection serviceCollection) => null;
+		public static IServiceCollection AddDbContextWithTriggers(this IServiceCollection serviceCollection) => serviceCollection.AddSingleton();
 	}
 }

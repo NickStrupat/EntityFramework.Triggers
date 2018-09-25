@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Collections.Generic;
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
 using EntityFrameworkCore.TypedOriginalValues;
@@ -16,7 +17,7 @@ namespace EntityFramework.Triggers {
 		private static readonly ITriggerEntityInvoker<TDbContext> BaseTriggerEntityInvoker = BaseEntityType == null ? null : TriggerEntityInvokers<TDbContext>.Get(BaseEntityType);
 		private static readonly ITriggerEntityInvoker<TDbContext>[] DeclaredInterfaces = typeof(TEntity).GetDeclaredInterfaces().Select(TriggerEntityInvokers<TDbContext>.Get).ToArray();
 
-		private static Triggerz<TEntity> GetTriggers(IServiceProvider serviceProvider) => (Triggerz<TEntity>) serviceProvider.GetService(typeof(Triggerz<TEntity>));
+		private static Triggers<TEntity, TDbContext> GetTriggers(IServiceProvider serviceProvider) => (Triggers<TEntity, TDbContext>) serviceProvider.GetService(typeof(Triggers<TEntity, TDbContext>));
 
 		public void RaiseInserting   (IServiceProvider sp, Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new InsertingEntry   ((TEntity) entity, dbc, cancel)     ; RaiseInsertingInner   (sp, entry); cancel = entry.Cancel; }
 		public void RaiseUpdating    (IServiceProvider sp, Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new UpdatingEntry    ((TEntity) entity, dbc, cancel)     ; RaiseUpdatingInner    (sp, entry); cancel = entry.Cancel; }
@@ -38,7 +39,7 @@ namespace EntityFramework.Triggers {
 		public void RaiseUpdatedInner     (IServiceProvider sp, Object e) => RaiseInner<IUpdatedEntry     <TEntity, TDbContext>>(sp, e, i => i.RaiseUpdatedInner     , t => t.RaiseUpdated     );
 		public void RaiseDeletedInner     (IServiceProvider sp, Object e) => RaiseInner<IDeletedEntry     <TEntity, TDbContext>>(sp, e, i => i.RaiseDeletedInner     , t => t.RaiseDeleted     );
 
-		private void RaiseInner<TEntry>(IServiceProvider sp, Object e, Func<ITriggerEntityInvoker<TDbContext>, Action<IServiceProvider, Object>> getRaiseInner, Func<Triggerz<TEntity>, Action<TEntry>> getRaise) where TEntry : IEntry<TEntity, TDbContext>
+		private void RaiseInner<TEntry>(IServiceProvider sp, Object e, Func<ITriggerEntityInvoker<TDbContext>, Action<IServiceProvider, Object>> getRaiseInner, Func<ITriggers<TEntity, TDbContext>, Action<TEntry>> getRaise) where TEntry : IEntry<TEntity, TDbContext>
 		{
 			var entry = (TEntry) e;
 			if (BaseTriggerEntityInvoker != null)

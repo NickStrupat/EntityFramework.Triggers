@@ -26,23 +26,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Triggerz.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Triggerz.tt</DependentUpon>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="CoContra" Version="1.1.0" />
     <PackageReference Include="EntityFrameworkCore.TypedOriginalValues" Version="1.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Triggerz.tt">
+    <None Update="Triggers.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Triggerz.cs</LastGenOutput>
+      <LastGenOutput>Triggers.cs</LastGenOutput>
     </None>
   </ItemGroup>
 
@@ -51,10 +43,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Triggerz.cs">
+    <Compile Update="Triggers.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Triggerz.tt</DependentUpon>
+      <DependentUpon>Triggers.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

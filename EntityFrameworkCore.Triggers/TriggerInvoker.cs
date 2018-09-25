@@ -22,9 +22,8 @@ namespace EntityFramework.Triggers {
 	}
 
 	internal class TriggerInvoker<TDbContext> : ITriggerInvoker where TDbContext : DbContext {
-		private static readonly Type BaseDbContextType = typeof(TDbContext).GetTypeInfo().BaseType;
-		private static readonly Boolean IsADbContextType = typeof(DbContext).IsAssignableFrom(BaseDbContextType);
-		private static readonly ITriggerInvoker BaseTriggerInvoker = IsADbContextType ? TriggerInvokers.Get(BaseDbContextType) : null;
+		private static readonly Type DbContextBaseType = typeof(TDbContext).GetTypeInfo().BaseType;
+		private static readonly ITriggerInvoker BaseTriggerInvoker = typeof(DbContext).IsAssignableFrom(DbContextBaseType) ? TriggerInvokers.Get(DbContextBaseType) : null;
 
 		public List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext, IServiceProvider serviceProvider) {
 			var entries = dbContext.ChangeTracker.Entries().ToList();

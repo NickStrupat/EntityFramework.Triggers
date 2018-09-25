@@ -4,6 +4,7 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".cs" #>
+<# var events = new [] { "Inserting", "InsertFailed", "Inserted", "Deleting", "DeleteFailed", "Deleted", "Updating", "UpdateFailed", "Updated" }; #>
 using System;
 using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,13 +15,29 @@ namespace EntityFrameworkCore.Triggers {
 using System.Data.Entity;
 namespace EntityFramework.Triggers {
 #endif
-	public class Triggerz<TEntity> where TEntity : class
+	internal interface ITriggers<in TEntity, in TDbContext>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+<#
+foreach (var @event in events)
+{
+#>
+		void Raise<#= @event #>(I<#= @event #>Entry<TEntity, TDbContext> entry);
+<#
+}
+#>
+	}
+
+	public class Triggers<TEntity, TDbContext> : ITriggers<TEntity, TDbContext>
+	where TEntity : class
+	where TDbContext : DbContext
 	{
 		private readonly IServiceProvider serviceProvider;
-		public Triggerz(IServiceProvider serviceProvider) => this.serviceProvider = serviceProvider;
+		public Triggers(IServiceProvider serviceProvider) => this.serviceProvider = serviceProvider;
 		private TService S<TService>() => serviceProvider.GetService<TService>();
 
-		struct WrappedHandler<TEntry> : IEquatable<WrappedHandler<TEntry>> where TEntry : IEntry<TEntity>
+		struct WrappedHandler<TEntry> : IEquatable<WrappedHandler<TEntry>> where TEntry : IEntry<TEntity, TDbContext>
 		{
 			private readonly Object source;
 			private readonly Action<TEntry> wrapper;
@@ -29,7 +46,7 @@ namespace EntityFramework.Triggers {
 			public void Invoke(TEntry entry) => wrapper.Invoke(entry);
 		}
 
-		private static void Add<TEntry>(ref ImmutableArray<WrappedHandler<TEntry>> array, Object source, Action<TEntry> wrapper) where TEntry : IEntry<TEntity>
+		private static void Add<TEntry>(ref ImmutableArray<WrappedHandler<TEntry>> array, Object source, Action<TEntry> wrapper) where TEntry : IEntry<TEntity, TDbContext>
 		{
 			ImmutableArray<WrappedHandler<TEntry>> initial, computed;
 			do
@@ -40,7 +57,7 @@ namespace EntityFramework.Triggers {
 			while (initial != ImmutableInterlocked.InterlockedCompareExchange(ref array, computed, initial));
 		}
 
-		private static void Remove<TEntry>(ref ImmutableArray<WrappedHandler<TEntry>> array, Object source) where TEntry : IEntry<TEntity>
+		private static void Remove<TEntry>(ref ImmutableArray<WrappedHandler<TEntry>> array, Object source) where TEntry : IEntry<TEntity, TDbContext>
 		{
 			ImmutableArray<WrappedHandler<TEntry>> initial, computed;
 			do
@@ -54,28 +71,28 @@ namespace EntityFramework.Triggers {
 			while (initial != ImmutableInterlocked.InterlockedCompareExchange(ref array, computed, initial));
 		}
 
-		private static ImmutableArray<WrappedHandler<TEntry>> ImmutableInterlockedRead<TEntry>(ref ImmutableArray<WrappedHandler<TEntry>> array) where TEntry : IEntry<TEntity> =>
+		private static ImmutableArray<WrappedHandler<TEntry>> ImmutableInterlockedRead<TEntry>(ref ImmutableArray<WrappedHandler<TEntry>> array) where TEntry : IEntry<TEntity, TDbContext> =>
 			ImmutableInterlocked.InterlockedCompareExchange(ref array, ImmutableArray<WrappedHandler<TEntry>>.Empty, ImmutableArray<WrappedHandler<TEntry>>.Empty);
 
 <#
-foreach (var @event in new [] { "Inserting", "InsertFailed", "Inserted", "Deleting", "DeleteFailed", "Deleted", "Updating", "UpdateFailed", "Updated" })
+foreach (var @event in events)
 {
 		var camelCase = Char.ToLower(@event[0]) + @event.Substring(1);
 #>
-		private ImmutableArray<WrappedHandler<I<#= @event #>Entry<TEntity>>> <#= camelCase #> = ImmutableArray<WrappedHandler<I<#= @event #>Entry<TEntity>>>.Empty;
+		private ImmutableArray<WrappedHandler<I<#= @event #>Entry<TEntity, TDbContext>>> <#= camelCase #> = ImmutableArray<WrappedHandler<I<#= @event #>Entry<TEntity, TDbContext>>>.Empty;
 		
-		internal void Raise<#= @event #>(I<#= @event #>Entry<TEntity> entry)
+		void ITriggers<TEntity, TDbContext>.Raise<#= @event #>(I<#= @event #>Entry<TEntity, TDbContext> entry)
 		{
 			var latestHandlers = ImmutableInterlockedRead(ref <#= camelCase #>);
-			foreach (var wrappedHandler in latestHandlers)
-				wrappedHandler.Invoke(entry);
+			for (var i = 0; i < latestHandlers.Length; i++)
+				latestHandlers[i].Invoke(entry);
 		}
 		
-		public void <#= @event #>Add(Action<I<#= @event #>Entry<TEntity>> handler) =>
+		public void <#= @event #>Add(Action<I<#= @event #>Entry<TEntity, TDbContext>> handler) =>
 			Add(ref <#=camelCase#>, handler, handler);
 
 <#
-	for (var i = 1; i != 3; i++)
+	for (var i = 1; i != 16; i++)
 	{
 		var suffixes = Enumerable.Range(0, i).Select(x => i == 1 ? "" : (x + 1).ToString());
 		var types = suffixes.Select(x => "TService" + x);
@@ -84,10 +101,10 @@ foreach (var @event in new [] { "Inserting", "InsertFailed", "Inserted", "Deleti
 		var invokeParams = String.Join(", ", suffixes.Select(x => "TService" + x + " arg" + x));
 		var invokeArgs = String.Join(", ", suffixes.Select(x => "service" + x));
 #>
-		public void <#= @event #>Add<<#= typeArgs #>>(Action<I<#= @event #>Entry<TEntity>, <#= typeArgs #>> handler) =>
+		public void <#= @event #>Add<<#= typeArgs #>>(Action<I<#= @event #>Entry<TEntity, TDbContext>, <#= typeArgs #>> handler) =>
 			Add(ref <#=camelCase#>, handler, entry => handler.Invoke(entry, <#=serviceResolveCalls#>));
 
-		public void <#= @event #>Remove<<#= typeArgs #>>(Action<I<#= @event #>Entry<TEntity>, <#= typeArgs #>> handler) =>
+		public void <#= @event #>Remove<<#= typeArgs #>>(Action<I<#= @event #>Entry<TEntity, TDbContext>, <#= typeArgs #>> handler) =>
 			Remove(ref <#=camelCase#>, handler);
 
 <#
