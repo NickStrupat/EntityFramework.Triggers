@@ -40,32 +40,35 @@ namespace Testing
 	{
 		static void Main(String[] args)
 		{
-			var container = new Container();
-			container.Register<IServiceProvider>(() => container, Lifestyle.Singleton);
-			container.Register<Context>(Lifestyle.Transient);
-			container.Register<Foo>(Lifestyle.Transient);
-			container.Register(typeof(Triggers<,>), typeof(Triggers<,>), Lifestyle.Singleton);
-
-			var triggers = container.GetInstance<Triggers<Entity, Context>>();
-			triggers.InsertingAdd<Foo>((entry, foo) => entry.Entity.Inserted = DateTime.UtcNow);
-			triggers.UpdatingAdd<Foo>((entry, foo) => entry.Entity.Updated = DateTime.UtcNow);
-			triggers.InsertingAdd<Foo>((entry, foo) => entry.Entity.Name = foo.Count.ToString());
-
-			using (var context = container.GetInstance<Context>())
+			using (var container = new Container())
 			{
-				var a = new Entity();
-				var b = new Entity();
-				context.Add(a);
-				context.Add(b);
-				context.SaveChanges();
-				a.Name = "Test";
-				context.SaveChanges();
+				container.Register<IServiceProvider>(() => container, Lifestyle.Singleton);
+				container.Register<Context>(Lifestyle.Transient);
+				container.Register<Foo>(Lifestyle.Transient);
+				container.Register(typeof(ITriggers<,>), typeof(Triggers<,>), Lifestyle.Singleton);
+
+				var triggers = container.GetInstance<ITriggers<Entity, Context>>();
+				triggers.Inserting.Add<Foo>((entry, foo) => entry.Entity.Inserted = DateTime.UtcNow);
+				triggers.Updating.Add<Foo>((entry, foo) => entry.Entity.Updated = DateTime.UtcNow);
+				triggers.Inserting.Add<Foo>((entry, foo) => entry.Entity.Name = foo.Count.ToString());
+
+				using (var context = container.GetInstance<Context>())
+				{
+					var a = new Entity();
+					var b = new Entity();
+					context.Add(a);
+					context.Add(b);
+					context.SaveChanges();
+					a.Name = "Test";
+					context.SaveChanges();
+				}
 			}
 		}
 	}
 
 	public static class TriggersExtensions
 	{
-		public static IServiceCollection AddDbContextWithTriggers(this IServiceCollection serviceCollection) => serviceCollection.AddSingleton();
+		public static IServiceCollection AddDbContextWithTriggers(this IServiceCollection serviceCollection) =>
+			serviceCollection.AddSingleton(typeof(Triggers<,>), typeof(Triggers<,>));
 	}
 }

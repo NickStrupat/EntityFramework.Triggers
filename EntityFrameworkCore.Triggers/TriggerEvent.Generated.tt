@@ -1,0 +1,43 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+using System;
+
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
+namespace EntityFrameworkCore.Triggers
+#else
+using System.Data.Entity;
+namespace EntityFramework.Triggers
+#endif
+{
+	public partial class TriggerEvent<TEntry, TEntity, TDbContext>
+	where TEntry : IEntry<TEntity, TDbContext>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+<#
+	for (var i = 1; i != 16; i++)
+	{
+		var suffixes = Enumerable.Range(0, i).Select(x => i == 1 ? String.Empty : (x + 1).ToString());
+		var serviceTypeName = i < 4 ? "TService" : "TS";
+		var types = suffixes.Select(x => serviceTypeName + x);
+		var typeArgs = String.Join(", ", types);
+		var serviceResolveCalls = String.Join(", ", types.Select(x => $"S<{x}>()"));
+		var invokeParams = String.Join(", ", suffixes.Select(x => "TService" + x + " arg" + x));
+		var invokeArgs = String.Join(", ", suffixes.Select(x => "service" + x));
+#>
+		public void Add<<#= typeArgs #>>(Action<TEntry, <#= typeArgs #>> handler) =>
+			Add(ref wrappedHandlers, handler, entry => handler.Invoke(entry, <#=serviceResolveCalls#>));
+
+		public void Remove<<#= typeArgs #>>(Action<TEntry, <#= typeArgs #>> handler) =>
+			Remove(ref wrappedHandlers, handler);
+
+<#
+	}
+#>
+	}
+}

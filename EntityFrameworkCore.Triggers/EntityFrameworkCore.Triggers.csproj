@@ -26,13 +26,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="TriggerEvent.Generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>TriggerEvent.Generated.tt</DependentUpon>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Triggers.tt">
+    <None Update="TriggerEvent.Generated.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Triggers.cs</LastGenOutput>
+      <LastGenOutput>TriggerEvent.Generated.cs</LastGenOutput>
     </None>
   </ItemGroup>
 
@@ -41,10 +49,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Triggers.cs">
+    <Compile Update="TriggerEvent.Generated.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>Triggers.tt</DependentUpon>
+      <DependentUpon>TriggerEvent.Generated.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 
