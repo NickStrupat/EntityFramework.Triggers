@@ -9,7 +9,7 @@ using System.Data.Entity;
 namespace EntityFramework.Triggers
 #endif
 {
-	public partial class TriggerEvent<TEntry, TEntity, TDbContext>
+	public sealed partial class TriggerEvent<TEntry, TEntity, TDbContext> : IEquatable<TriggerEvent<TEntry, TEntity, TDbContext>>
 	where TEntry : IEntry<TEntity, TDbContext>
 	where TEntity : class
 	where TDbContext : DbContext
@@ -73,5 +73,10 @@ namespace EntityFramework.Triggers
 
 		private static ImmutableArray<WrappedHandler> ImmutableInterlockedRead(ref ImmutableArray<WrappedHandler> array) =>
 			ImmutableInterlocked.InterlockedCompareExchange(ref array, ImmutableArray<WrappedHandler>.Empty, ImmutableArray<WrappedHandler>.Empty);
+		
+		public override Boolean Equals(Object obj) => obj is TriggerEvent<TEntry, TEntity, TDbContext> triggerEvent && Equals(triggerEvent);
+		public Boolean Equals(TriggerEvent<TEntry, TEntity, TDbContext> other) => ImmutableInterlockedRead(ref wrappedHandlers).Equals(ImmutableInterlockedRead(ref other.wrappedHandlers));
+		public override Int32 GetHashCode() => ImmutableInterlockedRead(ref wrappedHandlers).GetHashCode();
+
 	}
 }

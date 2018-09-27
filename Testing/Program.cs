@@ -40,6 +40,7 @@ namespace Testing
 	{
 		static void Main(String[] args)
 		{
+			Triggers<Entity>.Inserting.
 			using (var container = new Container())
 			{
 				container.Register<IServiceProvider>(() => container, Lifestyle.Singleton);
