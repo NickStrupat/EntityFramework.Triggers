@@ -78,5 +78,11 @@ namespace EntityFramework.Triggers
 		public Boolean Equals(TriggerEvent<TEntry, TEntity, TDbContext> other) => ImmutableInterlockedRead(ref wrappedHandlers).Equals(ImmutableInterlockedRead(ref other.wrappedHandlers));
 		public override Int32 GetHashCode() => ImmutableInterlockedRead(ref wrappedHandlers).GetHashCode();
 
-	}
+        public void Add(Action<TEntry> handler) =>
+            Add(ref wrappedHandlers, handler, handler);
+
+        public void Remove(Action<TEntry> handler) =>
+            Remove(ref wrappedHandlers, handler);
+
+    }
 }
