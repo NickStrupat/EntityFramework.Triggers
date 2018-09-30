@@ -7,8 +7,8 @@ namespace EntityFramework.Triggers
 #endif
 {
 	public interface ITriggers<TEntity, TDbContext>
-		where TEntity : class
-		where TDbContext : DbContext
+	where TEntity : class
+	where TDbContext : DbContext
 	{
 		TriggerEvent<IDeletedEntry     <TEntity, TDbContext>, TEntity, TDbContext> Deleted      { get; }
 		TriggerEvent<IDeleteFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> DeleteFailed { get; }
@@ -20,4 +20,7 @@ namespace EntityFramework.Triggers
 		TriggerEvent<IUpdateFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> UpdateFailed { get; }
 		TriggerEvent<IUpdatingEntry    <TEntity, TDbContext>, TEntity, TDbContext> Updating     { get; }
 	}
+
+    public interface ITriggers<TEntity> : ITriggers<TEntity, DbContext>
+    where TEntity : class {}
 }

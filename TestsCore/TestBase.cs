@@ -41,7 +41,7 @@ namespace EntityFramework.Triggers.Tests {
 			}
 		}
 
-		protected readonly Context Context = new Context();
+		protected readonly Context Context = new Context(null);
 
 		public virtual void Dispose() => Context.Dispose();
 	}

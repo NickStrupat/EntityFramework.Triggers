@@ -40,7 +40,7 @@ namespace Testing
 	{
 		static void Main(String[] args)
 		{
-            Triggers<Entity>.Inserting.Add(x => x.Entity.Name = "");
+            Triggers<Entity>.Inserting += x => x.Entity.Name = "";
 			using (var container = new Container())
 			{
 				container.Register<IServiceProvider>(() => container, Lifestyle.Singleton);
@@ -66,13 +66,4 @@ namespace Testing
 			}
 		}
 	}
-
-	public static class TriggersExtensions
-	{
-        public static IServiceCollection AddDbContextWithTriggers(this IServiceCollection serviceCollection)
-        {
-            return serviceCollection.AddSingleton(typeof(Triggers<,>), typeof(Triggers<,>))
-                                    .AddSingleton(typeof(Triggers<>), typeof(Triggers<>));
-        }
-    }
 }
