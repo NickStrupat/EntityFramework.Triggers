@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
-
+using Microsoft.Extensions.DependencyInjection;
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
 namespace EntityFrameworkCore.Triggers
@@ -14,27 +14,25 @@ namespace EntityFramework.Triggers
 	where TEntity : class
 	where TDbContext : DbContext
 	{
-		private readonly Func<IServiceProvider> getServiceProvider;
-		private IServiceProvider serviceProvider => getServiceProvider() ?? throw new InvalidOperationException("Service provider must not be null");
-		internal TriggerEvent(Func<IServiceProvider> getServiceProvider) => this.getServiceProvider = getServiceProvider;
+		internal TriggerEvent() {}
 
-		private TService S<TService>() => (TService)serviceProvider.GetService(typeof(TService));
+		private TService S<TService>(IServiceProvider serviceProvider) => serviceProvider.GetRequiredService<TService>();
 
 		private ImmutableArray<WrappedHandler> wrappedHandlers = ImmutableArray<WrappedHandler>.Empty;
 		
-		internal void Raise(TEntry entry)
+		internal void Raise(TEntry entry, IServiceProvider serviceProvider)
 		{
 			var latestWrappedHandlers = ImmutableInterlockedRead(ref wrappedHandlers);
 			foreach (var wrappedHandler in latestWrappedHandlers)
-				wrappedHandler.Invoke(entry);
+				wrappedHandler.Invoke(entry, serviceProvider);
 		}
 
 		private struct WrappedHandler : IEquatable<WrappedHandler>
 		{
 			private readonly Delegate source;
-			private readonly Action<TEntry> wrapper;
+			private readonly Action<TEntry, IServiceProvider> wrapper;
 
-			public WrappedHandler(Delegate source, Action<TEntry> wrapper)
+			public WrappedHandler(Delegate source, Action<TEntry, IServiceProvider> wrapper)
 			{
 				this.source = source ?? throw new ArgumentNullException(nameof(source));
 				this.wrapper = wrapper ?? throw new ArgumentNullException(nameof(wrapper));
@@ -43,10 +41,10 @@ namespace EntityFramework.Triggers
 			public Boolean Equals(WrappedHandler other) => ReferenceEquals(source, other.source) || source == other.source;
 			public override Boolean Equals(Object o) => o is WrappedHandler wrappedHandler && Equals(wrappedHandler);
 			public override Int32 GetHashCode() => source.GetHashCode() ^ wrapper.GetHashCode();
-			public void Invoke(TEntry entry) => wrapper.Invoke(entry);
+			public void Invoke(TEntry entry, IServiceProvider serviceProvider) => wrapper.Invoke(entry, serviceProvider);
 		}
 
-		private static void Add(ref ImmutableArray<WrappedHandler> wrappedHandlers, Delegate source, Action<TEntry> wrapper)
+		private static void Add(ref ImmutableArray<WrappedHandler> wrappedHandlers, Delegate source, Action<TEntry, IServiceProvider> wrapper)
 		{
 			ImmutableArray<WrappedHandler> initial, computed;
 			do
@@ -75,14 +73,18 @@ namespace EntityFramework.Triggers
 			ImmutableInterlocked.InterlockedCompareExchange(ref array, ImmutableArray<WrappedHandler>.Empty, ImmutableArray<WrappedHandler>.Empty);
 		
 		public override Boolean Equals(Object obj) => obj is TriggerEvent<TEntry, TEntity, TDbContext> triggerEvent && Equals(triggerEvent);
-		public Boolean Equals(TriggerEvent<TEntry, TEntity, TDbContext> other) => ImmutableInterlockedRead(ref wrappedHandlers).Equals(ImmutableInterlockedRead(ref other.wrappedHandlers));
+		public Boolean Equals(TriggerEvent<TEntry, TEntity, TDbContext> other) => other != null && ImmutableInterlockedRead(ref wrappedHandlers).Equals(ImmutableInterlockedRead(ref other.wrappedHandlers));
 		public override Int32 GetHashCode() => ImmutableInterlockedRead(ref wrappedHandlers).GetHashCode();
 
-        public void Add(Action<TEntry> handler) =>
-            Add(ref wrappedHandlers, handler, handler);
+        public void Add(Action<TEntry> handler)
+        {
+	        void Wrapper(TEntry entry, IServiceProvider provider) => handler(entry);
+			Add(ref wrappedHandlers, handler, Wrapper);
+        }
 
-        public void Remove(Action<TEntry> handler) =>
-            Remove(ref wrappedHandlers, handler);
-
-    }
+		public void Remove(Action<TEntry> handler)
+		{
+			Remove(ref wrappedHandlers, handler);
+		}
+	}
 }

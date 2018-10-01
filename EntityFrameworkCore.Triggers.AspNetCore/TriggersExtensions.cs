@@ -15,7 +15,6 @@ namespace EntityFrameworkCore.Triggers.AspNetCore
 
         public static IApplicationBuilder UseTriggers(this IApplicationBuilder app, Action<ITriggersBuilder> configureTriggers)
         {
-            Triggers.ServiceProvider = app.ApplicationServices;
             configureTriggers?.Invoke(new TriggersBuilder(app.ApplicationServices));
             return app;
         }

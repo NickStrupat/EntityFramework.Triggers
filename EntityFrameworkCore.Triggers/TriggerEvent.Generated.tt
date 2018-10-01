@@ -26,15 +26,20 @@ namespace EntityFramework.Triggers
 		var serviceTypeName = i < 4 ? "TService" : "TS";
 		var types = suffixes.Select(x => serviceTypeName + x);
 		var typeArgs = String.Join(", ", types);
-		var serviceResolveCalls = String.Join(", ", types.Select(x => $"S<{x}>()"));
+		var serviceResolveCalls = String.Join(", ", types.Select(x => $"S<{x}>(sp)"));
 		var invokeParams = String.Join(", ", suffixes.Select(x => "TService" + x + " arg" + x));
 		var invokeArgs = String.Join(", ", suffixes.Select(x => "service" + x));
 #>
-		public void Add<<#= typeArgs #>>(Action<TEntry, <#= typeArgs #>> handler) =>
-			Add(ref wrappedHandlers, handler, entry => handler.Invoke(entry, <#=serviceResolveCalls#>));
+		public void Add<<#= typeArgs #>>(Action<TEntry, <#= typeArgs #>> handler)
+		{
+			void Wrapper(TEntry entry, IServiceProvider sp) => handler.Invoke(entry, <#=serviceResolveCalls#>);
+			Add(ref wrappedHandlers, handler, Wrapper);
+		}
 
-		public void Remove<<#= typeArgs #>>(Action<TEntry, <#= typeArgs #>> handler) =>
+		public void Remove<<#= typeArgs #>>(Action<TEntry, <#= typeArgs #>> handler)
+		{
 			Remove(ref wrappedHandlers, handler);
+		}
 
 <#
 	}

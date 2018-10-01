@@ -22,6 +22,19 @@ namespace EntityFramework.Triggers {
 	}
 
 	internal class TriggerInvoker<TDbContext> : ITriggerInvoker where TDbContext : DbContext {
+		private static IList<Type> GetInheritanceChain()
+		{
+			// from DbContext up to TDbContext
+			var types = new List<Type>();
+			Type type = typeof(TDbContext);
+			while (typeof(DbContext).IsAssignableFrom(type))
+			{
+				types.Add(type);
+				type = type.BaseType;
+			}
+			types.Reverse();
+			return types;
+		}
 		private static readonly Type DbContextBaseType = typeof(TDbContext).GetTypeInfo().BaseType;
 		private static readonly ITriggerInvoker BaseTriggerInvoker = typeof(DbContext).IsAssignableFrom(DbContextBaseType) ? TriggerInvokers.Get(DbContextBaseType) : null;
 
