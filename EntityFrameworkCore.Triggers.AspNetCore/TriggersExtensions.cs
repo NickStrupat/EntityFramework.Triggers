@@ -27,16 +27,12 @@ namespace EntityFrameworkCore.Triggers.AspNetCore
 
             public ITriggers<TEntity, TDbContext> Triggers<TEntity, TDbContext>()
             where TEntity : class
-            where TDbContext : DbContext
-            {
-                return serviceProvider.GetService<ITriggers<TEntity, TDbContext>>();
-            }
+            where TDbContext : DbContext =>
+	            serviceProvider.GetRequiredService<ITriggers<TEntity, TDbContext>>();
 
-            public ITriggers<TEntity> Triggers<TEntity>()
-            where TEntity : class
-            {
-                return serviceProvider.GetService<ITriggers<TEntity>>();
-            }
+	        public ITriggers<TEntity> Triggers<TEntity>()
+            where TEntity : class =>
+		        serviceProvider.GetRequiredService<ITriggers<TEntity>>();
         }
     }
 

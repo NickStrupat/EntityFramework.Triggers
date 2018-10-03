@@ -16,25 +16,12 @@ namespace EntityFramework.Triggers {
 #endif
 	internal class EntityEntryComparer : IEqualityComparer<EntityEntry> {
 		private EntityEntryComparer() {}
-		public Boolean Equals(EntityEntry x, EntityEntry y) => ReferenceEquals(x.Entity, y.Entity);
+		public Boolean Equals(EntityEntry x, EntityEntry y) => ReferenceEquals(x?.Entity, y?.Entity);
 		public Int32 GetHashCode(EntityEntry obj) => obj.Entity.GetHashCode();
 		public static readonly EntityEntryComparer Default = new EntityEntryComparer();
 	}
 
 	internal class TriggerInvoker<TDbContext> : ITriggerInvoker where TDbContext : DbContext {
-		private static IList<Type> GetInheritanceChain()
-		{
-			// from DbContext up to TDbContext
-			var types = new List<Type>();
-			Type type = typeof(TDbContext);
-			while (typeof(DbContext).IsAssignableFrom(type))
-			{
-				types.Add(type);
-				type = type.BaseType;
-			}
-			types.Reverse();
-			return types;
-		}
 		private static readonly Type DbContextBaseType = typeof(TDbContext).GetTypeInfo().BaseType;
 		private static readonly ITriggerInvoker BaseTriggerInvoker = typeof(DbContext).IsAssignableFrom(DbContextBaseType) ? TriggerInvokers.Get(DbContextBaseType) : null;
 

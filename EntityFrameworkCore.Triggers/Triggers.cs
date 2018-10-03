@@ -1,5 +1,4 @@
 ﻿using System;
-
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
 namespace EntityFrameworkCore.Triggers
@@ -12,38 +11,15 @@ namespace EntityFramework.Triggers
 	where TEntity : class
 	where TDbContext : DbContext
 	{
-		internal Triggers()
-		{
-			inserting    = new TriggerEvent<IInsertingEntry   <TEntity, TDbContext>, TEntity, TDbContext>();
-			insertFailed = new TriggerEvent<IInsertFailedEntry<TEntity, TDbContext>, TEntity, TDbContext>();
-			inserted     = new TriggerEvent<IInsertedEntry    <TEntity, TDbContext>, TEntity, TDbContext>();
-			deleting     = new TriggerEvent<IDeletingEntry    <TEntity, TDbContext>, TEntity, TDbContext>();
-			deleteFailed = new TriggerEvent<IDeleteFailedEntry<TEntity, TDbContext>, TEntity, TDbContext>();
-			deleted      = new TriggerEvent<IDeletedEntry     <TEntity, TDbContext>, TEntity, TDbContext>();
-			updating     = new TriggerEvent<IUpdatingEntry    <TEntity, TDbContext>, TEntity, TDbContext>();
-			updateFailed = new TriggerEvent<IUpdateFailedEntry<TEntity, TDbContext>, TEntity, TDbContext>();
-			updated      = new TriggerEvent<IUpdatedEntry     <TEntity, TDbContext>, TEntity, TDbContext>();
-		}
-
-		private readonly TriggerEvent<IInsertingEntry   <TEntity, TDbContext>, TEntity, TDbContext> inserting   ;
-		private readonly TriggerEvent<IInsertFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> insertFailed;
-		private readonly TriggerEvent<IInsertedEntry    <TEntity, TDbContext>, TEntity, TDbContext> inserted    ;
-		private readonly TriggerEvent<IDeletingEntry    <TEntity, TDbContext>, TEntity, TDbContext> deleting    ;
-		private readonly TriggerEvent<IDeleteFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> deleteFailed;
-		private readonly TriggerEvent<IDeletedEntry     <TEntity, TDbContext>, TEntity, TDbContext> deleted     ;
-		private readonly TriggerEvent<IUpdatingEntry    <TEntity, TDbContext>, TEntity, TDbContext> updating    ;
-		private readonly TriggerEvent<IUpdateFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> updateFailed;
-		private readonly TriggerEvent<IUpdatedEntry     <TEntity, TDbContext>, TEntity, TDbContext> updated     ;
-
-		TriggerEvent<IInsertingEntry   <TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.Inserting    => inserting   ;
-		TriggerEvent<IInsertFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.InsertFailed => insertFailed;
-		TriggerEvent<IInsertedEntry    <TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.Inserted     => inserted    ;
-		TriggerEvent<IDeletingEntry    <TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.Deleting     => deleting    ;
-		TriggerEvent<IDeleteFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.DeleteFailed => deleteFailed;
-		TriggerEvent<IDeletedEntry     <TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.Deleted      => deleted     ;
-		TriggerEvent<IUpdatingEntry    <TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.Updating     => updating    ;
-		TriggerEvent<IUpdateFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.UpdateFailed => updateFailed;
-		TriggerEvent<IUpdatedEntry     <TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.Updated      => updated     ;
+		TriggerEvent<IInsertingEntry   <TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.Inserting    { get; } = new TriggerEvent<IInsertingEntry   <TEntity, TDbContext>, TEntity, TDbContext>();
+		TriggerEvent<IInsertFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.InsertFailed { get; } = new TriggerEvent<IInsertFailedEntry<TEntity, TDbContext>, TEntity, TDbContext>();
+		TriggerEvent<IInsertedEntry    <TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.Inserted     { get; } = new TriggerEvent<IInsertedEntry    <TEntity, TDbContext>, TEntity, TDbContext>();
+		TriggerEvent<IDeletingEntry    <TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.Deleting     { get; } = new TriggerEvent<IDeletingEntry    <TEntity, TDbContext>, TEntity, TDbContext>();
+		TriggerEvent<IDeleteFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.DeleteFailed { get; } = new TriggerEvent<IDeleteFailedEntry<TEntity, TDbContext>, TEntity, TDbContext>();
+		TriggerEvent<IDeletedEntry     <TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.Deleted      { get; } = new TriggerEvent<IDeletedEntry     <TEntity, TDbContext>, TEntity, TDbContext>();
+		TriggerEvent<IUpdatingEntry    <TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.Updating     { get; } = new TriggerEvent<IUpdatingEntry    <TEntity, TDbContext>, TEntity, TDbContext>();
+		TriggerEvent<IUpdateFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.UpdateFailed { get; } = new TriggerEvent<IUpdateFailedEntry<TEntity, TDbContext>, TEntity, TDbContext>();
+		TriggerEvent<IUpdatedEntry     <TEntity, TDbContext>, TEntity, TDbContext> ITriggers<TEntity, TDbContext>.Updated      { get; } = new TriggerEvent<IUpdatedEntry     <TEntity, TDbContext>, TEntity, TDbContext>();
 		
 		private static readonly TriggerEvent<IInsertingEntry   <TEntity, TDbContext>, TEntity, TDbContext> staticInserting    = new TriggerEvent<IInsertingEntry   <TEntity, TDbContext>, TEntity, TDbContext>();
 		private static readonly TriggerEvent<IInsertFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> staticInsertFailed = new TriggerEvent<IInsertFailedEntry<TEntity, TDbContext>, TEntity, TDbContext>();
@@ -70,7 +46,7 @@ namespace EntityFramework.Triggers
 	where TEntity : class
 	{
 		private readonly ITriggers<TEntity, DbContext> triggers;
-		internal Triggers() => triggers = new Triggers<TEntity, DbContext>();
+		public Triggers(ITriggers<TEntity, DbContext> triggers) => this.triggers = triggers;
 
 		TriggerEvent<IInsertingEntry   <TEntity, DbContext>, TEntity, DbContext> ITriggers<TEntity, DbContext>.Inserting    => triggers.Inserting   ;
 		TriggerEvent<IInsertFailedEntry<TEntity, DbContext>, TEntity, DbContext> ITriggers<TEntity, DbContext>.InsertFailed => triggers.InsertFailed;
