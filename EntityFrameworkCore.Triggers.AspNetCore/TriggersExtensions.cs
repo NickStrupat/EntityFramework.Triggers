@@ -1,9 +1,12 @@
 ﻿using System;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-
+#if EF_CORE
 namespace EntityFrameworkCore.Triggers.AspNetCore
+#else
+using System.Data.Entity;
+namespace EntityFramework.Triggers.AspNetCore
+#endif
 {
 	public static class TriggersExtensions
 	{
@@ -18,30 +21,5 @@ namespace EntityFrameworkCore.Triggers.AspNetCore
             configureTriggers?.Invoke(new TriggersBuilder(app.ApplicationServices));
             return app;
         }
-
-        private class TriggersBuilder : ITriggersBuilder
-        {
-            private readonly IServiceProvider serviceProvider;
-
-            public TriggersBuilder(IServiceProvider serviceProvider) => this.serviceProvider = serviceProvider;
-
-            public ITriggers<TEntity, TDbContext> Triggers<TEntity, TDbContext>()
-            where TEntity : class
-            where TDbContext : DbContext =>
-	            serviceProvider.GetRequiredService<ITriggers<TEntity, TDbContext>>();
-
-	        public ITriggers<TEntity> Triggers<TEntity>()
-            where TEntity : class =>
-		        serviceProvider.GetRequiredService<ITriggers<TEntity>>();
-        }
-    }
-
-    public interface ITriggersBuilder {
-        ITriggers<TEntity, TDbContext> Triggers<TEntity, TDbContext>()
-        where TEntity : class
-        where TDbContext : DbContext;
-
-        ITriggers<TEntity> Triggers<TEntity>()
-        where TEntity : class;
     }
 }
