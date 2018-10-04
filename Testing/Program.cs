@@ -82,8 +82,9 @@ namespace Testing
 				var triggers = container.GetInstance<ITriggers<Entity, Context>>();
 				var triggers1 = container.GetInstance<ITriggers<Entity>>();
 				var triggers2 = container.GetInstance<ITriggers<Entity, DbContext>>();
+				var bb = triggers1.Equals(triggers2);
 				var bbb = ReferenceEquals(triggers1, triggers2);
-				//triggers.Inserting.Add<Foo>((entry, foo) => entry.Entity.Inserted = DateTime.UtcNow);
+			    //triggers.Inserting.Add<Foo>((entry, foo) => entry.Entity.Inserted = DateTime.UtcNow);
 				//triggers.Updating.Add<Foo>((entry, foo) => entry.Entity.Updated = DateTime.UtcNow);
 				triggers.Inserting.Add<Foo>((entry, foo) => entry.Entity.Name = foo.Count.ToString());
 

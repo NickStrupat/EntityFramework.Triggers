@@ -9,7 +9,7 @@ using System.Data.Entity;
 namespace EntityFramework.Triggers
 #endif
 {
-	public sealed partial class TriggerEvent<TEntry, TEntity, TDbContext> : IEquatable<TriggerEvent<TEntry, TEntity, TDbContext>>
+    public sealed partial class TriggerEvent<TEntry, TEntity, TDbContext> : ITriggerEvent<TEntity, TDbContext>, IEquatable<TriggerEvent<TEntry, TEntity, TDbContext>>
 	where TEntry : IEntry<TEntity, TDbContext>
 	where TEntity : class
 	where TDbContext : DbContext

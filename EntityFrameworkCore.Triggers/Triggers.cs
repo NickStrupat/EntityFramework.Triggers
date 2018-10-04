@@ -7,7 +7,7 @@ using System.Data.Entity;
 namespace EntityFramework.Triggers
 #endif
 {
-	public sealed class Triggers<TEntity, TDbContext> : ITriggers<TEntity, TDbContext>
+	public sealed class Triggers<TEntity, TDbContext> : ITriggers<TEntity, TDbContext>, IEquatable<ITriggers<TEntity, TDbContext>>
 	where TEntity : class
 	where TDbContext : DbContext
 	{
@@ -40,9 +40,17 @@ namespace EntityFramework.Triggers
         public static event Action<IUpdatingEntry    <TEntity, TDbContext>> Updating     { add => staticUpdating    .Add(value); remove => staticUpdating    .Remove(value); }
         public static event Action<IUpdateFailedEntry<TEntity, TDbContext>> UpdateFailed { add => staticUpdateFailed.Add(value); remove => staticUpdateFailed.Remove(value); }
         public static event Action<IUpdatedEntry     <TEntity, TDbContext>> Updated      { add => staticUpdated     .Add(value); remove => staticUpdated     .Remove(value); }
-	}
 
-	public sealed class Triggers<TEntity> : ITriggers<TEntity>
+	    public override Boolean Equals(Object obj) => obj is ITriggers<TEntity, TDbContext> other && Equals(other);
+        public Boolean Equals(ITriggers<TEntity, TDbContext> other)
+        {
+            if (other is Triggers<TEntity, TDbContext> ted)
+                return ReferenceEquals(this, ted);
+            return TriggersEqualityComparer<TEntity, TDbContext>.Instance.Equals(this, other);
+        }
+    }
+
+	public sealed class Triggers<TEntity> : ITriggers<TEntity>, IEquatable<ITriggers<TEntity, DbContext>>
 	where TEntity : class
 	{
 		private readonly ITriggers<TEntity, DbContext> triggers;
@@ -67,5 +75,14 @@ namespace EntityFramework.Triggers
 		public static event Action<IUpdatingEntry    <TEntity, DbContext>> Updating     { add => Triggers<TEntity, DbContext>.Updating     += value; remove => Triggers<TEntity, DbContext>.Updating     -= value; }
 		public static event Action<IUpdateFailedEntry<TEntity, DbContext>> UpdateFailed { add => Triggers<TEntity, DbContext>.UpdateFailed += value; remove => Triggers<TEntity, DbContext>.UpdateFailed -= value; }
 		public static event Action<IUpdatedEntry     <TEntity, DbContext>> Updated      { add => Triggers<TEntity, DbContext>.Updated      += value; remove => Triggers<TEntity, DbContext>.Updated      -= value; }
-	}
+
+	    public override Int32 GetHashCode() => triggers.GetHashCode();
+        public override Boolean Equals(Object obj) => obj is ITriggers<TEntity, DbContext> other && Equals(other);
+        public Boolean Equals(ITriggers<TEntity, DbContext> other)
+        {
+            if (other is Triggers<TEntity> te)
+                return ReferenceEquals(triggers, te.triggers);
+            return TriggersEqualityComparer<TEntity, DbContext>.Instance.Equals(this, other);
+        }
+    }
 }
