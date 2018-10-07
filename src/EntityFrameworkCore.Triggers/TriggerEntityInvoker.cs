@@ -26,11 +26,11 @@ namespace EntityFramework.Triggers
 		{
 			var pairs = GetTypePairs().ToArray();
 			var raiseActions = new List<Action<TEntry, IServiceProvider>>(pairs.Length);
-			foreach (var typePair in pairs)
+			foreach (var (dbContextType, entityType) in pairs)
 			{
-				var globalTriggerEventGetter = typeof(Triggers<,>).MakeGenericType(typePair.entityType, typePair.dbContextType).GetProperty(globalTriggersEventName).GetGetMethod().CreateDelegate<Func<ITriggerEvent>>();
+				var globalTriggerEventGetter = typeof(Triggers<,>).MakeGenericType(entityType, dbContextType).GetProperty(globalTriggersEventName).GetGetMethod().CreateDelegate<Func<ITriggerEvent>>();
 				var instanceTriggerEventGetter = typeof(ITriggers).GetProperty(triggersEventName).GetGetMethod().CreateDelegate<Func<ITriggers, ITriggerEvent>>();
-				var triggerType = typeof(ITriggers<,>).MakeGenericType(typePair.entityType, typePair.dbContextType);
+				var triggerType = typeof(ITriggers<,>).MakeGenericType(entityType, dbContextType);
 
 				void RaiseGlobalThenInstance(TEntry entry, IServiceProvider sp)
 				{
