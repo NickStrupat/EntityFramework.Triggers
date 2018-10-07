@@ -35,11 +35,11 @@ namespace EntityFramework.Triggers
 			return TriggersEnabled ? this.SaveChangesWithTriggers(base.SaveChanges, serviceProvider, acceptAllChangesOnSuccess) : base.SaveChanges(acceptAllChangesOnSuccess);
 		}
 		
-		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+		public override Task<Int32> SaveChangesAsync(CancellationToken cancellationToken = default) {
 			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, serviceProvider, cancellationToken) : base.SaveChangesAsync(cancellationToken);
 		}
 		
-		public override Task<Int32> SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
+		public override Task<Int32> SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default) {
 			return TriggersEnabled ? this.SaveChangesWithTriggersAsync(base.SaveChangesAsync, serviceProvider, acceptAllChangesOnSuccess, cancellationToken) : base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 		}
 #else
