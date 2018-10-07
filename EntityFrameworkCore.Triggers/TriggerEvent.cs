@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
+
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
 namespace EntityFrameworkCore.Triggers
@@ -9,22 +10,32 @@ using System.Data.Entity;
 namespace EntityFramework.Triggers
 #endif
 {
-    public sealed partial class TriggerEvent<TEntry, TEntity, TDbContext> : ITriggerEvent<TEntity, TDbContext>, IEquatable<TriggerEvent<TEntry, TEntity, TDbContext>>
+	public abstract class TriggerEvent : ITriggerEvent
+	{
+		public void Raise(Object entry, IServiceProvider serviceProvider) => RaiseInternal(entry, serviceProvider);
+		
+		protected abstract void RaiseInternal(Object entry, IServiceProvider serviceProvider);
+	}
+
+	public sealed partial class TriggerEvent<TEntry, TEntity, TDbContext>
+	: TriggerEvent
+	, IEquatable<TriggerEvent<TEntry, TEntity, TDbContext>>
 	where TEntry : IEntry<TEntity, TDbContext>
 	where TEntity : class
 	where TDbContext : DbContext
 	{
 		internal TriggerEvent() {}
 
-		private TService S<TService>(IServiceProvider serviceProvider) => serviceProvider.GetRequiredService<TService>();
+		private static TService S<TService>(IServiceProvider serviceProvider) => serviceProvider.GetRequiredService<TService>();
 
 		private ImmutableArray<WrappedHandler> wrappedHandlers = ImmutableArray<WrappedHandler>.Empty;
 		
-		internal void Raise(TEntry entry, IServiceProvider serviceProvider)
+		protected override void RaiseInternal(Object entry, IServiceProvider serviceProvider)
 		{
+			var x = (TEntry) entry;
 			var latestWrappedHandlers = ImmutableInterlockedRead(ref wrappedHandlers);
 			foreach (var wrappedHandler in latestWrappedHandlers)
-				wrappedHandler.Invoke(entry, serviceProvider);
+				wrappedHandler.Invoke(x, serviceProvider);
 		}
 
 		private struct WrappedHandler : IEquatable<WrappedHandler>

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using EntityFrameworkCore.Triggers;
 using Microsoft.EntityFrameworkCore;
 using SimpleInjector;
@@ -11,7 +13,7 @@ namespace Testing
 		DateTime Inserted { get; }
 	}
 
-	public class Base : IInserted
+	public class Base : IInserted, IDisposable
 	{
 		public DateTime Inserted { get; private set; }
 		public DateTime? Updated { get; private set; }
@@ -21,9 +23,11 @@ namespace Testing
 			Triggers<Base>.Inserting += entry => entry.Entity.Inserted = DateTime.UtcNow;
 			Triggers<Base>.Updating += entry => entry.Entity.Updated = DateTime.UtcNow;
 		}
-	}
 
-	public class Entity : Base
+		public void Dispose() {}
+	}
+	public interface IWhat { }
+	public class Entity : Base, IInserted, IDisposable, IWhat
 	{
 		public Int64 Id { get; private set; }
 		public String Name { get; set; }
@@ -52,25 +56,18 @@ namespace Testing
 
 	class Program
 	{
-		private static IList<Type> GetDbContextInheritanceChain<TDbContext>() where TDbContext : DbContext
-		{
-			// from DbContext up to TDbContext
-			var types = new List<Type>();
-			Type type = typeof(TDbContext);
-			while (typeof(DbContext).IsAssignableFrom(type))
-			{
-				types.Add(type);
-				type = type.BaseType;
-			}
-			types.Reverse();
-			return types;
-		}
+		static void Foo(Object o) {}
 
 		static void Main(String[] args)
 		{
-			var ic = GetDbContextInheritanceChain<Context>();
+			Action<String> aaa = (Action<String>)((Action<Object>)Foo).Method.CreateDelegate(typeof(Action<String>));
 
-            Triggers<Entity>.Inserting += x => x.Entity.Name = "";
+			IInsertingEntry<Entity, Context> asdf = new What<Context, Entity>.InsertingEntry(new Entity(), new Context(null), false);
+			IInsertingEntry<Object, DbContext> asdf2 = asdf;
+
+			var ok = TriggerEntityInvoker<Context, Entity>.GetRaiseActions<IInsertingEntry<Entity, Context>>("GlobalInserting", "Inserting");
+
+			Triggers<Entity>.Inserting += x => x.Entity.Name = "";
 			using (var container = new Container())
 			{
 				container.Register<IServiceProvider>(() => container, Lifestyle.Singleton);
@@ -100,5 +97,108 @@ namespace Testing
 				}
 			}
 		}
+	}
+	public class What<TDbContext, TEntity>
+	where TDbContext : DbContext
+	where TEntity : class
+	{
+		#region Entry implementations
+		public abstract class Entry : IEntry<TEntity, TDbContext>
+		{
+			protected Entry(TEntity entity, TDbContext context)
+			{
+				Entity = entity;
+				Context = context;
+			}
+			public TEntity Entity { get; }
+			public TDbContext Context { get; }
+			DbContext IEntry<TEntity>.Context => Context;
+		}
+
+		public abstract class BeforeEntry : Entry, IBeforeEntry<TEntity, TDbContext>
+		{
+			protected BeforeEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context)
+			{
+				Cancel = cancel;
+			}
+			public Boolean Cancel { get; set; }
+		}
+
+		public abstract class BeforeChangeEntry : BeforeEntry, IBeforeChangeEntry<TEntity, TDbContext>
+		{
+			protected BeforeChangeEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) { }
+			private TEntity original;
+			public TEntity Original => original ?? (original = (TEntity)Context.Entry(Entity).OriginalValues.ToObject());
+		}
+
+		public abstract class FailedEntry : Entry, IFailedEntry<TEntity, TDbContext>
+		{
+			protected FailedEntry(TEntity entity, TDbContext context, Exception exception, Boolean swallow) : base(entity, context)
+			{
+				Exception = exception;
+				Swallow = swallow;
+			}
+			public Exception Exception { get; }
+			public Boolean Swallow { get; set; }
+		}
+
+		public abstract class ChangeFailedEntry : Entry, IChangeFailedEntry<TEntity, TDbContext>
+		{
+			public Exception Exception { get; }
+			public Boolean Swallow { get; set; }
+
+			protected ChangeFailedEntry(TEntity entity, TDbContext context, Exception exception, Boolean swallow) : base(entity, context)
+			{
+				Exception = exception;
+				Swallow = swallow;
+			}
+		}
+
+
+		public class InsertingEntry : BeforeEntry, IInsertingEntry<TEntity, TDbContext>
+		{
+			public InsertingEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) { }
+		}
+
+		public class UpdatingEntry : BeforeChangeEntry, IUpdatingEntry<TEntity, TDbContext>
+		{
+			public UpdatingEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) { }
+		}
+
+		public class DeletingEntry : BeforeChangeEntry, IDeletingEntry<TEntity, TDbContext>
+		{
+			public DeletingEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) { }
+		}
+
+		public class InsertFailedEntry : FailedEntry, IInsertFailedEntry<TEntity, TDbContext>
+		{
+			public InsertFailedEntry(TEntity entity, TDbContext context, Exception exception, Boolean swallow) : base(entity, context, exception, swallow) { }
+		}
+
+		public class UpdateFailedEntry : ChangeFailedEntry, IUpdateFailedEntry<TEntity, TDbContext>
+		{
+			public UpdateFailedEntry(TEntity entity, TDbContext context, Exception exception, Boolean swallow) : base(entity, context, exception, swallow) { }
+		}
+
+		public class DeleteFailedEntry : ChangeFailedEntry, IDeleteFailedEntry<TEntity, TDbContext>
+		{
+			public DeleteFailedEntry(TEntity entity, TDbContext context, Exception exception, Boolean swallow) : base(entity, context, exception, swallow) { }
+		}
+
+		public class InsertedEntry : Entry, IInsertedEntry<TEntity, TDbContext>
+		{
+			public InsertedEntry(TEntity entity, TDbContext context) : base(entity, context) { }
+		}
+
+		public class UpdatedEntry : Entry, IUpdatedEntry<TEntity, TDbContext>
+		{
+			public UpdatedEntry(TEntity entity, TDbContext context) : base(entity, context) { }
+		}
+
+		public class DeletedEntry : Entry, IDeletedEntry<TEntity, TDbContext>
+		{
+			public DeletedEntry(TEntity entity, TDbContext context) : base(entity, context) { }
+		}
+		#endregion
 	}
 }

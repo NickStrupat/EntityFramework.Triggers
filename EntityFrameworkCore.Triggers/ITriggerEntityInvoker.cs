@@ -17,15 +17,5 @@ namespace EntityFramework.Triggers {
 		void RaiseInserted    (IServiceProvider serviceProvider, Object entity, TDbContext dbc);
 		void RaiseUpdated     (IServiceProvider serviceProvider, Object entity, TDbContext dbc);
 		void RaiseDeleted     (IServiceProvider serviceProvider, Object entity, TDbContext dbc);
-
-		void RaiseInsertingInner   (IServiceProvider serviceProvider, Object entry);
-		void RaiseUpdatingInner    (IServiceProvider serviceProvider, Object entry);
-		void RaiseDeletingInner    (IServiceProvider serviceProvider, Object entry);
-		void RaiseInsertFailedInner(IServiceProvider serviceProvider, Object entry);
-		void RaiseUpdateFailedInner(IServiceProvider serviceProvider, Object entry);
-		void RaiseDeleteFailedInner(IServiceProvider serviceProvider, Object entry);
-		void RaiseInsertedInner    (IServiceProvider serviceProvider, Object entry);
-		void RaiseUpdatedInner     (IServiceProvider serviceProvider, Object entry);
-		void RaiseDeletedInner     (IServiceProvider serviceProvider, Object entry);
 	}
 }

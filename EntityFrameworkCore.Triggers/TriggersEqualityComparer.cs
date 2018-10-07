@@ -15,22 +15,20 @@ namespace EntityFramework.Triggers
     {
         public static readonly TriggersEqualityComparer<TEntity, TDbContext> Instance = new TriggersEqualityComparer<TEntity, TDbContext>();
 
-        public bool Equals(ITriggers<TEntity, TDbContext> x, ITriggers<TEntity, TDbContext> y)
+        public Boolean Equals(ITriggers<TEntity, TDbContext> x, ITriggers<TEntity, TDbContext> y)
         {
             if (ReferenceEquals(x, y))
                 return true;
             if (ReferenceEquals(x, null) || ReferenceEquals(y, null))
                 return false;
 
-            (ITriggerEvent<TEntity, TDbContext> tex, ITriggerEvent<TEntity, TDbContext> tey) ResultSelector(ITriggerEvent<TEntity, TDbContext> tex, ITriggerEvent<TEntity, TDbContext> tey) => (tex, tey);
-
-            foreach (var tes in GetTriggerEvents(x).Zip(GetTriggerEvents(y), ResultSelector))
+	        foreach (var tes in GetTriggerEvents(x).Zip(GetTriggerEvents(y), (tex, tey) => (tex, tey)))
                 if (!ReferenceEquals(tes.tex, tes.tey))
                     return false;
             return true;
         }
 
-        public int GetHashCode(ITriggers<TEntity, TDbContext> triggers)
+        public Int32 GetHashCode(ITriggers<TEntity, TDbContext> triggers)
         {
             var hashCode = 0x51ed270b;
             foreach (var triggerEvent in GetTriggerEvents(triggers))
@@ -39,14 +37,14 @@ namespace EntityFramework.Triggers
             return hashCode;
         }
 
-        private static IEnumerable<ITriggerEvent<TEntity, TDbContext>> GetTriggerEvents(ITriggers<TEntity, TDbContext> triggers) =>
+        private static IEnumerable<TriggerEvent> GetTriggerEvents(ITriggers<TEntity, TDbContext> triggers) =>
             eventGetters.Select(x => x.Invoke(triggers));
 
-        private delegate ITriggerEvent<TEntity, TDbContext> EventDelegate(ITriggers<TEntity, TDbContext> triggers);
+        private delegate TriggerEvent EventDelegate(ITriggers<TEntity, TDbContext> triggers);
 
         private static readonly EventDelegate[] eventGetters =
             typeof(ITriggers<TEntity, TDbContext>).GetProperties()
-                                                  .Where(x => typeof(ITriggerEvent<TEntity, TDbContext>).IsAssignableFrom(x.PropertyType))
+                                                  .Where(x => typeof(TriggerEvent).IsAssignableFrom(x.PropertyType))
                                                   .OrderBy(x => x.Name, StringComparer.Ordinal)
                                                   .Select(x => (EventDelegate)x.GetGetMethod().CreateDelegate(typeof(EventDelegate)))
                                                   .ToArray();

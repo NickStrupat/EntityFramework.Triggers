@@ -22,8 +22,6 @@ namespace EntityFramework.Triggers {
 	}
 
 	internal class TriggerInvoker<TDbContext> : ITriggerInvoker where TDbContext : DbContext {
-		private static readonly Type DbContextBaseType = typeof(TDbContext).GetTypeInfo().BaseType;
-		private static readonly ITriggerInvoker BaseTriggerInvoker = typeof(DbContext).IsAssignableFrom(DbContextBaseType) ? TriggerInvokers.Get(DbContextBaseType) : null;
 
 		public List<Action<DbContext>> RaiseTheBeforeEvents(DbContext dbContext, IServiceProvider serviceProvider) {
 			var entries = dbContext.ChangeTracker.Entries().ToList();
@@ -57,9 +55,7 @@ namespace EntityFramework.Triggers {
 			}
 		}
 
-
 		public void RaiseTheBeforeEventInner(DbContext dbContext, IServiceProvider serviceProvider, EntityEntry entry, List<Action<DbContext>> afterEvents, ref Boolean cancel) {
-			BaseTriggerInvoker?.RaiseTheBeforeEventInner(dbContext, serviceProvider, entry, afterEvents, ref cancel);
 			var after = RaiseTheBeforeEvent(entry, dbContext, serviceProvider, ref cancel);
 			if (after != null && !cancel)
 				afterEvents.Add(after);
@@ -67,17 +63,18 @@ namespace EntityFramework.Triggers {
 
 		private static Action<DbContext> RaiseTheBeforeEvent(EntityEntry entry, DbContext dbContext, IServiceProvider serviceProvider, ref Boolean cancel) {
 			var tDbContext = (TDbContext)dbContext;
-			var triggers = TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType());
+			var entityType = entry.Entity.GetType();
+			var triggerEntityInvoker = TriggerEntityInvokers<TDbContext>.Get(entityType);
 			switch (entry.State) {
 				case EntityState.Added:
-					triggers.RaiseInserting(serviceProvider, entry.Entity, tDbContext, ref cancel);
-					return context => triggers.RaiseInserted(serviceProvider, entry.Entity, (TDbContext) context);
+					triggerEntityInvoker.RaiseInserting(serviceProvider, entry.Entity, tDbContext, ref cancel);
+					return context => triggerEntityInvoker.RaiseInserted(serviceProvider, entry.Entity, (TDbContext) context);
 				case EntityState.Deleted:
-					triggers.RaiseDeleting(serviceProvider, entry.Entity, tDbContext, ref cancel);
-					return context => triggers.RaiseDeleted(serviceProvider, entry.Entity, (TDbContext) context);
+					triggerEntityInvoker.RaiseDeleting(serviceProvider, entry.Entity, tDbContext, ref cancel);
+					return context => triggerEntityInvoker.RaiseDeleted(serviceProvider, entry.Entity, (TDbContext) context);
 				case EntityState.Modified:
-					triggers.RaiseUpdating(serviceProvider, entry.Entity, tDbContext, ref cancel);
-					return context => triggers.RaiseUpdated(serviceProvider, entry.Entity, (TDbContext) context);
+					triggerEntityInvoker.RaiseUpdating(serviceProvider, entry.Entity, tDbContext, ref cancel);
+					return context => triggerEntityInvoker.RaiseUpdated(serviceProvider, entry.Entity, (TDbContext) context);
 			}
 			return null;
 		}
@@ -88,7 +85,6 @@ namespace EntityFramework.Triggers {
 		}
 
 		public Boolean RaiseTheFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, DbUpdateException dbUpdateException, ref Boolean swallow) {
-			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, serviceProvider, dbUpdateException, ref swallow);
 			var context = (TDbContext) dbContext;
 
 			IEnumerable<EntityEntry> entries;
@@ -109,7 +105,6 @@ namespace EntityFramework.Triggers {
 
 #if !EF_CORE
 		public Boolean RaiseTheFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, DbEntityValidationException dbEntityValidationException, ref Boolean swallow) {
-			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, serviceProvider, dbEntityValidationException, ref swallow);
 			var context = (TDbContext) dbContext;
 			RaiseTheFailedEvents(context, serviceProvider, dbEntityValidationException.EntityValidationErrors.Select(x => x.Entry), dbEntityValidationException, ref swallow);
 			return swallow;
@@ -117,7 +112,6 @@ namespace EntityFramework.Triggers {
 #endif
 
 		public Boolean RaiseTheFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, Exception exception, ref Boolean swallow) {
-			BaseTriggerInvoker?.RaiseTheFailedEvents(dbContext, serviceProvider, exception, ref swallow);
 			var context = (TDbContext) dbContext;
 			var entries = dbContext.ChangeTracker.Entries().ToArray();
 			if (entries.Length != 1) {
