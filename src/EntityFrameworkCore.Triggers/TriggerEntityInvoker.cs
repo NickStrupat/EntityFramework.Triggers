@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
@@ -53,14 +51,14 @@ namespace EntityFramework.Triggers
 
 			IEnumerable<(Type dbContextType, Type entityType)> GetTypePairs()
 			{
-				var dbContextTypes = GetInheritanceChain<TDbContext>(typeof(DbContext)).ToArray();
-				foreach (var entityType in GetInheritanceChain<TEntity>())
+				var dbContextTypes = GetInheritanceChain<TDbContext>(typeof(DbContext));
+				foreach (var entityType in GetInheritanceChain<TEntity>().Distinct())
 				foreach (var dbContextType in dbContextTypes)
 					yield return (dbContextType, entityType);
 			}
 		}
 
-		private static IList<Type> GetInheritanceChain<T>(Type terminator = null) where T : class
+		private static List<Type> GetInheritanceChain<T>(Type terminator = null) where T : class
 		{
 			if (terminator == null)
 				terminator = typeof(Object);
