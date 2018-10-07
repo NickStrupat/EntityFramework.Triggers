@@ -37,8 +37,7 @@ namespace EntityFramework.Triggers
 				void RaiseGlobalThenInstance(TEntry entry, IServiceProvider sp)
 				{
 					globalTriggerEventGetter().Raise(entry, sp);
-					var triggers = (ITriggers) sp.GetService(triggerType);
-					if (triggers != null)
+					if (sp.GetService(triggerType) is ITriggers triggers)
 						instanceTriggerEventGetter(triggers).Raise(entry, sp);
 				}
 
