@@ -65,8 +65,6 @@ namespace Testing
 			IInsertingEntry<Entity, Context> asdf = new What<Context, Entity>.InsertingEntry(new Entity(), new Context(null), false);
 			IInsertingEntry<Object, DbContext> asdf2 = asdf;
 
-			var ok = TriggerEntityInvoker<Context, Entity>.GetRaiseActions<IInsertingEntry<Entity, Context>>("GlobalInserting", "Inserting");
-
 			Triggers<Entity>.Inserting += x => x.Entity.Name = "";
 			using (var container = new Container())
 			{

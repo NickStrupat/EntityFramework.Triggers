@@ -19,7 +19,7 @@ namespace EntityFramework.Triggers.Tests {
 		public Context(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) {}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-			optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=EntityFrameworkCore.Triggers.Tests;Trusted_Connection=True;");
+			optionsBuilder.UseSqlServer($@"Server=(localdb)\mssqllocaldb;Database={GetType().FullName};Trusted_Connection=True;");
 		}
 #endif
 

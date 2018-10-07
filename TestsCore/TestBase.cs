@@ -22,6 +22,9 @@ namespace EntityFramework.Triggers.Tests {
 		protected abstract void Teardown();
 
 		protected void DoATest(Action action) {
+#if EF_CORE
+			Context.Database.EnsureCreated();
+#endif
 			Setup();
 			try {
 				action();

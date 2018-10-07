@@ -46,7 +46,7 @@ namespace EntityFramework.Triggers
 			public WrappedHandler(Delegate source, Action<TEntry, IServiceProvider> wrapper)
 			{
 				this.source = source ?? throw new ArgumentNullException(nameof(source));
-				this.wrapper = wrapper ?? throw new ArgumentNullException(nameof(wrapper));
+				this.wrapper = wrapper;
 			}
 
 			public Boolean Equals(WrappedHandler other) => ReferenceEquals(source, other.source) || source == other.source;

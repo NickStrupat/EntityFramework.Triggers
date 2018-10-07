@@ -23,7 +23,7 @@ namespace EntityFramework.Triggers
 		private static readonly Action<IUpdatedEntry     <TEntity, TDbContext>, IServiceProvider> RaiseUpdatedActions      = GetRaiseActions<IUpdatedEntry     <TEntity, TDbContext>>(nameof(Triggers<DbContext>.GlobalUpdated     ), nameof(ITriggers<DbContext>.Updated     ));
 		private static readonly Action<IDeletedEntry     <TEntity, TDbContext>, IServiceProvider> RaiseDeletedActions      = GetRaiseActions<IDeletedEntry     <TEntity, TDbContext>>(nameof(Triggers<DbContext>.GlobalDeleted     ), nameof(ITriggers<DbContext>.Deleted     ));
 
-		public static Action<TEntry, IServiceProvider> GetRaiseActions<TEntry>(String globalTriggersEventName, String triggersEventName)
+		private static Action<TEntry, IServiceProvider> GetRaiseActions<TEntry>(String globalTriggersEventName, String triggersEventName)
 		where TEntry : IEntry<TEntity, TDbContext>
 		{
 			var pairs = GetTypePairs().ToArray();
@@ -37,7 +37,7 @@ namespace EntityFramework.Triggers
 				void RaiseGlobalThenInstance(TEntry entry, IServiceProvider sp)
 				{
 					globalTriggerEventGetter().Raise(entry, sp);
-					if (sp.GetService(triggerType) is ITriggers triggers)
+					if (sp?.GetService(triggerType) is ITriggers triggers)
 						instanceTriggerEventGetter(triggers).Raise(entry, sp);
 				}
 
