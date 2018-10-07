@@ -8,21 +8,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFrameworkCore.Triggers", "EntityFrameworkCore.Triggers\EntityFrameworkCore.Triggers.csproj", "{8A37C5E0-C635-4324-ABD8-572E3C68438A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFrameworkCore.Triggers", "src\EntityFrameworkCore.Triggers\EntityFrameworkCore.Triggers.csproj", "{8A37C5E0-C635-4324-ABD8-572E3C68438A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Triggers", "EntityFramework.Triggers\EntityFramework.Triggers.csproj", "{C1C9F07E-DE27-41B2-9099-6E7D22803003}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Triggers", "src\EntityFramework.Triggers\EntityFramework.Triggers.csproj", "{C1C9F07E-DE27-41B2-9099-6E7D22803003}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Testing", "Testing\Testing.csproj", "{FF33E298-5F3C-41B3-99FE-B434B317B58C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Testing", "test\Testing\Testing.csproj", "{FF33E298-5F3C-41B3-99FE-B434B317B58C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFrameworkCore.Triggers.AspNetCore", "EntityFrameworkCore.Triggers.AspNetCore\EntityFrameworkCore.Triggers.AspNetCore.csproj", "{9288F9F7-6E24-4773-BE72-62E46A1242B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFrameworkCore.Triggers.AspNetCore", "src\EntityFrameworkCore.Triggers.AspNetCore\EntityFrameworkCore.Triggers.AspNetCore.csproj", "{9288F9F7-6E24-4773-BE72-62E46A1242B2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestsCore", "TestsCore\TestsCore.csproj", "{6FD4046C-8BC8-42EB-9023-71188F5422EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestsCore", "test\TestsCore\TestsCore.csproj", "{6FD4046C-8BC8-42EB-9023-71188F5422EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{C32D9005-85D3-4384-AEF8-2853C2A3C6B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "test\Tests\Tests.csproj", "{C32D9005-85D3-4384-AEF8-2853C2A3C6B1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestsCore.net461", "TestsCore.net461\TestsCore.net461.csproj", "{779ED957-B234-4E9D-8437-C54F51856FC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestsCore.net461", "test\TestsCore.net461\TestsCore.net461.csproj", "{779ED957-B234-4E9D-8437-C54F51856FC7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Triggers.AspNetCore", "EntityFramework.Triggers.AspNetCore\EntityFramework.Triggers.AspNetCore.csproj", "{6B8179F0-68CC-434C-940A-D79786F29004}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Triggers.AspNetCore", "src\EntityFramework.Triggers.AspNetCore\EntityFramework.Triggers.AspNetCore.csproj", "{6B8179F0-68CC-434C-940A-D79786F29004}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
