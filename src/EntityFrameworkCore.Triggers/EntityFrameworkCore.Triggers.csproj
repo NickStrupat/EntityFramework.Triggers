@@ -11,11 +11,11 @@
     <PackageTags>entity-framework-core;entityframeworkcore;triggers</PackageTags>
     <PackageProjectUrl>https://github.com/NickStrupat/EntityFramework.Triggers</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/NickStrupat/EntityFramework.Triggers/master/LICENSE</PackageLicenseUrl>
-    <AssemblyVersion>1.1.1.0</AssemblyVersion>
-    <FileVersion>1.1.1.0</FileVersion>
-    <Version>1.1.1</Version>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
+    <Version>1.2.0-beta1</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageReleaseNotes>fix for net461</PackageReleaseNotes>
+    <PackageReleaseNotes>Added dependency-injectable objects</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -27,6 +27,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="IEntry.Generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>IEntry.Generated.tt</DependentUpon>
+    </None>
     <None Include="TriggerEvent.Generated.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -40,6 +45,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="IEntry.Generated.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>IEntry.Generated.cs</LastGenOutput>
+    </None>
     <None Update="TriggerEvent.Generated.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>TriggerEvent.Generated.cs</LastGenOutput>
@@ -51,6 +60,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="IEntry.Generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>IEntry.Generated.tt</DependentUpon>
+    </Compile>
     <Compile Update="TriggerEvent.Generated.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
