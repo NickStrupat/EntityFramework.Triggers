@@ -648,19 +648,19 @@ namespace EntityFramework.Triggers.Tests {
 			Triggers<IRoyalGala, DbContext>.Inserting += Add5;
 			Triggers<RoyalGala , DbContext>.Inserting += Add6;
 			
-			Triggers<IThing    , DbContextWithTriggers>.Inserting += Add7 ;
-			Triggers<Thing     , DbContextWithTriggers>.Inserting += Add8 ;
-			Triggers<IApple    , DbContextWithTriggers>.Inserting += Add9 ;
-			Triggers<Apple     , DbContextWithTriggers>.Inserting += Add10;
-			Triggers<IRoyalGala, DbContextWithTriggers>.Inserting += Add11;
-			Triggers<RoyalGala , DbContextWithTriggers>.Inserting += Add12;
+			Triggers<IThing    , DbContextWithTriggers>.Inserting += Add11;
+			Triggers<Thing     , DbContextWithTriggers>.Inserting += Add22;
+			Triggers<IApple    , DbContextWithTriggers>.Inserting += Add33;
+			Triggers<Apple     , DbContextWithTriggers>.Inserting += Add44;
+			Triggers<IRoyalGala, DbContextWithTriggers>.Inserting += Add55;
+			Triggers<RoyalGala , DbContextWithTriggers>.Inserting += Add66;
 			
-			Triggers<IThing    , Context>.Inserting += Add13;
-			Triggers<Thing     , Context>.Inserting += Add14;
-			Triggers<IApple    , Context>.Inserting += Add15;
-			Triggers<Apple     , Context>.Inserting += Add16;
-			Triggers<IRoyalGala, Context>.Inserting += Add17;
-			Triggers<RoyalGala , Context>.Inserting += Add18;
+			Triggers<IThing    , Context>.Inserting += Add111;
+			Triggers<Thing     , Context>.Inserting += Add222;
+			Triggers<IApple    , Context>.Inserting += Add333;
+			Triggers<Apple     , Context>.Inserting += Add444;
+			Triggers<IRoyalGala, Context>.Inserting += Add555;
+			Triggers<RoyalGala , Context>.Inserting += Add666;
 		}
 
 		protected override void Teardown() {
@@ -671,19 +671,19 @@ namespace EntityFramework.Triggers.Tests {
 			Triggers<IRoyalGala, DbContext>.Inserting -= Add5;
 			Triggers<RoyalGala , DbContext>.Inserting -= Add6;
 			
-			Triggers<IThing    , DbContextWithTriggers>.Inserting -= Add7 ;
-			Triggers<Thing     , DbContextWithTriggers>.Inserting -= Add8 ;
-			Triggers<IApple    , DbContextWithTriggers>.Inserting -= Add9 ;
-			Triggers<Apple     , DbContextWithTriggers>.Inserting -= Add10;
-			Triggers<IRoyalGala, DbContextWithTriggers>.Inserting -= Add11;
-			Triggers<RoyalGala , DbContextWithTriggers>.Inserting -= Add12;
+			Triggers<IThing    , DbContextWithTriggers>.Inserting -= Add11;
+			Triggers<Thing     , DbContextWithTriggers>.Inserting -= Add22;
+			Triggers<IApple    , DbContextWithTriggers>.Inserting -= Add33;
+			Triggers<Apple     , DbContextWithTriggers>.Inserting -= Add44;
+			Triggers<IRoyalGala, DbContextWithTriggers>.Inserting -= Add55;
+			Triggers<RoyalGala , DbContextWithTriggers>.Inserting -= Add66;
 			
-			Triggers<IThing    , Context>.Inserting -= Add13;
-			Triggers<Thing     , Context>.Inserting -= Add14;
-			Triggers<IApple    , Context>.Inserting -= Add15;
-			Triggers<Apple     , Context>.Inserting -= Add16;
-			Triggers<IRoyalGala, Context>.Inserting -= Add17;
-			Triggers<RoyalGala , Context>.Inserting -= Add18;
+			Triggers<IThing    , Context>.Inserting -= Add111;
+			Triggers<Thing     , Context>.Inserting -= Add222;
+			Triggers<IApple    , Context>.Inserting -= Add333;
+			Triggers<Apple     , Context>.Inserting -= Add444;
+			Triggers<IRoyalGala, Context>.Inserting -= Add555;
+			Triggers<RoyalGala , Context>.Inserting -= Add666;
 		}
 
 		private static void Add1(IInsertingEntry<IThing,     DbContext> e)      => e.Entity.Numbers.Add(1);
@@ -693,26 +693,26 @@ namespace EntityFramework.Triggers.Tests {
 		private static void Add5(IInsertingEntry<IRoyalGala, DbContext> e)      => e.Entity.Numbers.Add(5);
 		private static void Add6(IInsertingEntry<IThing,     DbContext> e)      => e.Entity.Numbers.Add(6);
 
-		private static void Add7 (IInsertingEntry<IThing,     DbContextWithTriggers> e)      => e.Entity.Numbers.Add(7);
-		private static void Add8 (IInsertingEntry<IThing,     DbContextWithTriggers> e)      => e.Entity.Numbers.Add(8);
-		private static void Add9 (IInsertingEntry<IApple,     DbContextWithTriggers> e)      => e.Entity.Numbers.Add(9);
-		private static void Add10(IInsertingEntry<IThing,     DbContextWithTriggers> e)      => e.Entity.Numbers.Add(10);
-		private static void Add11(IInsertingEntry<IRoyalGala, DbContextWithTriggers> e)      => e.Entity.Numbers.Add(11);
-		private static void Add12(IInsertingEntry<IThing,     DbContextWithTriggers> e)      => e.Entity.Numbers.Add(12);
+		private static void Add11(IInsertingEntry<IThing,     DbContextWithTriggers> e)      => e.Entity.Numbers.Add(11);
+		private static void Add22(IInsertingEntry<IThing,     DbContextWithTriggers> e)      => e.Entity.Numbers.Add(22);
+		private static void Add33(IInsertingEntry<IApple,     DbContextWithTriggers> e)      => e.Entity.Numbers.Add(33);
+		private static void Add44(IInsertingEntry<IThing,     DbContextWithTriggers> e)      => e.Entity.Numbers.Add(44);
+		private static void Add55(IInsertingEntry<IRoyalGala, DbContextWithTriggers> e)      => e.Entity.Numbers.Add(55);
+		private static void Add66(IInsertingEntry<IThing,     DbContextWithTriggers> e)      => e.Entity.Numbers.Add(66);
 
-		private static void Add13(IInsertingEntry<IThing,     Context> e)      => e.Entity.Numbers.Add(13);
-		private static void Add14(IInsertingEntry<IThing,     Context> e)      => e.Entity.Numbers.Add(14);
-		private static void Add15(IInsertingEntry<IApple,     Context> e)      => e.Entity.Numbers.Add(15);
-		private static void Add16(IInsertingEntry<IThing,     Context> e)      => e.Entity.Numbers.Add(16);
-		private static void Add17(IInsertingEntry<IRoyalGala, Context> e)      => e.Entity.Numbers.Add(17);
-		private static void Add18(IInsertingEntry<IThing,     Context> e)      => e.Entity.Numbers.Add(18);
+		private static void Add111(IInsertingEntry<IThing,     Context> e)      => e.Entity.Numbers.Add(111);
+		private static void Add222(IInsertingEntry<IThing,     Context> e)      => e.Entity.Numbers.Add(222);
+		private static void Add333(IInsertingEntry<IApple,     Context> e)      => e.Entity.Numbers.Add(333);
+		private static void Add444(IInsertingEntry<IThing,     Context> e)      => e.Entity.Numbers.Add(444);
+		private static void Add555(IInsertingEntry<IRoyalGala, Context> e)      => e.Entity.Numbers.Add(555);
+		private static void Add666(IInsertingEntry<IThing,     Context> e)      => e.Entity.Numbers.Add(666);
 
 		[Fact]
 		public void Sync() => DoATest(() => {
 			var royalGala = new RoyalGala { Value = Guid.NewGuid().ToString() };
 			Context.RoyalGalas.Add(royalGala);
 			Context.SaveChanges();
-			Assert.True(royalGala.Numbers.SequenceEqual(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 ,16, 17, 18 }));
+			Assert.True(royalGala.Numbers.SequenceEqual(new[] { 1, 11, 111,  2, 22, 222,  3, 33, 333,  4, 44, 444,  5, 55, 555,  6, 66, 666 }));
 		});
         
 		[Fact]
@@ -720,7 +720,7 @@ namespace EntityFramework.Triggers.Tests {
 			var royalGala = new RoyalGala { Value = Guid.NewGuid().ToString() };
 			Context.RoyalGalas.Add(royalGala);
 			await Context.SaveChangesAsync().ConfigureAwait(false);
-			Assert.True(royalGala.Numbers.SequenceEqual(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 }));
+			Assert.True(royalGala.Numbers.SequenceEqual(new[] { 1, 11, 111,  2, 22, 222,  3, 33, 333,  4, 44, 444,  5, 55, 555,  6, 66, 666 }));
 		});
 	}
 
