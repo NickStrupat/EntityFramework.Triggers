@@ -58,5 +58,25 @@ namespace EntityFramework.Triggers
 		public override Boolean Equals(Object obj) => obj is ITriggers<TEntity, TDbContext> other && Equals(other);
 
 		public Boolean Equals(ITriggers<TEntity, TDbContext> other) => other is Triggers<TEntity, TDbContext> ted ? ReferenceEquals(this, ted) : TriggersEqualityComparer<TEntity, TDbContext>.Instance.Equals(this, other);
+
+		public class InsertingTriggerEvent : TriggerEvent<IInsertingEntry<TEntity, TDbContext>, TEntity, TDbContext>
+		{
+			public void Add<TService>(Action<IInsertingEntry<TEntity, TDbContext, TService>> handler)
+			{
+				void Wrapper(IInsertingEntry<TEntity, TDbContext> entry, IServiceProvider sp)
+				{
+					var insertingEntry = new InsertingEntry<TEntity, TDbContext, TService>(entry.Entity, entry.Context, entry.Service, entry.Cancel);
+					handler.Invoke(insertingEntry);
+					entry.Cancel = insertingEntry.Cancel;
+				}
+
+				Add(ref wrappedHandlers, handler, Wrapper);
+			}
+
+			public void Remove<TService>(Action<IInsertingEntry<TEntity, TDbContext, TService>> handler)
+			{
+				Remove(ref wrappedHandlers, handler);
+			}
+		}
 	}
 }
