@@ -74,95 +74,14 @@ namespace EntityFramework.Triggers
 			return types;
 		}
 
-		public void RaiseInserting   (IServiceProvider sp, Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new InsertingEntry   ((TEntity) entity, dbc, cancel)     ; RaiseInsertingActions   (entry, sp); cancel = entry.Cancel; }
-		public void RaiseUpdating    (IServiceProvider sp, Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new UpdatingEntry    ((TEntity) entity, dbc, cancel)     ; RaiseUpdatingActions    (entry, sp); cancel = entry.Cancel; }
-		public void RaiseDeleting    (IServiceProvider sp, Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new DeletingEntry    ((TEntity) entity, dbc, cancel)     ; RaiseDeletingActions    (entry, sp); cancel = entry.Cancel; }
-		public void RaiseInsertFailed(IServiceProvider sp, Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new InsertFailedEntry((TEntity) entity, dbc, ex, swallow); RaiseInsertFailedActions(entry, sp); swallow = entry.Swallow; }
-		public void RaiseUpdateFailed(IServiceProvider sp, Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new UpdateFailedEntry((TEntity) entity, dbc, ex, swallow); RaiseUpdateFailedActions(entry, sp); swallow = entry.Swallow; }
-		public void RaiseDeleteFailed(IServiceProvider sp, Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new DeleteFailedEntry((TEntity) entity, dbc, ex, swallow); RaiseDeleteFailedActions(entry, sp); swallow = entry.Swallow; }
-		public void RaiseInserted    (IServiceProvider sp, Object entity, TDbContext dbc)                                    { var entry = new InsertedEntry    ((TEntity) entity, dbc)             ; RaiseInsertedActions    (entry, sp); }
-		public void RaiseUpdated     (IServiceProvider sp, Object entity, TDbContext dbc)                                    { var entry = new UpdatedEntry     ((TEntity) entity, dbc)             ; RaiseUpdatedActions     (entry, sp); }
-		public void RaiseDeleted     (IServiceProvider sp, Object entity, TDbContext dbc)                                    { var entry = new DeletedEntry     ((TEntity) entity, dbc)             ; RaiseDeletedActions     (entry, sp); }
-		
-		#region Entry implementations
-		private abstract class Entry : IEntry<TEntity, TDbContext> {
-			protected Entry(TEntity entity, TDbContext context) {
-				Entity = entity;
-				Context = context;
-			}
-			public TEntity Entity { get; }
-			public TDbContext Context { get; }
-			DbContext IEntry<TEntity>.Context => Context;
-		}
-
-		private abstract class BeforeEntry : Entry, IBeforeEntry<TEntity, TDbContext> {
-			protected BeforeEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context) {
-				Cancel = cancel;
-			}
-			public Boolean Cancel { get; set; }
-		}
-
-		private abstract class BeforeChangeEntry : BeforeEntry, IBeforeChangeEntry<TEntity, TDbContext> {
-			protected BeforeChangeEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) {}
-			private TEntity original;
-			public TEntity Original => original ?? (original = (TEntity)Context.Entry(Entity).OriginalValues.ToObject());
-		}
-
-		private abstract class FailedEntry : Entry, IFailedEntry<TEntity, TDbContext> {
-			protected FailedEntry(TEntity entity, TDbContext context, Exception exception, Boolean swallow) : base(entity, context) {
-				Exception = exception;
-				Swallow = swallow;
-			}
-			public Exception Exception { get; }
-			public Boolean Swallow { get; set; }
-		}
-
-		private abstract class ChangeFailedEntry : Entry, IChangeFailedEntry<TEntity, TDbContext> {
-			public Exception Exception { get; }
-			public Boolean Swallow { get; set; }
-
-			protected ChangeFailedEntry(TEntity entity, TDbContext context, Exception exception, Boolean swallow) : base(entity, context) {
-				Exception = exception;
-				Swallow = swallow;
-			}
-		}
-		
-
-		private class InsertingEntry : BeforeEntry, IInsertingEntry<TEntity, TDbContext> {
-			public InsertingEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) { }
-		}
-
-		private class UpdatingEntry : BeforeChangeEntry, IUpdatingEntry<TEntity, TDbContext> {
-			public UpdatingEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) { }
-		}
-
-		private class DeletingEntry : BeforeChangeEntry, IDeletingEntry<TEntity, TDbContext> {
-			public DeletingEntry(TEntity entity, TDbContext context, Boolean cancel) : base(entity, context, cancel) { }
-		}
-
-		private class InsertFailedEntry : FailedEntry, IInsertFailedEntry<TEntity, TDbContext> {
-			public InsertFailedEntry(TEntity entity, TDbContext context, Exception exception, Boolean swallow) : base(entity, context, exception, swallow) {}
-		}
-
-		private class UpdateFailedEntry : ChangeFailedEntry, IUpdateFailedEntry<TEntity, TDbContext> {
-			public UpdateFailedEntry(TEntity entity, TDbContext context, Exception exception, Boolean swallow) : base(entity, context, exception, swallow) {}
-		}
-
-		private class DeleteFailedEntry : ChangeFailedEntry, IDeleteFailedEntry<TEntity, TDbContext> {
-			public DeleteFailedEntry(TEntity entity, TDbContext context, Exception exception, Boolean swallow) : base(entity, context, exception, swallow) {}
-		}
-
-		private class InsertedEntry : Entry, IInsertedEntry<TEntity, TDbContext> {
-			public InsertedEntry(TEntity entity, TDbContext context) : base(entity, context) {}
-		}
-
-		private class UpdatedEntry : Entry, IUpdatedEntry<TEntity, TDbContext> {
-			public UpdatedEntry(TEntity entity, TDbContext context) : base(entity, context) {}
-		}
-
-		private class DeletedEntry : Entry, IDeletedEntry<TEntity, TDbContext> {
-			public DeletedEntry(TEntity entity, TDbContext context) : base(entity, context) {}
-		}
-		#endregion
+		public void RaiseInserting   (IServiceProvider sp, Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new InsertingEntry   <TEntity, TDbContext>((TEntity) entity, dbc, sp, cancel)     ; RaiseInsertingActions   (entry, sp); cancel = entry.Cancel; }
+		public void RaiseUpdating    (IServiceProvider sp, Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new UpdatingEntry    <TEntity, TDbContext>((TEntity) entity, dbc, sp, cancel)     ; RaiseUpdatingActions    (entry, sp); cancel = entry.Cancel; }
+		public void RaiseDeleting    (IServiceProvider sp, Object entity, TDbContext dbc, ref Boolean cancel)                { var entry = new DeletingEntry    <TEntity, TDbContext>((TEntity) entity, dbc, sp, cancel)     ; RaiseDeletingActions    (entry, sp); cancel = entry.Cancel; }
+		public void RaiseInsertFailed(IServiceProvider sp, Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new InsertFailedEntry<TEntity, TDbContext>((TEntity) entity, dbc, sp, ex, swallow); RaiseInsertFailedActions(entry, sp); swallow = entry.Swallow; }
+		public void RaiseUpdateFailed(IServiceProvider sp, Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new UpdateFailedEntry<TEntity, TDbContext>((TEntity) entity, dbc, sp, ex, swallow); RaiseUpdateFailedActions(entry, sp); swallow = entry.Swallow; }
+		public void RaiseDeleteFailed(IServiceProvider sp, Object entity, TDbContext dbc, Exception ex, ref Boolean swallow) { var entry = new DeleteFailedEntry<TEntity, TDbContext>((TEntity) entity, dbc, sp, ex, swallow); RaiseDeleteFailedActions(entry, sp); swallow = entry.Swallow; }
+		public void RaiseInserted    (IServiceProvider sp, Object entity, TDbContext dbc)                                    { var entry = new InsertedEntry    <TEntity, TDbContext>((TEntity) entity, dbc, sp)             ; RaiseInsertedActions    (entry, sp); }
+		public void RaiseUpdated     (IServiceProvider sp, Object entity, TDbContext dbc)                                    { var entry = new UpdatedEntry     <TEntity, TDbContext>((TEntity) entity, dbc, sp)             ; RaiseUpdatedActions     (entry, sp); }
+		public void RaiseDeleted     (IServiceProvider sp, Object entity, TDbContext dbc)                                    { var entry = new DeletedEntry     <TEntity, TDbContext>((TEntity) entity, dbc, sp)             ; RaiseDeletedActions     (entry, sp); }
 	}
 }
