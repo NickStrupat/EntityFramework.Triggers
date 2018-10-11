@@ -17,7 +17,7 @@ namespace EntityFramework.Triggers
 		protected abstract void RaiseInternal(Object entry, IServiceProvider serviceProvider);
 	}
 
-	public sealed partial class TriggerEvent<TEntry, TEntity, TDbContext>
+	public partial class TriggerEvent<TEntry, TEntity, TDbContext>
 	: TriggerEvent
 	, IEquatable<TriggerEvent<TEntry, TEntity, TDbContext>>
 	where TEntry : IEntry<TEntity, TDbContext>
@@ -26,9 +26,9 @@ namespace EntityFramework.Triggers
 	{
 		internal TriggerEvent() {}
 
-		private static TService S<TService>(IServiceProvider serviceProvider) => serviceProvider.GetRequiredService<TService>();
+		internal static TService S<TService>(IServiceProvider serviceProvider) => ServiceRetrieval<TService>.GetService(serviceProvider);
 
-		private ImmutableArray<WrappedHandler> wrappedHandlers = ImmutableArray<WrappedHandler>.Empty;
+		internal ImmutableArray<WrappedHandler> wrappedHandlers = ImmutableArray<WrappedHandler>.Empty;
 		
 		protected override void RaiseInternal(Object entry, IServiceProvider serviceProvider)
 		{
@@ -38,7 +38,7 @@ namespace EntityFramework.Triggers
 				wrappedHandler.Invoke(x, serviceProvider);
 		}
 
-		private struct WrappedHandler : IEquatable<WrappedHandler>
+		internal struct WrappedHandler : IEquatable<WrappedHandler>
 		{
 			private readonly Delegate source;
 			private readonly Action<TEntry, IServiceProvider> wrapper;
@@ -55,7 +55,7 @@ namespace EntityFramework.Triggers
 			public void Invoke(TEntry entry, IServiceProvider serviceProvider) => wrapper.Invoke(entry, serviceProvider);
 		}
 
-		private static void Add(ref ImmutableArray<WrappedHandler> wrappedHandlers, Delegate source, Action<TEntry, IServiceProvider> wrapper)
+		internal static void Add(ref ImmutableArray<WrappedHandler> wrappedHandlers, Delegate source, Action<TEntry, IServiceProvider> wrapper)
 		{
 			ImmutableArray<WrappedHandler> initial, computed;
 			do
@@ -66,7 +66,7 @@ namespace EntityFramework.Triggers
 			while (initial != ImmutableInterlocked.InterlockedCompareExchange(ref wrappedHandlers, computed, initial));
 		}
 
-		private static void Remove(ref ImmutableArray<WrappedHandler> wrappedHandlers, Delegate source)
+		internal static void Remove(ref ImmutableArray<WrappedHandler> wrappedHandlers, Delegate source)
 		{
 			ImmutableArray<WrappedHandler> initial, computed;
 			do
@@ -89,12 +89,16 @@ namespace EntityFramework.Triggers
 
         public void Add(Action<TEntry> handler)
         {
+	        if (handler == null)
+		        throw new ArgumentNullException(nameof(handler));
 	        void Wrapper(TEntry entry, IServiceProvider provider) => handler(entry);
 			Add(ref wrappedHandlers, handler, Wrapper);
         }
 
 		public void Remove(Action<TEntry> handler)
 		{
+			if (handler == null)
+				throw new ArgumentNullException(nameof(handler));
 			Remove(ref wrappedHandlers, handler);
 		}
 	}
