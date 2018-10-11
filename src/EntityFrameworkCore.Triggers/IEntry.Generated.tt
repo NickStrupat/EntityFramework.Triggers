@@ -1,0 +1,45 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+<#
+	var triggerNames = new [] {
+		"Inserting",
+		"InsertFailed",
+		"Inserted",
+		"Deleting",
+		"DeleteFailed",
+		"Deleted",
+		"Updating",
+		"UpdateFailed",
+		"Updated"
+	};
+#>
+using System;
+
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
+namespace EntityFrameworkCore.Triggers
+#else
+using System.Data.Entity;
+namespace EntityFramework.Triggers
+#endif
+{
+<#	foreach (var triggerName in triggerNames)
+	for (var i = 1; i != 8; i++) {
+		var suffixes = Enumerable.Range(0, i).Select(x => i == 1 ? String.Empty : (x + 1).ToString());
+		var serviceTypeName = i < 4 ? "TService" : "TS";
+		var types = suffixes.Select(x => serviceTypeName + x);
+		var typeArgs = String.Join(", ", types);
+		var invokeParams = String.Join(", ", suffixes.Select(x => serviceTypeName + x + " Service" + x));
+#>
+		public interface I<#= triggerName #>Entry2<out TEntity, out TDbContext, <#= typeArgs #>> : I<#= triggerName #>Entry<TEntity, TDbContext>
+		where TEntity : class
+		where TDbContext : DbContext
+		{
+			ValueTuple<<#= typeArgs #>> Services { get; }
+		}
+<# } #>
+}
