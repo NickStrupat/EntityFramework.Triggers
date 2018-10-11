@@ -30,7 +30,7 @@ namespace EntityFramework.Triggers
 
 		internal ImmutableArray<WrappedHandler> wrappedHandlers = ImmutableArray<WrappedHandler>.Empty;
 		
-		protected override void RaiseInternal(Object entry, IServiceProvider serviceProvider)
+		protected sealed override void RaiseInternal(Object entry, IServiceProvider serviceProvider)
 		{
 			var x = (TEntry) entry;
 			var latestWrappedHandlers = ImmutableInterlockedRead(ref wrappedHandlers);
