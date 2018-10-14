@@ -22,5 +22,8 @@ namespace EntityFramework.Triggers.AspNetCore
         public ITriggers<TEntity> Triggers<TEntity>()
         where TEntity : class =>
             serviceProvider.GetRequiredService<ITriggers<TEntity>>();
+
+	    public ITriggers Triggers() =>
+		    serviceProvider.GetRequiredService<ITriggers>();
     }
 }

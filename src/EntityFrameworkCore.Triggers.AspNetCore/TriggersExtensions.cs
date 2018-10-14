@@ -10,19 +10,23 @@ namespace EntityFramework.Triggers.AspNetCore
 {
 	public static class TriggersExtensions
 	{
-        public static IServiceCollection AddTriggers(this IServiceCollection serviceCollection)
-        {
-            return serviceCollection.AddSingleton(typeof(ITriggers<,>), typeof(Triggers<,>))
-                                    .AddSingleton(typeof(ITriggers<>), typeof(Triggers<>))
-                                    .AddSingleton(typeof(ITriggers), typeof(Triggers));
-        }
+		public static IServiceCollection AddTriggers(this IServiceCollection serviceCollection)
+		{
+			return serviceCollection
+				.AddSingleton(typeof(Triggers<,>))
+				.AddSingleton(typeof(Triggers<>))
+				.AddSingleton(typeof(Triggers))
+				.AddSingleton(typeof(ITriggers<,>), typeof(Triggers<,>))
+				.AddSingleton(typeof(ITriggers<>), typeof(Triggers<>))
+				.AddSingleton(typeof(ITriggers), typeof(Triggers));
+		}
 
-        public static IApplicationBuilder UseTriggers(this IApplicationBuilder app, Action<ITriggersBuilder> configureTriggers)
-        {
-	        if (configureTriggers == null)
-		        throw new ArgumentNullException(nameof(configureTriggers));
-	        configureTriggers.Invoke(new TriggersBuilder(app.ApplicationServices));
-            return app;
-        }
-    }
+		public static IApplicationBuilder UseTriggers(this IApplicationBuilder app, Action<ITriggersBuilder> configureTriggers)
+		{
+			if (configureTriggers == null)
+				throw new ArgumentNullException(nameof(configureTriggers));
+			configureTriggers.Invoke(new TriggersBuilder(app.ApplicationServices));
+			return app;
+		}
+	}
 }
