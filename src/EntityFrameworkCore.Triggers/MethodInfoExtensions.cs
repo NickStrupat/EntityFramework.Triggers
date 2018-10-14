@@ -10,7 +10,7 @@ namespace EntityFramework.Triggers
 	public static class MethodInfoExtensions
 	{
 		public static TDelegate CreateDelegate<TDelegate>(this MethodInfo methodInfo)
-		where TDelegate : Delegate
-		=>	(TDelegate) methodInfo.CreateDelegate(typeof(TDelegate));
+		where TDelegate : Delegate =>
+			(TDelegate) methodInfo.CreateDelegate(typeof(TDelegate));
 	}
 }

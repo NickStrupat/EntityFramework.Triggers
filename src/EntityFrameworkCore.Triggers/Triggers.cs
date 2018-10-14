@@ -10,7 +10,6 @@ namespace EntityFramework.Triggers
 {
 	public sealed class Triggers
 	: ITriggers
-	, ITriggersInternal
 	, IEquatable<ITriggers>
 	{
 		private readonly ITriggers<Object, DbContext> triggers;
@@ -25,16 +24,6 @@ namespace EntityFramework.Triggers
 		ITriggerEvent<IUpdatedEntry     <Object, DbContext>> ITriggers.Updated      => triggers.Updated     ;
 		ITriggerEvent<IUpdateFailedEntry<Object, DbContext>> ITriggers.UpdateFailed => triggers.UpdateFailed;
 		ITriggerEvent<IUpdatingEntry    <Object, DbContext>> ITriggers.Updating     => triggers.Updating    ;
-
-		ITriggerEvent ITriggersInternal.Deleted      => triggers.Deleted;
-		ITriggerEvent ITriggersInternal.DeleteFailed => triggers.DeleteFailed;
-		ITriggerEvent ITriggersInternal.Deleting     => triggers.Deleting    ;
-		ITriggerEvent ITriggersInternal.Inserted     => triggers.Inserted    ;
-		ITriggerEvent ITriggersInternal.InsertFailed => triggers.InsertFailed;
-		ITriggerEvent ITriggersInternal.Inserting    => triggers.Inserting   ;
-		ITriggerEvent ITriggersInternal.Updated      => triggers.Updated     ;
-		ITriggerEvent ITriggersInternal.UpdateFailed => triggers.UpdateFailed;
-		ITriggerEvent ITriggersInternal.Updating     => triggers.Updating    ;
 
 		public static ITriggerEvent<IInsertingEntry   <Object, DbContext>> GlobalInserting    { get; } = Triggers<Object>.GlobalInserting   ;
 		public static ITriggerEvent<IInsertFailedEntry<Object, DbContext>> GlobalInsertFailed { get; } = Triggers<Object>.GlobalInsertFailed;

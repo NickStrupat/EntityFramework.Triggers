@@ -96,10 +96,10 @@ namespace EntityFramework.Triggers {
 		/// <example>this.SaveChangesWithTriggersAsync();</example>
 		/// <returns>A task that represents the asynchronous save operation. The task result contains the number of objects written to the underlying database.</returns>
 #if EF_CORE
-		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
+		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default) {
 			return dbContext.SaveChangesWithTriggersAsync(baseSaveChangesAsync, null, acceptAllChangesOnSuccess, cancellationToken);
 #else
-		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken = default(CancellationToken)) {
+		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken = default) {
 			return dbContext.SaveChangesWithTriggersAsync(baseSaveChangesAsync, null, cancellationToken);
 #endif
 		}
@@ -119,9 +119,9 @@ namespace EntityFramework.Triggers {
 		/// <example>this.SaveChangesWithTriggersAsync();</example>
 		/// <returns>A task that represents the asynchronous save operation. The task result contains the number of objects written to the underlying database.</returns>
 #if EF_CORE
-		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, IServiceProvider serviceProvider, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken)) {
+		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, IServiceProvider serviceProvider, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken = default) {
 #else
-		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync, IServiceProvider serviceProvider, CancellationToken cancellationToken = default(CancellationToken)) {
+		public static async Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<CancellationToken, Task<Int32>> baseSaveChangesAsync, IServiceProvider serviceProvider, CancellationToken cancellationToken = default) {
 #endif
 			if (dbContext == null)
 				throw new ArgumentNullException(nameof(dbContext));
@@ -149,10 +149,10 @@ namespace EntityFramework.Triggers {
 		}
 
 #if EF_CORE
-		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, IServiceProvider serviceProvider, CancellationToken cancellationToken = default(CancellationToken)) {
+		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, IServiceProvider serviceProvider, CancellationToken cancellationToken = default) {
 			return dbContext.SaveChangesWithTriggersAsync(baseSaveChangesAsync, serviceProvider, true, cancellationToken);
 		}
-		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken = default(CancellationToken)) {
+		public static Task<Int32> SaveChangesWithTriggersAsync(this DbContext dbContext, Func<Boolean, CancellationToken, Task<Int32>> baseSaveChangesAsync, CancellationToken cancellationToken = default) {
 			return dbContext.SaveChangesWithTriggersAsync(baseSaveChangesAsync, null, true, cancellationToken);
 		}
 #endif
