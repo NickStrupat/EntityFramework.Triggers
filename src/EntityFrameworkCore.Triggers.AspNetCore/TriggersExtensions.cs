@@ -13,12 +13,15 @@ namespace EntityFramework.Triggers.AspNetCore
         public static IServiceCollection AddTriggers(this IServiceCollection serviceCollection)
         {
             return serviceCollection.AddSingleton(typeof(ITriggers<,>), typeof(Triggers<,>))
-                                    .AddSingleton(typeof(ITriggers<>), typeof(Triggers<>));
+                                    .AddSingleton(typeof(ITriggers<>), typeof(Triggers<>))
+                                    .AddSingleton(typeof(ITriggers), typeof(Triggers));
         }
 
         public static IApplicationBuilder UseTriggers(this IApplicationBuilder app, Action<ITriggersBuilder> configureTriggers)
         {
-            configureTriggers?.Invoke(new TriggersBuilder(app.ApplicationServices));
+	        if (configureTriggers == null)
+		        throw new ArgumentNullException(nameof(configureTriggers));
+	        configureTriggers.Invoke(new TriggersBuilder(app.ApplicationServices));
             return app;
         }
     }

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <LangVersion>latest</LangVersion>
+    <NoWarn>618</NoWarn>
     <Description>Supports events for entity inserting, inserted, updating, updated, deleting, and deleted. Also events on insert failure, update failure, and delete failure.</Description>
     <AssemblyTitle>EntityFrameworkCore.Triggers</AssemblyTitle>
     <AssemblyName>EntityFrameworkCore.Triggers</AssemblyName>
@@ -27,49 +28,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="IEntry.Generated.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>IEntry.Generated.tt</DependentUpon>
-    </None>
-    <None Include="TriggerEvent.Generated.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TriggerEvent.Generated.tt</DependentUpon>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="IEntry.Generated.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>IEntry.Generated.cs</LastGenOutput>
-    </None>
-    <None Update="TriggerEvent.Generated.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>TriggerEvent.Generated.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="IEntry.Generated.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>IEntry.Generated.tt</DependentUpon>
-    </Compile>
-    <Compile Update="TriggerEvent.Generated.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TriggerEvent.Generated.tt</DependentUpon>
-    </Compile>
   </ItemGroup>
 
 </Project>

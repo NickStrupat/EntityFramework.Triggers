@@ -12,13 +12,22 @@ namespace EntityFramework.Triggers
 {
 	public abstract class TriggerEvent : ITriggerEvent
 	{
-		public void Raise(Object entry, IServiceProvider serviceProvider) => RaiseInternal(entry, serviceProvider);
+		public void Raise(Object entry) => RaiseInternal(entry);
 		
-		protected abstract void RaiseInternal(Object entry, IServiceProvider serviceProvider);
+		protected abstract void RaiseInternal(Object entry);
 	}
 
-	public partial class TriggerEvent<TEntry, TEntity, TDbContext>
+	//public class TriggerEvent<TEntry, TEntity>
+	//: TriggerEvent
+	//, ITriggerEvent<TEntry, TEntity>
+	//, IEquatable<TriggerEvent<TEntry, TEntity>>
+	//where TEntry : IEntry<TEntity>
+	//where TEntity : class
+	//{}
+
+	public class TriggerEvent<TEntry, TEntity, TDbContext>
 	: TriggerEvent
+	, ITriggerEvent<TEntry, TEntity, TDbContext>
 	, IEquatable<TriggerEvent<TEntry, TEntity, TDbContext>>
 	where TEntry : IEntry<TEntity, TDbContext>
 	where TEntity : class
@@ -26,24 +35,22 @@ namespace EntityFramework.Triggers
 	{
 		internal TriggerEvent() {}
 
-		internal static TService S<TService>(IServiceProvider serviceProvider) => ServiceRetrieval<TService>.GetService(serviceProvider);
-
-		internal ImmutableArray<WrappedHandler> wrappedHandlers = ImmutableArray<WrappedHandler>.Empty;
+		private protected ImmutableArray<WrappedHandler> wrappedHandlers = ImmutableArray<WrappedHandler>.Empty;
 		
-		protected sealed override void RaiseInternal(Object entry, IServiceProvider serviceProvider)
+		protected sealed override void RaiseInternal(Object entry)
 		{
 			var x = (TEntry) entry;
 			var latestWrappedHandlers = ImmutableInterlockedRead(ref wrappedHandlers);
 			foreach (var wrappedHandler in latestWrappedHandlers)
-				wrappedHandler.Invoke(x, serviceProvider);
+				wrappedHandler.Invoke(x);
 		}
 
-		internal struct WrappedHandler : IEquatable<WrappedHandler>
+		protected struct WrappedHandler : IEquatable<WrappedHandler>
 		{
 			private readonly Delegate source;
-			private readonly Action<TEntry, IServiceProvider> wrapper;
+			private readonly Action<TEntry> wrapper;
 
-			public WrappedHandler(Delegate source, Action<TEntry, IServiceProvider> wrapper)
+			public WrappedHandler(Delegate source, Action<TEntry> wrapper)
 			{
 				this.source = source ?? throw new ArgumentNullException(nameof(source));
 				this.wrapper = wrapper;
@@ -51,11 +58,11 @@ namespace EntityFramework.Triggers
 
 			public Boolean Equals(WrappedHandler other) => ReferenceEquals(source, other.source) || source == other.source;
 			public override Boolean Equals(Object o) => o is WrappedHandler wrappedHandler && Equals(wrappedHandler);
-			public override Int32 GetHashCode() => source.GetHashCode() ^ wrapper.GetHashCode();
-			public void Invoke(TEntry entry, IServiceProvider serviceProvider) => wrapper.Invoke(entry, serviceProvider);
+			public override Int32 GetHashCode() => source.GetHashCode() ^ wrapper?.GetHashCode() ?? 0;
+			public void Invoke(TEntry entry) => wrapper.Invoke(entry);
 		}
 
-		internal static void Add(ref ImmutableArray<WrappedHandler> wrappedHandlers, Delegate source, Action<TEntry, IServiceProvider> wrapper)
+		protected static void Add(ref ImmutableArray<WrappedHandler> wrappedHandlers, Delegate source, Action<TEntry> wrapper)
 		{
 			ImmutableArray<WrappedHandler> initial, computed;
 			do
@@ -66,7 +73,7 @@ namespace EntityFramework.Triggers
 			while (initial != ImmutableInterlocked.InterlockedCompareExchange(ref wrappedHandlers, computed, initial));
 		}
 
-		internal static void Remove(ref ImmutableArray<WrappedHandler> wrappedHandlers, Delegate source)
+		protected static void Remove(ref ImmutableArray<WrappedHandler> wrappedHandlers, Delegate source)
 		{
 			ImmutableArray<WrappedHandler> initial, computed;
 			do
@@ -91,8 +98,7 @@ namespace EntityFramework.Triggers
         {
 	        if (handler == null)
 		        throw new ArgumentNullException(nameof(handler));
-	        void Wrapper(TEntry entry, IServiceProvider provider) => handler(entry);
-			Add(ref wrappedHandlers, handler, Wrapper);
+			Add(ref wrappedHandlers, handler, handler);
         }
 
 		public void Remove(Action<TEntry> handler)
