@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Immutable;
-using Microsoft.Extensions.DependencyInjection;
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
@@ -10,22 +9,14 @@ using System.Data.Entity;
 namespace EntityFramework.Triggers
 #endif
 {
-	public abstract class TriggerEvent : ITriggerEvent
+	internal abstract class TriggerEvent : ITriggerEvent
 	{
 		public void Raise(Object entry) => RaiseInternal(entry);
-		
+
 		protected abstract void RaiseInternal(Object entry);
 	}
 
-	//public class TriggerEvent<TEntry, TEntity>
-	//: TriggerEvent
-	//, ITriggerEvent<TEntry, TEntity>
-	//, IEquatable<TriggerEvent<TEntry, TEntity>>
-	//where TEntry : IEntry<TEntity>
-	//where TEntity : class
-	//{}
-
-	public class TriggerEvent<TEntry, TEntity, TDbContext>
+	internal class TriggerEvent<TEntry, TEntity, TDbContext>
 	: TriggerEvent
 	, ITriggerEvent<TEntry, TEntity, TDbContext>
 	, IEquatable<TriggerEvent<TEntry, TEntity, TDbContext>>
@@ -36,10 +27,10 @@ namespace EntityFramework.Triggers
 		internal TriggerEvent() {}
 
 		private protected ImmutableArray<WrappedHandler> wrappedHandlers = ImmutableArray<WrappedHandler>.Empty;
-		
+
 		protected sealed override void RaiseInternal(Object entry)
 		{
-			var x = (TEntry) entry;
+			var x = (TEntry)entry;
 			var latestWrappedHandlers = ImmutableInterlockedRead(ref wrappedHandlers);
 			foreach (var wrappedHandler in latestWrappedHandlers)
 				wrappedHandler.Invoke(x);
@@ -89,17 +80,17 @@ namespace EntityFramework.Triggers
 
 		private static ImmutableArray<WrappedHandler> ImmutableInterlockedRead(ref ImmutableArray<WrappedHandler> array) =>
 			ImmutableInterlocked.InterlockedCompareExchange(ref array, ImmutableArray<WrappedHandler>.Empty, ImmutableArray<WrappedHandler>.Empty);
-		
+
 		public override Boolean Equals(Object obj) => obj is TriggerEvent<TEntry, TEntity, TDbContext> triggerEvent && Equals(triggerEvent);
 		public Boolean Equals(TriggerEvent<TEntry, TEntity, TDbContext> other) => other != null && ImmutableInterlockedRead(ref wrappedHandlers).Equals(ImmutableInterlockedRead(ref other.wrappedHandlers));
 		public override Int32 GetHashCode() => ImmutableInterlockedRead(ref wrappedHandlers).GetHashCode();
 
-        public void Add(Action<TEntry> handler)
-        {
-	        if (handler == null)
-		        throw new ArgumentNullException(nameof(handler));
+		public void Add(Action<TEntry> handler)
+		{
+			if (handler == null)
+				throw new ArgumentNullException(nameof(handler));
 			Add(ref wrappedHandlers, handler, handler);
-        }
+		}
 
 		public void Remove(Action<TEntry> handler)
 		{

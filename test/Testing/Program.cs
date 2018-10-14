@@ -34,7 +34,14 @@ namespace Testing
 	{
 		private static Int32 instanceCount;
 		public readonly Int32 Count;
-		public Foo() => Count = instanceCount++;
+		public Foo() => Count = instanceCount += 1;
+	}
+
+	public class Bar
+	{
+		private static Int32 instanceCount;
+		public readonly Int32 Count;
+		public Bar() => Count = instanceCount += 10;
 	}
 
 	public class Context : DbContextWithTriggers, IWhat
@@ -66,6 +73,7 @@ namespace Testing
 				container.Register<IServiceProvider>(() => container, Lifestyle.Singleton);
 				container.Register<Context>(Lifestyle.Transient);
 				container.Register<Foo>(Lifestyle.Transient);
+				container.Register<Bar>(Lifestyle.Transient);
 				container.Register(typeof(ITriggers<,>), typeof(Triggers<,>), Lifestyle.Singleton);
 				container.Register(typeof(ITriggers<>), typeof(Triggers<>), Lifestyle.Singleton);
 				container.Register(typeof(ITriggers), typeof(Triggers), Lifestyle.Singleton);
@@ -82,6 +90,8 @@ namespace Testing
 			    //triggers.Inserting.Add<Foo>((entry, foo) => entry.Entity.Inserted = DateTime.UtcNow);
 				//triggers.Updating.Add<Foo>((entry, foo) => entry.Entity.Updated = DateTime.UtcNow);
 				//triggers.Inserting.Add<Foo>((entry, foo) => entry.Entity.Name = foo.Count.ToString());
+				Triggers<Entity, Context>.GlobalInserting.Add<(Foo Foo, Bar Bar)>(entry => Console.WriteLine(entry.Service.Foo.Count + " " + entry.Service.Bar.Count));
+				Triggers<Entity, Context>.GlobalUpdating.Add<(Foo Foo, Bar Bar)>(entry => Console.WriteLine(entry.Service.Foo.Count + " " + entry.Service.Bar.Count));
 
 				using (var context = container.GetInstance<Context>())
 				{

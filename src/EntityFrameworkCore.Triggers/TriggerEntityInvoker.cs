@@ -63,14 +63,14 @@ namespace EntityFramework.Triggers
 
 			IEnumerable<(Type dbContextType, Type entityType)> GetTypePairs()
 			{
-				var dbContextTypes = GetInheritanceChain<TDbContext>(typeof(DbContext));
+				var dbContextTypes = GetInheritanceChain<TDbContext>(includeInterfaces:false, typeof(DbContext));
 				foreach (var entityType in GetInheritanceChain<TEntity>().Distinct())
 				foreach (var dbContextType in dbContextTypes)
 					yield return (dbContextType, entityType);
 			}
 		}
 
-		private static List<Type> GetInheritanceChain<T>(Type terminator = null) where T : class
+		private static List<Type> GetInheritanceChain<T>(Boolean includeInterfaces = true, Type terminator = null) where T : class
 		{
 			if (terminator == null)
 				terminator = typeof(Object);
@@ -80,7 +80,8 @@ namespace EntityFramework.Triggers
 				types.Add(type);
 				if (type == terminator)
 					break;
-				types.AddRange(type.GetDeclaredInterfaces().Reverse());
+				if (includeInterfaces)
+					types.AddRange(type.GetDeclaredInterfaces().Reverse());
 			}
 			types.Reverse();
 			return types;

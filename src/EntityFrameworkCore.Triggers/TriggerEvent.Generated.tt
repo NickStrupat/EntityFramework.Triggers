@@ -1,0 +1,41 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+using System;
+#if EF_CORE
+using Microsoft.EntityFrameworkCore;
+namespace EntityFrameworkCore.Triggers
+#else
+using System.Data.Entity;
+namespace EntityFramework.Triggers
+#endif
+{
+<#	foreach (var triggerName in new [] { "Inserting", "InsertFailed", "Inserted", "Deleting", "DeleteFailed", "Deleted", "Updating", "UpdateFailed", "Updated" })
+{ #>
+	public interface I<#= triggerName #>TriggerEvent<out TEntity, out TDbContext>
+	: ITriggerEvent<I<#= triggerName #>Entry<TEntity, TDbContext>, TEntity, TDbContext>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+		void Add<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler);
+		void Remove<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler);
+	}
+
+	internal class <#= triggerName #>TriggerEvent<TEntity, TDbContext>
+	: TriggerEvent<I<#= triggerName #>Entry<TEntity, TDbContext>, TEntity, TDbContext>
+	, I<#= triggerName #>TriggerEvent<TEntity, TDbContext>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+		public void Add<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler) =>
+			Add(ref wrappedHandlers, handler, entry => handler.Invoke(new Wrapped<#= triggerName #>Entry<TEntity, TDbContext, TService>(entry)));
+
+		public void Remove<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler) =>
+			Remove(ref wrappedHandlers, handler);
+	}
+
+<# } #>
+}

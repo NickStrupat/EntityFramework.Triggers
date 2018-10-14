@@ -15,25 +15,25 @@ namespace EntityFramework.Triggers
 		private readonly ITriggers<Object, DbContext> triggers;
 		public Triggers(ITriggers<Object, DbContext> triggers) => this.triggers = triggers;
 
-		ITriggerEvent<IDeletedEntry     <Object, DbContext>> ITriggers.Deleted      => triggers.Deleted     ;
-		ITriggerEvent<IDeleteFailedEntry<Object, DbContext>> ITriggers.DeleteFailed => triggers.DeleteFailed;
-		ITriggerEvent<IDeletingEntry    <Object, DbContext>> ITriggers.Deleting     => triggers.Deleting    ;
-		ITriggerEvent<IInsertedEntry    <Object, DbContext>> ITriggers.Inserted     => triggers.Inserted    ;
-		ITriggerEvent<IInsertFailedEntry<Object, DbContext>> ITriggers.InsertFailed => triggers.InsertFailed;
-		ITriggerEvent<IInsertingEntry   <Object, DbContext>> ITriggers.Inserting    => triggers.Inserting   ;
-		ITriggerEvent<IUpdatedEntry     <Object, DbContext>> ITriggers.Updated      => triggers.Updated     ;
-		ITriggerEvent<IUpdateFailedEntry<Object, DbContext>> ITriggers.UpdateFailed => triggers.UpdateFailed;
-		ITriggerEvent<IUpdatingEntry    <Object, DbContext>> ITriggers.Updating     => triggers.Updating    ;
+		IInsertingTriggerEvent   <Object, DbContext> ITriggers.Inserting    => triggers.Inserting   ;
+		IInsertFailedTriggerEvent<Object, DbContext> ITriggers.InsertFailed => triggers.InsertFailed;
+		IInsertedTriggerEvent    <Object, DbContext> ITriggers.Inserted     => triggers.Inserted    ;
+		IDeletingTriggerEvent    <Object, DbContext> ITriggers.Deleting     => triggers.Deleting    ;
+		IDeleteFailedTriggerEvent<Object, DbContext> ITriggers.DeleteFailed => triggers.DeleteFailed;
+		IDeletedTriggerEvent     <Object, DbContext> ITriggers.Deleted      => triggers.Deleted     ;
+		IUpdatingTriggerEvent    <Object, DbContext> ITriggers.Updating     => triggers.Updating    ;
+		IUpdateFailedTriggerEvent<Object, DbContext> ITriggers.UpdateFailed => triggers.UpdateFailed;
+		IUpdatedTriggerEvent     <Object, DbContext> ITriggers.Updated      => triggers.Updated     ;
 
-		public static ITriggerEvent<IInsertingEntry   <Object, DbContext>> GlobalInserting    { get; } = Triggers<Object>.GlobalInserting   ;
-		public static ITriggerEvent<IInsertFailedEntry<Object, DbContext>> GlobalInsertFailed { get; } = Triggers<Object>.GlobalInsertFailed;
-		public static ITriggerEvent<IInsertedEntry    <Object, DbContext>> GlobalInserted     { get; } = Triggers<Object>.GlobalInserted    ;
-		public static ITriggerEvent<IDeletingEntry    <Object, DbContext>> GlobalDeleting     { get; } = Triggers<Object>.GlobalDeleting    ;
-		public static ITriggerEvent<IDeleteFailedEntry<Object, DbContext>> GlobalDeleteFailed { get; } = Triggers<Object>.GlobalDeleteFailed;
-		public static ITriggerEvent<IDeletedEntry     <Object, DbContext>> GlobalDeleted      { get; } = Triggers<Object>.GlobalDeleted     ;
-		public static ITriggerEvent<IUpdatingEntry    <Object, DbContext>> GlobalUpdating     { get; } = Triggers<Object>.GlobalUpdating    ;
-		public static ITriggerEvent<IUpdateFailedEntry<Object, DbContext>> GlobalUpdateFailed { get; } = Triggers<Object>.GlobalUpdateFailed;
-		public static ITriggerEvent<IUpdatedEntry     <Object, DbContext>> GlobalUpdated      { get; } = Triggers<Object>.GlobalUpdated     ;
+		public static IInsertingTriggerEvent   <Object, DbContext> GlobalInserting    { get; } = Triggers<Object>.GlobalInserting   ;
+		public static IInsertFailedTriggerEvent<Object, DbContext> GlobalInsertFailed { get; } = Triggers<Object>.GlobalInsertFailed;
+		public static IInsertedTriggerEvent    <Object, DbContext> GlobalInserted     { get; } = Triggers<Object>.GlobalInserted    ;
+		public static IDeletingTriggerEvent    <Object, DbContext> GlobalDeleting     { get; } = Triggers<Object>.GlobalDeleting    ;
+		public static IDeleteFailedTriggerEvent<Object, DbContext> GlobalDeleteFailed { get; } = Triggers<Object>.GlobalDeleteFailed;
+		public static IDeletedTriggerEvent     <Object, DbContext> GlobalDeleted      { get; } = Triggers<Object>.GlobalDeleted     ;
+		public static IUpdatingTriggerEvent    <Object, DbContext> GlobalUpdating     { get; } = Triggers<Object>.GlobalUpdating    ;
+		public static IUpdateFailedTriggerEvent<Object, DbContext> GlobalUpdateFailed { get; } = Triggers<Object>.GlobalUpdateFailed;
+		public static IUpdatedTriggerEvent     <Object, DbContext> GlobalUpdated      { get; } = Triggers<Object>.GlobalUpdated     ;
 
 		public static event Action<IInsertingEntry   <Object, DbContext>> Inserting    { add => Triggers<Object>.Inserting    += value; remove => Triggers<Object>.Inserting    -= value; }
 		public static event Action<IInsertFailedEntry<Object, DbContext>> InsertFailed { add => Triggers<Object>.InsertFailed += value; remove => Triggers<Object>.InsertFailed -= value; }

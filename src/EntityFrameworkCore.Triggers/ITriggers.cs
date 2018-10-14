@@ -12,42 +12,42 @@ namespace EntityFramework.Triggers
 	where TEntity : class
 	where TDbContext : DbContext
 	{
-		new ITriggerEvent<IInsertingEntry   <TEntity, TDbContext>, TEntity, TDbContext> Inserting    { get; }
-		new ITriggerEvent<IInsertFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> InsertFailed { get; }
-		new ITriggerEvent<IInsertedEntry    <TEntity, TDbContext>, TEntity, TDbContext> Inserted     { get; }
-		new ITriggerEvent<IDeletingEntry    <TEntity, TDbContext>, TEntity, TDbContext> Deleting     { get; }
-		new ITriggerEvent<IDeleteFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> DeleteFailed { get; }
-		new ITriggerEvent<IDeletedEntry     <TEntity, TDbContext>, TEntity, TDbContext> Deleted      { get; }
-		new ITriggerEvent<IUpdatingEntry    <TEntity, TDbContext>, TEntity, TDbContext> Updating     { get; }
-		new ITriggerEvent<IUpdateFailedEntry<TEntity, TDbContext>, TEntity, TDbContext> UpdateFailed { get; }
-		new ITriggerEvent<IUpdatedEntry     <TEntity, TDbContext>, TEntity, TDbContext> Updated      { get; }
+		new IInsertingTriggerEvent   <TEntity, TDbContext> Inserting    { get; }
+		new IInsertFailedTriggerEvent<TEntity, TDbContext> InsertFailed { get; }
+		new IInsertedTriggerEvent    <TEntity, TDbContext> Inserted     { get; }
+		new IDeletingTriggerEvent    <TEntity, TDbContext> Deleting     { get; }
+		new IDeleteFailedTriggerEvent<TEntity, TDbContext> DeleteFailed { get; }
+		new IDeletedTriggerEvent     <TEntity, TDbContext> Deleted      { get; }
+		new IUpdatingTriggerEvent    <TEntity, TDbContext> Updating     { get; }
+		new IUpdateFailedTriggerEvent<TEntity, TDbContext> UpdateFailed { get; }
+		new IUpdatedTriggerEvent     <TEntity, TDbContext> Updated      { get; }
 	}
 
 	public interface ITriggers<out TEntity>
 	: ITriggers
 	where TEntity : class
 	{
-		new ITriggerEvent<IInsertingEntry   <TEntity, DbContext>, TEntity> Inserting    { get; }
-		new ITriggerEvent<IInsertFailedEntry<TEntity, DbContext>, TEntity> InsertFailed { get; }
-		new ITriggerEvent<IInsertedEntry    <TEntity, DbContext>, TEntity> Inserted     { get; }
-		new ITriggerEvent<IDeletingEntry    <TEntity, DbContext>, TEntity> Deleting     { get; }
-		new ITriggerEvent<IDeleteFailedEntry<TEntity, DbContext>, TEntity> DeleteFailed { get; }
-		new ITriggerEvent<IDeletedEntry     <TEntity, DbContext>, TEntity> Deleted      { get; }
-		new ITriggerEvent<IUpdatingEntry    <TEntity, DbContext>, TEntity> Updating     { get; }
-		new ITriggerEvent<IUpdateFailedEntry<TEntity, DbContext>, TEntity> UpdateFailed { get; }
-		new ITriggerEvent<IUpdatedEntry     <TEntity, DbContext>, TEntity> Updated      { get; }
+		new IInsertingTriggerEvent   <TEntity, DbContext> Inserting    { get; }
+		new IInsertFailedTriggerEvent<TEntity, DbContext> InsertFailed { get; }
+		new IInsertedTriggerEvent    <TEntity, DbContext> Inserted     { get; }
+		new IDeletingTriggerEvent    <TEntity, DbContext> Deleting     { get; }
+		new IDeleteFailedTriggerEvent<TEntity, DbContext> DeleteFailed { get; }
+		new IDeletedTriggerEvent     <TEntity, DbContext> Deleted      { get; }
+		new IUpdatingTriggerEvent    <TEntity, DbContext> Updating     { get; }
+		new IUpdateFailedTriggerEvent<TEntity, DbContext> UpdateFailed { get; }
+		new IUpdatedTriggerEvent     <TEntity, DbContext> Updated      { get; }
 	}
 
 	public interface ITriggers
 	{
-		ITriggerEvent<IInsertingEntry   <Object, DbContext>> Inserting    { get; }
-		ITriggerEvent<IInsertFailedEntry<Object, DbContext>> InsertFailed { get; }
-		ITriggerEvent<IInsertedEntry    <Object, DbContext>> Inserted     { get; }
-		ITriggerEvent<IDeletingEntry    <Object, DbContext>> Deleting     { get; }
-		ITriggerEvent<IDeleteFailedEntry<Object, DbContext>> DeleteFailed { get; }
-		ITriggerEvent<IDeletedEntry     <Object, DbContext>> Deleted      { get; }
-		ITriggerEvent<IUpdatingEntry    <Object, DbContext>> Updating     { get; }
-		ITriggerEvent<IUpdateFailedEntry<Object, DbContext>> UpdateFailed { get; }
-		ITriggerEvent<IUpdatedEntry     <Object, DbContext>> Updated      { get; }
+		IInsertingTriggerEvent   <Object, DbContext> Inserting    { get; }
+		IInsertFailedTriggerEvent<Object, DbContext> InsertFailed { get; }
+		IInsertedTriggerEvent    <Object, DbContext> Inserted     { get; }
+		IDeletingTriggerEvent    <Object, DbContext> Deleting     { get; }
+		IDeleteFailedTriggerEvent<Object, DbContext> DeleteFailed { get; }
+		IDeletedTriggerEvent     <Object, DbContext> Deleted      { get; }
+		IUpdatingTriggerEvent    <Object, DbContext> Updating     { get; }
+		IUpdateFailedTriggerEvent<Object, DbContext> UpdateFailed { get; }
+		IUpdatedTriggerEvent     <Object, DbContext> Updated      { get; }
 	}
 }

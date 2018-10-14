@@ -16,35 +16,35 @@ namespace EntityFramework.Triggers
 		private readonly ITriggers<TEntity, DbContext> triggers;
 		public Triggers(ITriggers<TEntity, DbContext> triggers) => this.triggers = triggers;
 
-		ITriggerEvent<IInsertingEntry   <TEntity, DbContext>, TEntity> ITriggers<TEntity>.Inserting    => triggers.Inserting   ;
-		ITriggerEvent<IInsertFailedEntry<TEntity, DbContext>, TEntity> ITriggers<TEntity>.InsertFailed => triggers.InsertFailed;
-		ITriggerEvent<IInsertedEntry    <TEntity, DbContext>, TEntity> ITriggers<TEntity>.Inserted     => triggers.Inserted    ;
-		ITriggerEvent<IDeletingEntry    <TEntity, DbContext>, TEntity> ITriggers<TEntity>.Deleting     => triggers.Deleting    ;
-		ITriggerEvent<IDeleteFailedEntry<TEntity, DbContext>, TEntity> ITriggers<TEntity>.DeleteFailed => triggers.DeleteFailed;
-		ITriggerEvent<IDeletedEntry     <TEntity, DbContext>, TEntity> ITriggers<TEntity>.Deleted      => triggers.Deleted     ;
-		ITriggerEvent<IUpdatingEntry    <TEntity, DbContext>, TEntity> ITriggers<TEntity>.Updating     => triggers.Updating    ;
-		ITriggerEvent<IUpdateFailedEntry<TEntity, DbContext>, TEntity> ITriggers<TEntity>.UpdateFailed => triggers.UpdateFailed;
-		ITriggerEvent<IUpdatedEntry     <TEntity, DbContext>, TEntity> ITriggers<TEntity>.Updated      => triggers.Updated     ;
+		IInsertingTriggerEvent   <TEntity, DbContext> ITriggers<TEntity>.Inserting    => triggers.Inserting   ;
+		IInsertFailedTriggerEvent<TEntity, DbContext> ITriggers<TEntity>.InsertFailed => triggers.InsertFailed;
+		IInsertedTriggerEvent    <TEntity, DbContext> ITriggers<TEntity>.Inserted     => triggers.Inserted    ;
+		IDeletingTriggerEvent    <TEntity, DbContext> ITriggers<TEntity>.Deleting     => triggers.Deleting    ;
+		IDeleteFailedTriggerEvent<TEntity, DbContext> ITriggers<TEntity>.DeleteFailed => triggers.DeleteFailed;
+		IDeletedTriggerEvent     <TEntity, DbContext> ITriggers<TEntity>.Deleted      => triggers.Deleted     ;
+		IUpdatingTriggerEvent    <TEntity, DbContext> ITriggers<TEntity>.Updating     => triggers.Updating    ;
+		IUpdateFailedTriggerEvent<TEntity, DbContext> ITriggers<TEntity>.UpdateFailed => triggers.UpdateFailed;
+		IUpdatedTriggerEvent     <TEntity, DbContext> ITriggers<TEntity>.Updated      => triggers.Updated     ;
 
-		ITriggerEvent<IInsertingEntry   <Object, DbContext>> ITriggers.Inserting    => triggers.Inserting   ;
-		ITriggerEvent<IInsertFailedEntry<Object, DbContext>> ITriggers.InsertFailed => triggers.InsertFailed;
-		ITriggerEvent<IInsertedEntry    <Object, DbContext>> ITriggers.Inserted     => triggers.Inserted    ;
-		ITriggerEvent<IDeletingEntry    <Object, DbContext>> ITriggers.Deleting     => triggers.Deleting    ;
-		ITriggerEvent<IDeleteFailedEntry<Object, DbContext>> ITriggers.DeleteFailed => triggers.DeleteFailed;
-		ITriggerEvent<IDeletedEntry     <Object, DbContext>> ITriggers.Deleted      => triggers.Deleted     ;
-		ITriggerEvent<IUpdatingEntry    <Object, DbContext>> ITriggers.Updating     => triggers.Updating    ;
-		ITriggerEvent<IUpdateFailedEntry<Object, DbContext>> ITriggers.UpdateFailed => triggers.UpdateFailed;
-		ITriggerEvent<IUpdatedEntry     <Object, DbContext>> ITriggers.Updated      => triggers.Updated     ;
+		IInsertingTriggerEvent   <Object, DbContext> ITriggers.Inserting    => triggers.Inserting   ;
+		IInsertFailedTriggerEvent<Object, DbContext> ITriggers.InsertFailed => triggers.InsertFailed;
+		IInsertedTriggerEvent    <Object, DbContext> ITriggers.Inserted     => triggers.Inserted    ;
+		IDeletingTriggerEvent    <Object, DbContext> ITriggers.Deleting     => triggers.Deleting    ;
+		IDeleteFailedTriggerEvent<Object, DbContext> ITriggers.DeleteFailed => triggers.DeleteFailed;
+		IDeletedTriggerEvent     <Object, DbContext> ITriggers.Deleted      => triggers.Deleted     ;
+		IUpdatingTriggerEvent    <Object, DbContext> ITriggers.Updating     => triggers.Updating    ;
+		IUpdateFailedTriggerEvent<Object, DbContext> ITriggers.UpdateFailed => triggers.UpdateFailed;
+		IUpdatedTriggerEvent     <Object, DbContext> ITriggers.Updated      => triggers.Updated     ;
 
-		public static ITriggerEvent<IInsertingEntry   <TEntity, DbContext>, TEntity, DbContext> GlobalInserting    { get; } = Triggers<TEntity, DbContext>.GlobalInserting   ;
-		public static ITriggerEvent<IInsertFailedEntry<TEntity, DbContext>, TEntity, DbContext> GlobalInsertFailed { get; } = Triggers<TEntity, DbContext>.GlobalInsertFailed;
-		public static ITriggerEvent<IInsertedEntry    <TEntity, DbContext>, TEntity, DbContext> GlobalInserted     { get; } = Triggers<TEntity, DbContext>.GlobalInserted    ;
-		public static ITriggerEvent<IDeletingEntry    <TEntity, DbContext>, TEntity, DbContext> GlobalDeleting     { get; } = Triggers<TEntity, DbContext>.GlobalDeleting    ;
-		public static ITriggerEvent<IDeleteFailedEntry<TEntity, DbContext>, TEntity, DbContext> GlobalDeleteFailed { get; } = Triggers<TEntity, DbContext>.GlobalDeleteFailed;
-		public static ITriggerEvent<IDeletedEntry     <TEntity, DbContext>, TEntity, DbContext> GlobalDeleted      { get; } = Triggers<TEntity, DbContext>.GlobalDeleted     ;
-		public static ITriggerEvent<IUpdatingEntry    <TEntity, DbContext>, TEntity, DbContext> GlobalUpdating     { get; } = Triggers<TEntity, DbContext>.GlobalUpdating    ;
-		public static ITriggerEvent<IUpdateFailedEntry<TEntity, DbContext>, TEntity, DbContext> GlobalUpdateFailed { get; } = Triggers<TEntity, DbContext>.GlobalUpdateFailed;
-		public static ITriggerEvent<IUpdatedEntry     <TEntity, DbContext>, TEntity, DbContext> GlobalUpdated      { get; } = Triggers<TEntity, DbContext>.GlobalUpdated     ;
+		public static IInsertingTriggerEvent   <TEntity, DbContext> GlobalInserting    { get; } = Triggers<TEntity, DbContext>.GlobalInserting   ;
+		public static IInsertFailedTriggerEvent<TEntity, DbContext> GlobalInsertFailed { get; } = Triggers<TEntity, DbContext>.GlobalInsertFailed;
+		public static IInsertedTriggerEvent    <TEntity, DbContext> GlobalInserted     { get; } = Triggers<TEntity, DbContext>.GlobalInserted    ;
+		public static IDeletingTriggerEvent    <TEntity, DbContext> GlobalDeleting     { get; } = Triggers<TEntity, DbContext>.GlobalDeleting    ;
+		public static IDeleteFailedTriggerEvent<TEntity, DbContext> GlobalDeleteFailed { get; } = Triggers<TEntity, DbContext>.GlobalDeleteFailed;
+		public static IDeletedTriggerEvent     <TEntity, DbContext> GlobalDeleted      { get; } = Triggers<TEntity, DbContext>.GlobalDeleted     ;
+		public static IUpdatingTriggerEvent    <TEntity, DbContext> GlobalUpdating     { get; } = Triggers<TEntity, DbContext>.GlobalUpdating    ;
+		public static IUpdateFailedTriggerEvent<TEntity, DbContext> GlobalUpdateFailed { get; } = Triggers<TEntity, DbContext>.GlobalUpdateFailed;
+		public static IUpdatedTriggerEvent     <TEntity, DbContext> GlobalUpdated      { get; } = Triggers<TEntity, DbContext>.GlobalUpdated     ;
 
 		public static event Action<IInsertingEntry   <TEntity, DbContext>> Inserting    { add => Triggers<TEntity, DbContext>.Inserting    += value; remove => Triggers<TEntity, DbContext>.Inserting    -= value; }
 		public static event Action<IInsertFailedEntry<TEntity, DbContext>> InsertFailed { add => Triggers<TEntity, DbContext>.InsertFailed += value; remove => Triggers<TEntity, DbContext>.InsertFailed -= value; }

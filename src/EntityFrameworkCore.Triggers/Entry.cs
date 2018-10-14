@@ -241,4 +241,206 @@ namespace EntityFramework.Triggers
 	}
 	#endregion
 	#endregion
+
+	#region Wrapped
+	internal class WrappedInsertingEntry<TEntity, TDbContext, TService> : IInsertingEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+		private readonly IInsertingEntry<TEntity, TDbContext> entry;
+		private readonly TService service;
+
+		public WrappedInsertingEntry(IInsertingEntry<TEntity, TDbContext> entry)
+		{
+			this.entry = entry;
+			service = ServiceRetrieval<TService>.GetService(entry.Service);
+		}
+
+		Object IEntry.Entity => ((IEntry) entry).Entity;
+		DbContext IEntry.Context => ((IEntry) entry).Context;
+		public TDbContext Context => entry.Context;
+		public TEntity Entity => entry.Entity;
+		public Boolean Cancel { get => entry.Cancel; set => entry.Cancel = value; }
+		public IServiceProvider Service => entry.Service;
+		TService IEntry<TEntity, TDbContext, TService>.Service => service;
+	}
+
+	internal class WrappedUpdatingEntry<TEntity, TDbContext, TService> : IUpdatingEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+		private readonly IUpdatingEntry<TEntity, TDbContext> entry;
+		private readonly TService service;
+
+		public WrappedUpdatingEntry(IUpdatingEntry<TEntity, TDbContext> entry)
+		{
+			this.entry = entry;
+			service = ServiceRetrieval<TService>.GetService(entry.Service);
+		}
+
+		Object IEntry.Entity => ((IEntry) entry).Entity;
+		DbContext IEntry.Context => ((IEntry) entry).Context;
+		public TDbContext Context => entry.Context;
+		public TEntity Entity => entry.Entity;
+		public Boolean Cancel { get => entry.Cancel; set => entry.Cancel = value; }
+		public TEntity Original => entry.Original;
+		public IServiceProvider Service => entry.Service;
+		TService IEntry<TEntity, TDbContext, TService>.Service => service;
+	}
+
+	internal class WrappedDeletingEntry<TEntity, TDbContext, TService> : IDeletingEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+		private readonly IDeletingEntry<TEntity, TDbContext> entry;
+		private readonly TService service;
+
+		public WrappedDeletingEntry(IDeletingEntry<TEntity, TDbContext> entry)
+		{
+			this.entry = entry;
+			service = ServiceRetrieval<TService>.GetService(entry.Service);
+		}
+
+		Object IEntry.Entity => ((IEntry) entry).Entity;
+		DbContext IEntry.Context => ((IEntry) entry).Context;
+		public TDbContext Context => entry.Context;
+		public TEntity Entity => entry.Entity;
+		public Boolean Cancel { get => entry.Cancel; set => entry.Cancel = value; }
+		public TEntity Original => entry.Original;
+		public IServiceProvider Service => entry.Service;
+		TService IEntry<TEntity, TDbContext, TService>.Service => service;
+	}
+
+	internal class WrappedInsertFailedEntry<TEntity, TDbContext, TService> : IInsertFailedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+		private readonly IInsertFailedEntry<TEntity, TDbContext> entry;
+		private readonly TService service;
+
+		public WrappedInsertFailedEntry(IInsertFailedEntry<TEntity, TDbContext> entry)
+		{
+			this.entry = entry;
+			service = ServiceRetrieval<TService>.GetService(entry.Service);
+		}
+
+		Object IEntry.Entity => ((IEntry) entry).Entity;
+		DbContext IEntry.Context => ((IEntry) entry).Context;
+		public TDbContext Context => entry.Context;
+		public TEntity Entity => entry.Entity;
+		public Exception Exception => entry.Exception;
+		public Boolean Swallow { get => entry.Swallow; set => entry.Swallow = value; }
+		public IServiceProvider Service => entry.Service;
+		TService IEntry<TEntity, TDbContext, TService>.Service => service;
+	}
+
+	internal class WrappedUpdateFailedEntry<TEntity, TDbContext, TService> : IUpdateFailedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+		private readonly IUpdateFailedEntry<TEntity, TDbContext> entry;
+		private readonly TService service;
+
+		public WrappedUpdateFailedEntry(IUpdateFailedEntry<TEntity, TDbContext> entry)
+		{
+			this.entry = entry;
+			service = ServiceRetrieval<TService>.GetService(entry.Service);
+		}
+
+		Object IEntry.Entity => ((IEntry) entry).Entity;
+		DbContext IEntry.Context => ((IEntry) entry).Context;
+		public TDbContext Context => entry.Context;
+		public TEntity Entity => entry.Entity;
+		public Exception Exception => entry.Exception;
+		public Boolean Swallow { get => entry.Swallow; set => entry.Swallow = value; }
+		public IServiceProvider Service => entry.Service;
+		TService IEntry<TEntity, TDbContext, TService>.Service => service;
+	}
+
+	internal class WrappedDeleteFailedEntry<TEntity, TDbContext, TService> : IDeleteFailedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+		private readonly IDeleteFailedEntry<TEntity, TDbContext> entry;
+		private readonly TService service;
+
+		public WrappedDeleteFailedEntry(IDeleteFailedEntry<TEntity, TDbContext> entry)
+		{
+			this.entry = entry;
+			service = ServiceRetrieval<TService>.GetService(entry.Service);
+		}
+
+		Object IEntry.Entity => ((IEntry) entry).Entity;
+		DbContext IEntry.Context => ((IEntry) entry).Context;
+		public TDbContext Context => entry.Context;
+		public TEntity Entity => entry.Entity;
+		public Exception Exception => entry.Exception;
+		public Boolean Swallow { get => entry.Swallow; set => entry.Swallow = value; }
+		public IServiceProvider Service => entry.Service;
+		TService IEntry<TEntity, TDbContext, TService>.Service => service;
+	}
+
+	internal class WrappedInsertedEntry<TEntity, TDbContext, TService> : IInsertedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+		private readonly IInsertedEntry<TEntity, TDbContext> entry;
+		private readonly TService service;
+
+		public WrappedInsertedEntry(IInsertedEntry<TEntity, TDbContext> entry)
+		{
+			this.entry = entry;
+			service = ServiceRetrieval<TService>.GetService(entry.Service);
+		}
+
+		Object IEntry.Entity => ((IEntry) entry).Entity;
+		DbContext IEntry.Context => ((IEntry) entry).Context;
+		public TDbContext Context => entry.Context;
+		public TEntity Entity => entry.Entity;
+		public IServiceProvider Service => entry.Service;
+		TService IEntry<TEntity, TDbContext, TService>.Service => service;
+	}
+
+	internal class WrappedUpdatedEntry<TEntity, TDbContext, TService> : IUpdatedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+		private readonly IUpdatedEntry<TEntity, TDbContext> entry;
+		private readonly TService service;
+
+		public WrappedUpdatedEntry(IUpdatedEntry<TEntity, TDbContext> entry)
+		{
+			this.entry = entry;
+			service = ServiceRetrieval<TService>.GetService(entry.Service);
+		}
+
+		Object IEntry.Entity => ((IEntry) entry).Entity;
+		DbContext IEntry.Context => ((IEntry) entry).Context;
+		public TDbContext Context => entry.Context;
+		public TEntity Entity => entry.Entity;
+		public IServiceProvider Service => entry.Service;
+		TService IEntry<TEntity, TDbContext, TService>.Service => service;
+	}
+
+	internal class WrappedDeletedEntry<TEntity, TDbContext, TService> : IDeletedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext
+	{
+		private readonly IDeletedEntry<TEntity, TDbContext> entry;
+		private readonly TService service;
+
+		public WrappedDeletedEntry(IDeletedEntry<TEntity, TDbContext> entry)
+		{
+			this.entry = entry;
+			service = ServiceRetrieval<TService>.GetService(entry.Service);
+		}
+
+		Object IEntry.Entity => ((IEntry) entry).Entity;
+		DbContext IEntry.Context => ((IEntry) entry).Context;
+		public TDbContext Context => entry.Context;
+		public TEntity Entity => entry.Entity;
+		public IServiceProvider Service => entry.Service;
+		TService IEntry<TEntity, TDbContext, TService>.Service => service;
+	}
+	#endregion
 }

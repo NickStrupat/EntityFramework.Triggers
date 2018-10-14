@@ -40,13 +40,4 @@ namespace EntityFramework.Triggers
 		new void Add(Action<TEntry> handler);
 		new void Remove(Action<TEntry> handler);
 	}
-
-	public interface IInsertingTriggerEvent<out TEntity, out TDbContext>
-	: ITriggerEvent<IInsertingEntry<TEntity, TDbContext>, TEntity, TDbContext>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		void Add<TService>(Action<IInsertingEntry<TEntity, TDbContext, TService>> handler);
-		void Remove<TService>(Action<IInsertingEntry<TEntity, TDbContext, TService>> handler);
-	}
 }
