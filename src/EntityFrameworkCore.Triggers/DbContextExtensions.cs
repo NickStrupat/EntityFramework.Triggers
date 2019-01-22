@@ -58,25 +58,25 @@ namespace EntityFramework.Triggers {
 #endif
 			if (dbContext == null)
 				throw new ArgumentNullException(nameof(dbContext));
-			var invoker = TriggerInvokers.Get(dbContext.GetType());
+			var invoker = TriggerInvokerCache.Get(dbContext.GetType());
 			var swallow = false;
 			try {
-				var afterActions = invoker.RaiseTheBeforeEvents(dbContext, serviceProvider);
+				var afterActions = invoker.RaiseChangingEvents(dbContext, serviceProvider);
 #if EF_CORE
 				var result = baseSaveChanges(acceptAllChangesOnSuccess);
 #else
 				var result = baseSaveChanges();
 #endif
-				invoker.RaiseTheAfterEvents(dbContext, serviceProvider, afterActions);
+				invoker.RaiseChangedEvents(dbContext, serviceProvider, afterActions);
 				return result;
 			}
-			catch (DbUpdateException ex) when (invoker.RaiseTheFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
+			catch (DbUpdateException ex) when (invoker.RaiseFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
 			}
 #if !EF_CORE
-			catch (DbEntityValidationException ex) when (invoker.RaiseTheFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
+			catch (DbEntityValidationException ex) when (invoker.RaiseFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
 			}
 #endif
-			catch (Exception ex) when(invoker.RaiseTheFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
+			catch (Exception ex) when(invoker.RaiseFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
 			}
 			return 0;
 		}
@@ -125,25 +125,25 @@ namespace EntityFramework.Triggers {
 #endif
 			if (dbContext == null)
 				throw new ArgumentNullException(nameof(dbContext));
-			var invoker = TriggerInvokers.Get(dbContext.GetType());
+			var invoker = TriggerInvokerCache.Get(dbContext.GetType());
 			var swallow = false;
 			try {
-				var afterActions = invoker.RaiseTheBeforeEvents(dbContext, serviceProvider);
+				var afterActions = invoker.RaiseChangingEvents(dbContext, serviceProvider);
 #if EF_CORE
 				var result = await baseSaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
 #else
 				var result = await baseSaveChangesAsync(cancellationToken).ConfigureAwait(false);
 #endif
-                invoker.RaiseTheAfterEvents(dbContext, serviceProvider, afterActions);
+                invoker.RaiseChangedEvents(dbContext, serviceProvider, afterActions);
 				return result;
 			}
-			catch (DbUpdateException ex) when(invoker.RaiseTheFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
+			catch (DbUpdateException ex) when(invoker.RaiseFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
 			}
 #if !EF_CORE
-			catch (DbEntityValidationException ex) when(invoker.RaiseTheFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
+			catch (DbEntityValidationException ex) when(invoker.RaiseFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
 			}
 #endif
-			catch (Exception ex) when (invoker.RaiseTheFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
+			catch (Exception ex) when (invoker.RaiseFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
 			}
 			return 0;
 		}

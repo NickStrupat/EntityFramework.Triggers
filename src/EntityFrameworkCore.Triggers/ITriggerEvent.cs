@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,8 @@ namespace EntityFramework.Triggers
 	{
 		void Add(Action<TEntry> handler);
 		void Remove(Action<TEntry> handler);
+		void Add(Func<TEntry, Task> handler);
+		void Remove(Func<TEntry, Task> handler);
 	}
 
 	public interface ITriggerEvent<out TEntry, out TEntity>
@@ -29,6 +32,8 @@ namespace EntityFramework.Triggers
 	{
 		new void Add(Action<TEntry> handler);
 		new void Remove(Action<TEntry> handler);
+		new void Add(Func<TEntry, Task> handler);
+		new void Remove(Func<TEntry, Task> handler);
 	}
 
 	public interface ITriggerEvent<out TEntry, out TEntity, out TDbContext>
@@ -39,5 +44,7 @@ namespace EntityFramework.Triggers
 	{
 		new void Add(Action<TEntry> handler);
 		new void Remove(Action<TEntry> handler);
+		new void Add(Func<TEntry, Task> handler);
+		new void Remove(Func<TEntry, Task> handler);
 	}
 }

@@ -1,20 +1,23 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
-namespace EntityFrameworkCore.Triggers {
+namespace EntityFrameworkCore.Triggers
 #else
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
-namespace EntityFramework.Triggers {
+namespace EntityFramework.Triggers
 #endif
-	internal interface ITriggerInvoker {
-		List<DelegateSynchronyUnion<DbContext>> RaiseChangingEvents(DbContext dbContext, IServiceProvider serviceProvider);
+{
+	internal interface ITriggerInvokerAsync
+	{
+		Task<List<DelegateSynchronyUnion<DbContext>>> RaiseChangingEventsAsync(DbContext dbContext, IServiceProvider serviceProvider);
 
-		void RaiseChangedEvents(DbContext dbContext, IServiceProvider serviceProvider, IEnumerable<DelegateSynchronyUnion<DbContext>> afterEvents);
+		void RaiseChangedEvents(DbContext dbContext, IServiceProvider serviceProvider, IEnumerable<List<Delegate>> afterEvents);
 
 		Boolean RaiseFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, DbUpdateException dbUpdateException, ref Boolean swallow);
 #if !EF_CORE

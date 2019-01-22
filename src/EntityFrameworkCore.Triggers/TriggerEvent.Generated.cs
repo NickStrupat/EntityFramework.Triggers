@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
 namespace EntityFrameworkCore.Triggers
@@ -14,6 +16,8 @@ namespace EntityFramework.Triggers
 	{
 		void Add<TService>(Action<IInsertingEntry<TEntity, TDbContext, TService>> handler);
 		void Remove<TService>(Action<IInsertingEntry<TEntity, TDbContext, TService>> handler);
+		void Add<TService>(Func<IInsertingEntry<TEntity, TDbContext, TService>, Task> handler);
+		void Remove<TService>(Func<IInsertingEntry<TEntity, TDbContext, TService>, Task> handler);
 	}
 
 	internal class InsertingTriggerEvent<TEntity, TDbContext>
@@ -36,6 +40,8 @@ namespace EntityFramework.Triggers
 	{
 		void Add<TService>(Action<IInsertFailedEntry<TEntity, TDbContext, TService>> handler);
 		void Remove<TService>(Action<IInsertFailedEntry<TEntity, TDbContext, TService>> handler);
+		void Add<TService>(Func<IInsertFailedEntry<TEntity, TDbContext, TService>, Task> handler);
+		void Remove<TService>(Func<IInsertFailedEntry<TEntity, TDbContext, TService>, Task> handler);
 	}
 
 	internal class InsertFailedTriggerEvent<TEntity, TDbContext>
@@ -58,6 +64,8 @@ namespace EntityFramework.Triggers
 	{
 		void Add<TService>(Action<IInsertedEntry<TEntity, TDbContext, TService>> handler);
 		void Remove<TService>(Action<IInsertedEntry<TEntity, TDbContext, TService>> handler);
+		void Add<TService>(Func<IInsertedEntry<TEntity, TDbContext, TService>, Task> handler);
+		void Remove<TService>(Func<IInsertedEntry<TEntity, TDbContext, TService>, Task> handler);
 	}
 
 	internal class InsertedTriggerEvent<TEntity, TDbContext>
@@ -80,6 +88,8 @@ namespace EntityFramework.Triggers
 	{
 		void Add<TService>(Action<IDeletingEntry<TEntity, TDbContext, TService>> handler);
 		void Remove<TService>(Action<IDeletingEntry<TEntity, TDbContext, TService>> handler);
+		void Add<TService>(Func<IDeletingEntry<TEntity, TDbContext, TService>, Task> handler);
+		void Remove<TService>(Func<IDeletingEntry<TEntity, TDbContext, TService>, Task> handler);
 	}
 
 	internal class DeletingTriggerEvent<TEntity, TDbContext>
@@ -102,6 +112,8 @@ namespace EntityFramework.Triggers
 	{
 		void Add<TService>(Action<IDeleteFailedEntry<TEntity, TDbContext, TService>> handler);
 		void Remove<TService>(Action<IDeleteFailedEntry<TEntity, TDbContext, TService>> handler);
+		void Add<TService>(Func<IDeleteFailedEntry<TEntity, TDbContext, TService>, Task> handler);
+		void Remove<TService>(Func<IDeleteFailedEntry<TEntity, TDbContext, TService>, Task> handler);
 	}
 
 	internal class DeleteFailedTriggerEvent<TEntity, TDbContext>
@@ -124,6 +136,8 @@ namespace EntityFramework.Triggers
 	{
 		void Add<TService>(Action<IDeletedEntry<TEntity, TDbContext, TService>> handler);
 		void Remove<TService>(Action<IDeletedEntry<TEntity, TDbContext, TService>> handler);
+		void Add<TService>(Func<IDeletedEntry<TEntity, TDbContext, TService>, Task> handler);
+		void Remove<TService>(Func<IDeletedEntry<TEntity, TDbContext, TService>, Task> handler);
 	}
 
 	internal class DeletedTriggerEvent<TEntity, TDbContext>
@@ -146,6 +160,8 @@ namespace EntityFramework.Triggers
 	{
 		void Add<TService>(Action<IUpdatingEntry<TEntity, TDbContext, TService>> handler);
 		void Remove<TService>(Action<IUpdatingEntry<TEntity, TDbContext, TService>> handler);
+		void Add<TService>(Func<IUpdatingEntry<TEntity, TDbContext, TService>, Task> handler);
+		void Remove<TService>(Func<IUpdatingEntry<TEntity, TDbContext, TService>, Task> handler);
 	}
 
 	internal class UpdatingTriggerEvent<TEntity, TDbContext>
@@ -168,6 +184,8 @@ namespace EntityFramework.Triggers
 	{
 		void Add<TService>(Action<IUpdateFailedEntry<TEntity, TDbContext, TService>> handler);
 		void Remove<TService>(Action<IUpdateFailedEntry<TEntity, TDbContext, TService>> handler);
+		void Add<TService>(Func<IUpdateFailedEntry<TEntity, TDbContext, TService>, Task> handler);
+		void Remove<TService>(Func<IUpdateFailedEntry<TEntity, TDbContext, TService>, Task> handler);
 	}
 
 	internal class UpdateFailedTriggerEvent<TEntity, TDbContext>
@@ -190,6 +208,8 @@ namespace EntityFramework.Triggers
 	{
 		void Add<TService>(Action<IUpdatedEntry<TEntity, TDbContext, TService>> handler);
 		void Remove<TService>(Action<IUpdatedEntry<TEntity, TDbContext, TService>> handler);
+		void Add<TService>(Func<IUpdatedEntry<TEntity, TDbContext, TService>, Task> handler);
+		void Remove<TService>(Func<IUpdatedEntry<TEntity, TDbContext, TService>, Task> handler);
 	}
 
 	internal class UpdatedTriggerEvent<TEntity, TDbContext>

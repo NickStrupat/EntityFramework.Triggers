@@ -5,6 +5,8 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension=".cs" #>
 using System;
+using System.Threading.Tasks;
+
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
 namespace EntityFrameworkCore.Triggers
@@ -22,6 +24,8 @@ namespace EntityFramework.Triggers
 	{
 		void Add<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler);
 		void Remove<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler);
+		void Add<TService>(Func<I<#= triggerName #>Entry<TEntity, TDbContext, TService>, Task> handler);
+		void Remove<TService>(Func<I<#= triggerName #>Entry<TEntity, TDbContext, TService>, Task> handler);
 	}
 
 	internal class <#= triggerName #>TriggerEvent<TEntity, TDbContext>
