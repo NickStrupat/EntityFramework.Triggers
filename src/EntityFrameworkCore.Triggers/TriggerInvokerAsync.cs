@@ -61,18 +61,18 @@ namespace EntityFramework.Triggers
 		{
 			var tDbContext = (TDbContext)dbContext;
 			var entityType = entry.Entity.GetType();
-			var triggerEntityInvoker = TriggerEntityInvokers<TDbContext>.Get(entityType);
+			var triggerEntityInvoker = GenericServiceCache<ITriggerEntityInvoker<TDbContext>, TriggerEntityInvoker<TDbContext, Object>>.GetOrAdd(tDbContext.GetType(), entityType);
 			switch (entry.State)
 			{
 				case EntityState.Added:
-					await triggerEntityInvoker.RaiseInserting(serviceProvider, entry.Entity, tDbContext, ref cancel);
-					return new DelegateSynchronyUnion<DbContext>(context => triggerEntityInvoker.RaiseInserted(serviceProvider, entry.Entity, (TDbContext)context));
+					cancel = await triggerEntityInvoker.RaiseInsertingAsync(serviceProvider, entry.Entity, tDbContext, cancel);
+					return new DelegateSynchronyUnion<DbContext>(context => triggerEntityInvoker.RaiseInsertedAsync(serviceProvider, entry.Entity, (TDbContext)context));
 				case EntityState.Deleted:
-					await triggerEntityInvoker.RaiseDeleting(serviceProvider, entry.Entity, tDbContext, ref cancel);
-					return new DelegateSynchronyUnion<DbContext>(context => triggerEntityInvoker.RaiseDeleted(serviceProvider, entry.Entity, (TDbContext)context));
+					cancel = await triggerEntityInvoker.RaiseDeletingAsync(serviceProvider, entry.Entity, tDbContext, cancel);
+					return new DelegateSynchronyUnion<DbContext>(context => triggerEntityInvoker.RaiseDeletedAsync(serviceProvider, entry.Entity, (TDbContext)context));
 				case EntityState.Modified:
-					await triggerEntityInvoker.RaiseUpdating(serviceProvider, entry.Entity, tDbContext, ref cancel);
-					return new DelegateSynchronyUnion<DbContext>(context => triggerEntityInvoker.RaiseUpdated(serviceProvider, entry.Entity, (TDbContext)context));
+					cancel = await triggerEntityInvoker.RaiseUpdatingAsync(serviceProvider, entry.Entity, tDbContext, cancel);
+					return new DelegateSynchronyUnion<DbContext>(context => triggerEntityInvoker.RaiseUpdatedAsync(serviceProvider, entry.Entity, (TDbContext)context));
 			}
 			return null;
 		}

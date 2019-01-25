@@ -58,7 +58,7 @@ namespace EntityFramework.Triggers {
 #endif
 			if (dbContext == null)
 				throw new ArgumentNullException(nameof(dbContext));
-			var invoker = TriggerInvokerCache.Get(dbContext.GetType());
+			var invoker = GenericServiceCache<ITriggerInvoker, TriggerInvoker<DbContext>>.GetOrAdd(dbContext.GetType());
 			var swallow = false;
 			try {
 				var afterActions = invoker.RaiseChangingEvents(dbContext, serviceProvider);
@@ -125,7 +125,7 @@ namespace EntityFramework.Triggers {
 #endif
 			if (dbContext == null)
 				throw new ArgumentNullException(nameof(dbContext));
-			var invoker = TriggerInvokerCache.Get(dbContext.GetType());
+			var invoker = GenericServiceCache<ITriggerInvoker, TriggerInvoker<DbContext>>.GetOrAdd(dbContext.GetType());
 			var swallow = false;
 			try {
 				var afterActions = invoker.RaiseChangingEvents(dbContext, serviceProvider);

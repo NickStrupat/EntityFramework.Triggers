@@ -22,14 +22,4 @@ namespace EntityFramework.Triggers
 
 		private static readonly ConcurrentDictionary<Type, ITriggerInvokerAsync> cache = new ConcurrentDictionary<Type, ITriggerInvokerAsync>();
 	}
-
-	public static class GenericServiceCache<TInterface, TConstructedSingleGenericArgImplementation>
-	where TConstructedSingleGenericArgImplementation : TInterface
-	{
-		private static readonly Type GenericTypeDefinition = typeof(TConstructedSingleGenericArgImplementation).GetGenericTypeDefinition();
-		private static readonly ConcurrentDictionary<Type, TInterface> cache = new ConcurrentDictionary<Type, TInterface>();
-		private static TInterface Factory(Type type) => (TInterface) Activator.CreateInstance(GenericTypeDefinition.MakeGenericType(type));
-
-		public static TInterface GetOrAdd(Type genericArgumentType) => cache.GetOrAdd(genericArgumentType, Factory);
-	}
 }

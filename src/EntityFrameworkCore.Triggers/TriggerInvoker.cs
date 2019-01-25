@@ -55,7 +55,7 @@ namespace EntityFramework.Triggers
 		private static DelegateSynchronyUnion<DbContext>? RaiseChangingEvent(EntityEntry entry, DbContext dbContext, IServiceProvider serviceProvider, ref Boolean cancel) {
 			var tDbContext = (TDbContext)dbContext;
 			var entityType = entry.Entity.GetType();
-			var triggerEntityInvoker = TriggerEntityInvokers<TDbContext>.Get(entityType);
+			var triggerEntityInvoker = GenericServiceCache<ITriggerEntityInvoker<TDbContext>, TriggerEntityInvoker<TDbContext, Object>>.GetOrAdd(dbContext.GetType(), entityType);
 			switch (entry.State) {
 				case EntityState.Added:
 					triggerEntityInvoker.RaiseInserting(serviceProvider, entry.Entity, tDbContext, ref cancel);
@@ -121,15 +121,17 @@ namespace EntityFramework.Triggers
 		private static void RaiseTheFailedEvents(TDbContext dbContext, IServiceProvider serviceProvider, EntityEntry entry, Exception exception, ref Boolean swallow) {
 			switch (entry.State) {
 				case EntityState.Added:
-					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseInsertFailed(serviceProvider, entry.Entity, dbContext, exception, ref swallow);
+					GetTriggerEntityInvoker(entry.Entity.GetType()).RaiseInsertFailed(serviceProvider, entry.Entity, dbContext, exception, ref swallow);
 					break;
 				case EntityState.Modified:
-					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseUpdateFailed(serviceProvider, entry.Entity, dbContext, exception, ref swallow);
+					GetTriggerEntityInvoker(entry.Entity.GetType()).RaiseUpdateFailed(serviceProvider, entry.Entity, dbContext, exception, ref swallow);
 					break;
 				case EntityState.Deleted:
-					TriggerEntityInvokers<TDbContext>.Get(entry.Entity.GetType()).RaiseDeleteFailed(serviceProvider, entry.Entity, dbContext, exception, ref swallow);
+					GetTriggerEntityInvoker(entry.Entity.GetType()).RaiseDeleteFailed(serviceProvider, entry.Entity, dbContext, exception, ref swallow);
 					break;
 			}
+			ITriggerEntityInvoker<TDbContext> GetTriggerEntityInvoker(Type entityType) =>
+				GenericServiceCache<ITriggerEntityInvoker<TDbContext>, TriggerEntityInvoker<TDbContext, Object>>.GetOrAdd(dbContext.GetType(), entityType);
 		}
 	}
 }

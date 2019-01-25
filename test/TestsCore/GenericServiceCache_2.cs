@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using EntityFrameworkCore.Triggers;
 using Xunit;
 
 #if EF_CORE

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Immutable;
+using System.Threading.Tasks;
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
@@ -12,8 +13,10 @@ namespace EntityFramework.Triggers
 	internal abstract class TriggerEvent : ITriggerEvent
 	{
 		public void Raise(Object entry) => RaiseInternal(entry);
+		public Task RaiseAsync(Object entry) => RaiseInternalAsync(entry);
 
 		protected abstract void RaiseInternal(Object entry);
+		protected abstract Task RaiseInternalAsync(Object entry);
 	}
 
 	internal class TriggerEvent<TEntry, TEntity, TDbContext>
@@ -36,12 +39,20 @@ namespace EntityFramework.Triggers
 				wrappedHandler.Invoke(x);
 		}
 
+		protected sealed override async Task RaiseInternalAsync(Object entry)
+		{
+			var x = (TEntry)entry;
+			var latestWrappedHandlers = ImmutableInterlockedRead(ref wrappedHandlers);
+			foreach (var wrappedHandler in latestWrappedHandlers)
+				await wrappedHandler.InvokeAsync(x);
+		}
+
 		protected struct WrappedHandler : IEquatable<WrappedHandler>
 		{
 			private readonly Delegate source;
-			private readonly Action<TEntry> wrapper;
+			private readonly DelegateSynchronyUnion<TEntry> wrapper;
 
-			public WrappedHandler(Delegate source, Action<TEntry> wrapper)
+			public WrappedHandler(Delegate source, DelegateSynchronyUnion<TEntry> wrapper)
 			{
 				this.source = source ?? throw new ArgumentNullException(nameof(source));
 				this.wrapper = wrapper;
@@ -49,11 +60,12 @@ namespace EntityFramework.Triggers
 
 			public Boolean Equals(WrappedHandler other) => ReferenceEquals(source, other.source) || source == other.source;
 			public override Boolean Equals(Object o) => o is WrappedHandler wrappedHandler && Equals(wrappedHandler);
-			public override Int32 GetHashCode() => source.GetHashCode() ^ wrapper?.GetHashCode() ?? 0;
+			public override Int32 GetHashCode() => source.GetHashCode() ^ wrapper.GetHashCode();
 			public void Invoke(TEntry entry) => wrapper.Invoke(entry);
+			public Task InvokeAsync(TEntry entry) => wrapper.InvokeAsync(entry);
 		}
 
-		protected static void Add(ref ImmutableArray<WrappedHandler> wrappedHandlers, Delegate source, Action<TEntry> wrapper)
+		protected static void Add(ref ImmutableArray<WrappedHandler> wrappedHandlers, Delegate source, DelegateSynchronyUnion<TEntry> wrapper)
 		{
 			ImmutableArray<WrappedHandler> initial, computed;
 			do
@@ -70,7 +82,7 @@ namespace EntityFramework.Triggers
 			do
 			{
 				initial = ImmutableInterlockedRead(ref wrappedHandlers);
-				var index = initial.LastIndexOf(new WrappedHandler(source, null));
+				var index = initial.LastIndexOf(new WrappedHandler(source, default));
 				if (index == -1)
 					return;
 				computed = initial.RemoveAt(index);
@@ -89,10 +101,24 @@ namespace EntityFramework.Triggers
 		{
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));
-			Add(ref wrappedHandlers, handler, handler);
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<TEntry>(handler));
 		}
 
 		public void Remove(Action<TEntry> handler)
+		{
+			if (handler == null)
+				throw new ArgumentNullException(nameof(handler));
+			Remove(ref wrappedHandlers, handler);
+		}
+
+		public void Add(Func<TEntry, Task> handler)
+		{
+			if (handler == null)
+				throw new ArgumentNullException(nameof(handler));
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<TEntry>(handler));
+		}
+
+		public void Remove(Func<TEntry, Task> handler)
 		{
 			if (handler == null)
 				throw new ArgumentNullException(nameof(handler));

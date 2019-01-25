@@ -13,6 +13,7 @@ namespace EntityFramework.Triggers
 	public interface ITriggerEvent
 	{
 		void Raise(Object entry);
+		Task RaiseAsync(Object entry);
 	}
 	
 	public interface ITriggerEvent<out TEntry>
