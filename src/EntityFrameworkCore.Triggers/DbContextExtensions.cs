@@ -125,25 +125,33 @@ namespace EntityFramework.Triggers {
 #endif
 			if (dbContext == null)
 				throw new ArgumentNullException(nameof(dbContext));
-			var invoker = GenericServiceCache<ITriggerInvoker, TriggerInvoker<DbContext>>.GetOrAdd(dbContext.GetType());
-			var swallow = false;
+			var invoker = GenericServiceCache<ITriggerInvokerAsync, TriggerInvokerAsync<DbContext>>.GetOrAdd(dbContext.GetType());
 			try {
-				var afterActions = invoker.RaiseChangingEvents(dbContext, serviceProvider);
+				var afterActions = await invoker.RaiseChangingEventsAsync(dbContext, serviceProvider);
 #if EF_CORE
 				var result = await baseSaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
 #else
 				var result = await baseSaveChangesAsync(cancellationToken).ConfigureAwait(false);
 #endif
-                invoker.RaiseChangedEvents(dbContext, serviceProvider, afterActions);
+                await invoker.RaiseChangedEventsAsync(dbContext, serviceProvider, afterActions);
 				return result;
 			}
-			catch (DbUpdateException ex) when(invoker.RaiseFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
+			catch (DbUpdateException ex) {
+				var swallow = await invoker.RaiseFailedEventsAsync(dbContext, serviceProvider, ex);
+				if (!swallow)
+					throw;
 			}
 #if !EF_CORE
-			catch (DbEntityValidationException ex) when(invoker.RaiseFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
+			catch (DbEntityValidationException ex) {
+				var swallow = await invoker.RaiseFailedEventsAsync(dbContext, serviceProvider, ex);
+				if (!swallow)
+					throw;
 			}
 #endif
-			catch (Exception ex) when (invoker.RaiseFailedEvents(dbContext, serviceProvider, ex, ref swallow)) {
+			catch (Exception ex) {
+				var swallow = await invoker.RaiseFailedEventsAsync(dbContext, serviceProvider, ex);
+				if (!swallow)
+					throw;
 			}
 			return 0;
 		}

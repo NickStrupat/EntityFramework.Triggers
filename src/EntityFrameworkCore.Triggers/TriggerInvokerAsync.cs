@@ -23,11 +23,11 @@ namespace EntityFramework.Triggers
 			var afterEvents = new List<DelegateSynchronyUnion<DbContext>>(entries.Count);
 			while (entries.Any())
 			{
+				var cancel = false;
 				foreach (var entry in entries)
 				{
-					var cancel = false;
-
-					var after = await RaiseChangingEventAsync(entry, dbContext, serviceProvider, ref cancel);
+					DelegateSynchronyUnion<DbContext>? after;
+					(after, cancel) = await RaiseChangingEventAsync(entry, dbContext, serviceProvider, cancel);
 					if (after != null && !cancel)
 						afterEvents.Add(after.Value);
 
@@ -57,7 +57,7 @@ namespace EntityFramework.Triggers
 			}
 		}
 
-		private static async Task<DelegateSynchronyUnion<DbContext>?> RaiseChangingEventAsync(EntityEntry entry, DbContext dbContext, IServiceProvider serviceProvider, ref Boolean cancel)
+		private static async Task<(DelegateSynchronyUnion<DbContext>?, Boolean)> RaiseChangingEventAsync(EntityEntry entry, DbContext dbContext, IServiceProvider serviceProvider, Boolean cancel)
 		{
 			var tDbContext = (TDbContext)dbContext;
 			var entityType = entry.Entity.GetType();
@@ -66,32 +66,86 @@ namespace EntityFramework.Triggers
 			{
 				case EntityState.Added:
 					cancel = await triggerEntityInvoker.RaiseInsertingAsync(serviceProvider, entry.Entity, tDbContext, cancel);
-					return new DelegateSynchronyUnion<DbContext>(context => triggerEntityInvoker.RaiseInsertedAsync(serviceProvider, entry.Entity, (TDbContext)context));
+					return (new DelegateSynchronyUnion<DbContext>(context => triggerEntityInvoker.RaiseInsertedAsync(serviceProvider, entry.Entity, (TDbContext)context)), cancel);
 				case EntityState.Deleted:
 					cancel = await triggerEntityInvoker.RaiseDeletingAsync(serviceProvider, entry.Entity, tDbContext, cancel);
-					return new DelegateSynchronyUnion<DbContext>(context => triggerEntityInvoker.RaiseDeletedAsync(serviceProvider, entry.Entity, (TDbContext)context));
+					return (new DelegateSynchronyUnion<DbContext>(context => triggerEntityInvoker.RaiseDeletedAsync(serviceProvider, entry.Entity, (TDbContext)context)), cancel);
 				case EntityState.Modified:
 					cancel = await triggerEntityInvoker.RaiseUpdatingAsync(serviceProvider, entry.Entity, tDbContext, cancel);
-					return new DelegateSynchronyUnion<DbContext>(context => triggerEntityInvoker.RaiseUpdatedAsync(serviceProvider, entry.Entity, (TDbContext)context));
+					return (new DelegateSynchronyUnion<DbContext>(context => triggerEntityInvoker.RaiseUpdatedAsync(serviceProvider, entry.Entity, (TDbContext)context)), cancel);
 			}
-			return null;
+			return default;
 		}
 
-		public void RaiseChangedEvents(DbContext dbContext, IServiceProvider serviceProvider, IEnumerable<List<Delegate>> afterEvents)
+		public async Task RaiseChangedEventsAsync(DbContext dbContext, IServiceProvider serviceProvider, IEnumerable<DelegateSynchronyUnion<DbContext>> afterEvents)
 		{
-			throw new NotImplementedException();
+			foreach (var after in afterEvents)
+				await after.InvokeAsync(dbContext);
 		}
 
-		public Boolean RaiseFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, DbUpdateException dbUpdateException,
-			ref Boolean swallow)
+		public async Task<Boolean> RaiseFailedEventsAsync(DbContext dbContext, IServiceProvider serviceProvider, DbUpdateException dbUpdateException)
 		{
-			throw new NotImplementedException();
+			var context = (TDbContext)dbContext;
+
+			IEnumerable<EntityEntry> entries;
+
+			if (dbUpdateException.Entries.Any())
+			{
+				entries = dbUpdateException.Entries;
+			}
+			else
+			{
+				entries = dbContext.ChangeTracker.Entries().ToArray();
+				if (entries.Count() != 1)
+				{
+					return false;
+				}
+			}
+			return await RaiseFailedEventsInternalAsync(context, serviceProvider, entries, dbUpdateException);
 		}
 
-		public Boolean RaiseFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, Exception exception,
-			ref Boolean swallow)
+#if !EF_CORE
+		public async Task<Boolean> RaiseFailedEventsAsync(DbContext dbContext, IServiceProvider serviceProvider, DbEntityValidationException dbEntityValidationException) {
+			var context = (TDbContext) dbContext;
+			return await RaiseFailedEventsInternalAsync(context, serviceProvider, dbEntityValidationException.EntityValidationErrors.Select(x => x.Entry), dbEntityValidationException);
+		}
+#endif
+
+		public async Task<Boolean> RaiseFailedEventsAsync(DbContext dbContext, IServiceProvider serviceProvider, Exception exception)
 		{
-			throw new NotImplementedException();
+			var context = (TDbContext)dbContext;
+			var entries = dbContext.ChangeTracker.Entries().ToArray();
+			if (entries.Length != 1)
+			{
+				return false;
+			}
+			return await RaiseFailedEventsInternalAsync(context, serviceProvider, entries, exception);
+		}
+
+		private static async Task<Boolean> RaiseFailedEventsInternalAsync(TDbContext dbContext, IServiceProvider serviceProvider, IEnumerable<EntityEntry> entries, Exception exception)
+		{
+			var swallow = false;
+			foreach (var entry in entries)
+				swallow = await RaiseFailedEventsInternalAsync(dbContext, serviceProvider, entry, exception, swallow);
+			return swallow;
+		}
+
+		private static async Task<Boolean> RaiseFailedEventsInternalAsync(TDbContext dbContext, IServiceProvider serviceProvider, EntityEntry entry, Exception exception, Boolean swallow)
+		{
+			switch (entry.State)
+			{
+				case EntityState.Added:
+					return await GetTriggerEntityInvoker(entry.Entity.GetType()).RaiseInsertFailedAsync(serviceProvider, entry.Entity, dbContext, exception, swallow);
+				case EntityState.Modified:
+					return await GetTriggerEntityInvoker(entry.Entity.GetType()).RaiseUpdateFailedAsync(serviceProvider, entry.Entity, dbContext, exception, swallow);
+				case EntityState.Deleted:
+					return await GetTriggerEntityInvoker(entry.Entity.GetType()).RaiseDeleteFailedAsync(serviceProvider, entry.Entity, dbContext, exception, swallow);
+				default:
+					return default;
+			}
+
+			ITriggerEntityInvoker<TDbContext> GetTriggerEntityInvoker(Type entityType) =>
+				GenericServiceCache<ITriggerEntityInvoker<TDbContext>, TriggerEntityInvoker<TDbContext, Object>>.GetOrAdd(dbContext.GetType(), entityType);
 		}
 	}
 }

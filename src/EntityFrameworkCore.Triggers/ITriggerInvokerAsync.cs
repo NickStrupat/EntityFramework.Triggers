@@ -17,12 +17,12 @@ namespace EntityFramework.Triggers
 	{
 		Task<List<DelegateSynchronyUnion<DbContext>>> RaiseChangingEventsAsync(DbContext dbContext, IServiceProvider serviceProvider);
 
-		void RaiseChangedEvents(DbContext dbContext, IServiceProvider serviceProvider, IEnumerable<List<Delegate>> afterEvents);
+		Task RaiseChangedEventsAsync(DbContext dbContext, IServiceProvider serviceProvider, IEnumerable<DelegateSynchronyUnion<DbContext>> afterEvents);
 
-		Boolean RaiseFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, DbUpdateException dbUpdateException, ref Boolean swallow);
+		Task<Boolean> RaiseFailedEventsAsync(DbContext dbContext, IServiceProvider serviceProvider, DbUpdateException dbUpdateException);
 #if !EF_CORE
-		Boolean RaiseFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, DbEntityValidationException dbEntityValidationException, ref Boolean swallow);
+		Task<Boolean> RaiseFailedEventsAsync(DbContext dbContext, IServiceProvider serviceProvider, DbEntityValidationException dbEntityValidationException);
 #endif
-		Boolean RaiseFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, Exception exception, ref Boolean swallow);
+		Task<Boolean> RaiseFailedEventsAsync(DbContext dbContext, IServiceProvider serviceProvider, Exception exception);
 	}
 }

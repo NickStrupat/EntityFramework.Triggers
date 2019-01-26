@@ -27,9 +27,15 @@ namespace EntityFramework.Triggers
 	where TDbContext : DbContext
 	{
 		public void Add<TService>(Action<IInsertingEntry<TEntity, TDbContext, TService>> handler) =>
-			Add(ref wrappedHandlers, handler, entry => handler.Invoke(new WrappedInsertingEntry<TEntity, TDbContext, TService>(entry)));
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IInsertingEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedInsertingEntry<TEntity, TDbContext, TService>(entry))));
 
 		public void Remove<TService>(Action<IInsertingEntry<TEntity, TDbContext, TService>> handler) =>
+			Remove(ref wrappedHandlers, handler);
+
+		public void Add<TService>(Func<IInsertingEntry<TEntity, TDbContext, TService>, Task> handler) =>
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IInsertingEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedInsertingEntry<TEntity, TDbContext, TService>(entry))));
+
+		public void Remove<TService>(Func<IInsertingEntry<TEntity, TDbContext, TService>, Task> handler) =>
 			Remove(ref wrappedHandlers, handler);
 	}
 
@@ -51,9 +57,15 @@ namespace EntityFramework.Triggers
 	where TDbContext : DbContext
 	{
 		public void Add<TService>(Action<IInsertFailedEntry<TEntity, TDbContext, TService>> handler) =>
-			Add(ref wrappedHandlers, handler, entry => handler.Invoke(new WrappedInsertFailedEntry<TEntity, TDbContext, TService>(entry)));
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IInsertFailedEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedInsertFailedEntry<TEntity, TDbContext, TService>(entry))));
 
 		public void Remove<TService>(Action<IInsertFailedEntry<TEntity, TDbContext, TService>> handler) =>
+			Remove(ref wrappedHandlers, handler);
+
+		public void Add<TService>(Func<IInsertFailedEntry<TEntity, TDbContext, TService>, Task> handler) =>
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IInsertFailedEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedInsertFailedEntry<TEntity, TDbContext, TService>(entry))));
+
+		public void Remove<TService>(Func<IInsertFailedEntry<TEntity, TDbContext, TService>, Task> handler) =>
 			Remove(ref wrappedHandlers, handler);
 	}
 
@@ -75,9 +87,15 @@ namespace EntityFramework.Triggers
 	where TDbContext : DbContext
 	{
 		public void Add<TService>(Action<IInsertedEntry<TEntity, TDbContext, TService>> handler) =>
-			Add(ref wrappedHandlers, handler, entry => handler.Invoke(new WrappedInsertedEntry<TEntity, TDbContext, TService>(entry)));
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IInsertedEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedInsertedEntry<TEntity, TDbContext, TService>(entry))));
 
 		public void Remove<TService>(Action<IInsertedEntry<TEntity, TDbContext, TService>> handler) =>
+			Remove(ref wrappedHandlers, handler);
+
+		public void Add<TService>(Func<IInsertedEntry<TEntity, TDbContext, TService>, Task> handler) =>
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IInsertedEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedInsertedEntry<TEntity, TDbContext, TService>(entry))));
+
+		public void Remove<TService>(Func<IInsertedEntry<TEntity, TDbContext, TService>, Task> handler) =>
 			Remove(ref wrappedHandlers, handler);
 	}
 
@@ -99,9 +117,15 @@ namespace EntityFramework.Triggers
 	where TDbContext : DbContext
 	{
 		public void Add<TService>(Action<IDeletingEntry<TEntity, TDbContext, TService>> handler) =>
-			Add(ref wrappedHandlers, handler, entry => handler.Invoke(new WrappedDeletingEntry<TEntity, TDbContext, TService>(entry)));
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IDeletingEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedDeletingEntry<TEntity, TDbContext, TService>(entry))));
 
 		public void Remove<TService>(Action<IDeletingEntry<TEntity, TDbContext, TService>> handler) =>
+			Remove(ref wrappedHandlers, handler);
+
+		public void Add<TService>(Func<IDeletingEntry<TEntity, TDbContext, TService>, Task> handler) =>
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IDeletingEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedDeletingEntry<TEntity, TDbContext, TService>(entry))));
+
+		public void Remove<TService>(Func<IDeletingEntry<TEntity, TDbContext, TService>, Task> handler) =>
 			Remove(ref wrappedHandlers, handler);
 	}
 
@@ -123,9 +147,15 @@ namespace EntityFramework.Triggers
 	where TDbContext : DbContext
 	{
 		public void Add<TService>(Action<IDeleteFailedEntry<TEntity, TDbContext, TService>> handler) =>
-			Add(ref wrappedHandlers, handler, entry => handler.Invoke(new WrappedDeleteFailedEntry<TEntity, TDbContext, TService>(entry)));
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IDeleteFailedEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedDeleteFailedEntry<TEntity, TDbContext, TService>(entry))));
 
 		public void Remove<TService>(Action<IDeleteFailedEntry<TEntity, TDbContext, TService>> handler) =>
+			Remove(ref wrappedHandlers, handler);
+
+		public void Add<TService>(Func<IDeleteFailedEntry<TEntity, TDbContext, TService>, Task> handler) =>
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IDeleteFailedEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedDeleteFailedEntry<TEntity, TDbContext, TService>(entry))));
+
+		public void Remove<TService>(Func<IDeleteFailedEntry<TEntity, TDbContext, TService>, Task> handler) =>
 			Remove(ref wrappedHandlers, handler);
 	}
 
@@ -147,9 +177,15 @@ namespace EntityFramework.Triggers
 	where TDbContext : DbContext
 	{
 		public void Add<TService>(Action<IDeletedEntry<TEntity, TDbContext, TService>> handler) =>
-			Add(ref wrappedHandlers, handler, entry => handler.Invoke(new WrappedDeletedEntry<TEntity, TDbContext, TService>(entry)));
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IDeletedEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedDeletedEntry<TEntity, TDbContext, TService>(entry))));
 
 		public void Remove<TService>(Action<IDeletedEntry<TEntity, TDbContext, TService>> handler) =>
+			Remove(ref wrappedHandlers, handler);
+
+		public void Add<TService>(Func<IDeletedEntry<TEntity, TDbContext, TService>, Task> handler) =>
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IDeletedEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedDeletedEntry<TEntity, TDbContext, TService>(entry))));
+
+		public void Remove<TService>(Func<IDeletedEntry<TEntity, TDbContext, TService>, Task> handler) =>
 			Remove(ref wrappedHandlers, handler);
 	}
 
@@ -171,9 +207,15 @@ namespace EntityFramework.Triggers
 	where TDbContext : DbContext
 	{
 		public void Add<TService>(Action<IUpdatingEntry<TEntity, TDbContext, TService>> handler) =>
-			Add(ref wrappedHandlers, handler, entry => handler.Invoke(new WrappedUpdatingEntry<TEntity, TDbContext, TService>(entry)));
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IUpdatingEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedUpdatingEntry<TEntity, TDbContext, TService>(entry))));
 
 		public void Remove<TService>(Action<IUpdatingEntry<TEntity, TDbContext, TService>> handler) =>
+			Remove(ref wrappedHandlers, handler);
+
+		public void Add<TService>(Func<IUpdatingEntry<TEntity, TDbContext, TService>, Task> handler) =>
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IUpdatingEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedUpdatingEntry<TEntity, TDbContext, TService>(entry))));
+
+		public void Remove<TService>(Func<IUpdatingEntry<TEntity, TDbContext, TService>, Task> handler) =>
 			Remove(ref wrappedHandlers, handler);
 	}
 
@@ -195,9 +237,15 @@ namespace EntityFramework.Triggers
 	where TDbContext : DbContext
 	{
 		public void Add<TService>(Action<IUpdateFailedEntry<TEntity, TDbContext, TService>> handler) =>
-			Add(ref wrappedHandlers, handler, entry => handler.Invoke(new WrappedUpdateFailedEntry<TEntity, TDbContext, TService>(entry)));
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IUpdateFailedEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedUpdateFailedEntry<TEntity, TDbContext, TService>(entry))));
 
 		public void Remove<TService>(Action<IUpdateFailedEntry<TEntity, TDbContext, TService>> handler) =>
+			Remove(ref wrappedHandlers, handler);
+
+		public void Add<TService>(Func<IUpdateFailedEntry<TEntity, TDbContext, TService>, Task> handler) =>
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IUpdateFailedEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedUpdateFailedEntry<TEntity, TDbContext, TService>(entry))));
+
+		public void Remove<TService>(Func<IUpdateFailedEntry<TEntity, TDbContext, TService>, Task> handler) =>
 			Remove(ref wrappedHandlers, handler);
 	}
 
@@ -219,9 +267,15 @@ namespace EntityFramework.Triggers
 	where TDbContext : DbContext
 	{
 		public void Add<TService>(Action<IUpdatedEntry<TEntity, TDbContext, TService>> handler) =>
-			Add(ref wrappedHandlers, handler, entry => handler.Invoke(new WrappedUpdatedEntry<TEntity, TDbContext, TService>(entry)));
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IUpdatedEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedUpdatedEntry<TEntity, TDbContext, TService>(entry))));
 
 		public void Remove<TService>(Action<IUpdatedEntry<TEntity, TDbContext, TService>> handler) =>
+			Remove(ref wrappedHandlers, handler);
+
+		public void Add<TService>(Func<IUpdatedEntry<TEntity, TDbContext, TService>, Task> handler) =>
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<IUpdatedEntry<TEntity, TDbContext>>(entry => handler.Invoke(new WrappedUpdatedEntry<TEntity, TDbContext, TService>(entry))));
+
+		public void Remove<TService>(Func<IUpdatedEntry<TEntity, TDbContext, TService>, Task> handler) =>
 			Remove(ref wrappedHandlers, handler);
 	}
 

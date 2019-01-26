@@ -16,7 +16,10 @@ namespace EntityFramework.Triggers
 #endif
 {
 <#	foreach (var triggerName in new [] { "Inserting", "InsertFailed", "Inserted", "Deleting", "DeleteFailed", "Deleted", "Updating", "UpdateFailed", "Updated" })
-{ #>
+{
+	var entryTypeName = $"I{triggerName}Entry<TEntity, TDbContext>";
+	var entryWithServiceTypeName = $"I{triggerName}Entry<TEntity, TDbContext, TService>";
+#>
 	public interface I<#= triggerName #>TriggerEvent<out TEntity, out TDbContext>
 	: ITriggerEvent<I<#= triggerName #>Entry<TEntity, TDbContext>, TEntity, TDbContext>
 	where TEntity : class
@@ -35,9 +38,15 @@ namespace EntityFramework.Triggers
 	where TDbContext : DbContext
 	{
 		public void Add<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler) =>
-			Add(ref wrappedHandlers, handler, entry => handler.Invoke(new Wrapped<#= triggerName #>Entry<TEntity, TDbContext, TService>(entry)));
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<<#= entryTypeName #>>(entry => handler.Invoke(new Wrapped<#= triggerName #>Entry<TEntity, TDbContext, TService>(entry))));
 
 		public void Remove<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler) =>
+			Remove(ref wrappedHandlers, handler);
+
+		public void Add<TService>(Func<I<#= triggerName #>Entry<TEntity, TDbContext, TService>, Task> handler) =>
+			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<<#= entryTypeName #>>(entry => handler.Invoke(new Wrapped<#= triggerName #>Entry<TEntity, TDbContext, TService>(entry))));
+
+		public void Remove<TService>(Func<I<#= triggerName #>Entry<TEntity, TDbContext, TService>, Task> handler) =>
 			Remove(ref wrappedHandlers, handler);
 	}
 

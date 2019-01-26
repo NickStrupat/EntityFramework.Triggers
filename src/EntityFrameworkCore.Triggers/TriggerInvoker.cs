@@ -97,7 +97,7 @@ namespace EntityFramework.Triggers
 #if !EF_CORE
 		public Boolean RaiseFailedEvents(DbContext dbContext, IServiceProvider serviceProvider, DbEntityValidationException dbEntityValidationException, ref Boolean swallow) {
 			var context = (TDbContext) dbContext;
-			RaiseFailedEvents(context, serviceProvider, dbEntityValidationException.EntityValidationErrors.Select(x => x.Entry), dbEntityValidationException, ref swallow);
+			RaiseTheFailedEvents(context, serviceProvider, dbEntityValidationException.EntityValidationErrors.Select(x => x.Entry), dbEntityValidationException, ref swallow);
 			return swallow;
 		}
 #endif
