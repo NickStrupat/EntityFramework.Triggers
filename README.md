@@ -141,10 +141,10 @@ namespace Example {
 				e.Context.Log.Add(new LogEntry { Message = "Insert trigger fired for " + e.Entity.FirstName });
 				Console.WriteLine("Inserting " + e.Entity.FirstName);
 			};
-			Triggers<Person>.Updating += e => Console.WriteLine("Updating " + e.Entity.FirstName);
+			Triggers<Person>.Updating += e => Console.WriteLine($"Updating {e.Original.FirstName} to {e.Entity.FirstName}");
 			Triggers<Person>.Deleting += e => Console.WriteLine("Deleting " + e.Entity.FirstName);
 			Triggers<Person>.Inserted += e => Console.WriteLine("Inserted " + e.Entity.FirstName);
-			Triggers<Person>.Updated += e => Console.WriteLine("Updated " + e.Original.FirstName);
+			Triggers<Person>.Updated += e => Console.WriteLine("Updated " + e.Entity.FirstName);
 			Triggers<Person>.Deleted += e => Console.WriteLine("Deleted " + e.Entity.FirstName);
 		}
 		
