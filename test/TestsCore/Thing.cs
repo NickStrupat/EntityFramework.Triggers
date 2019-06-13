@@ -48,7 +48,10 @@ namespace EntityFramework.Triggers.Tests {
 		List<Int32> Numbers { get; }
 	}
 
-	public class Apple : Thing, IApple { }
+    public class Apple : Thing, IApple
+    {
+        public override String ToString() => Value;
+    }
 
 	public interface IRoyalGala {
 		List<Int32> Numbers { get; }

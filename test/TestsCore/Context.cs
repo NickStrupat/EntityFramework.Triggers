@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
@@ -14,12 +12,17 @@ namespace EntityFramework.Triggers.Tests {
 #endif
 
 	public class Context : DbContextWithTriggers {
-		public Context(IServiceProvider serviceProvider) : base(serviceProvider) {}
+        private static String GetConnectionString(String databaseName) => $@"Server=(localdb)\mssqllocaldb;Database={databaseName};Trusted_Connection=True;";
+
+#if !EF_CORE
+        public Context(IServiceProvider serviceProvider) : base(serviceProvider, GetConnectionString(typeof(Context).FullName)) {}
+#endif
 #if EF_CORE
-		public Context(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) {}
+        public Context(IServiceProvider serviceProvider) : base(serviceProvider) { }
+        public Context(IServiceProvider serviceProvider, DbContextOptions options) : base(serviceProvider, options) {}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-			optionsBuilder.UseSqlServer($@"Server=(localdb)\mssqllocaldb;Database={GetType().FullName};Trusted_Connection=True;");
+			optionsBuilder.UseSqlServer(GetConnectionString(GetType().FullName));
 		}
 #endif
 

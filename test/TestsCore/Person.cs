@@ -16,5 +16,7 @@ namespace EntityFramework.Triggers.Tests {
 		[Required]
 		public virtual String LastName { get; set; }
 		public virtual Boolean IsMarkedDeleted { get; set; }
-	}
+
+        public override String ToString() => $"{FirstName} {LastName}";
+    }
 }

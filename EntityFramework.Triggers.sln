@@ -24,9 +24,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{574C1572-A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "test\Tests\Tests.csproj", "{9F752D45-4772-40C6-BB97-57951318780A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Triggers", "src\EntityFramework.Triggers\EntityFramework.Triggers.csproj", "{7248163D-E00A-44F4-B0FE-D1A798D8058F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFramework.Triggers", "src\EntityFramework.Triggers\EntityFramework.Triggers.csproj", "{7248163D-E00A-44F4-B0FE-D1A798D8058F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Triggers.AspNetCore", "src\EntityFramework.Triggers.AspNetCore\EntityFramework.Triggers.AspNetCore.csproj", "{2DADC956-591B-4605-A624-7D9546B3285C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFramework.Triggers.AspNetCore", "src\EntityFramework.Triggers.AspNetCore\EntityFramework.Triggers.AspNetCore.csproj", "{2DADC956-591B-4605-A624-7D9546B3285C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Triggers.AspNetCore.Test", "test\EntityFramework.Triggers.AspNetCore.Test\EntityFramework.Triggers.AspNetCore.Test.csproj", "{6F1B5B0B-052B-4738-882D-D623947C5077}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkCore.Triggers.AspNetCore.Test", "test\EntityFrameworkCore.Triggers.AspNetCore.Test\EntityFrameworkCore.Triggers.AspNetCore.Test.csproj", "{0D2FCC28-96AF-4638-AFA5-5C260BF3AE76}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +70,14 @@ Global
 		{2DADC956-591B-4605-A624-7D9546B3285C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DADC956-591B-4605-A624-7D9546B3285C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DADC956-591B-4605-A624-7D9546B3285C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F1B5B0B-052B-4738-882D-D623947C5077}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F1B5B0B-052B-4738-882D-D623947C5077}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F1B5B0B-052B-4738-882D-D623947C5077}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F1B5B0B-052B-4738-882D-D623947C5077}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D2FCC28-96AF-4638-AFA5-5C260BF3AE76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D2FCC28-96AF-4638-AFA5-5C260BF3AE76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D2FCC28-96AF-4638-AFA5-5C260BF3AE76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D2FCC28-96AF-4638-AFA5-5C260BF3AE76}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,6 +91,8 @@ Global
 		{9F752D45-4772-40C6-BB97-57951318780A} = {574C1572-AEB6-49BD-88F0-448848A6DBA1}
 		{7248163D-E00A-44F4-B0FE-D1A798D8058F} = {D7D8E993-0048-470A-9AAC-57AB11898D76}
 		{2DADC956-591B-4605-A624-7D9546B3285C} = {D7D8E993-0048-470A-9AAC-57AB11898D76}
+		{6F1B5B0B-052B-4738-882D-D623947C5077} = {574C1572-AEB6-49BD-88F0-448848A6DBA1}
+		{0D2FCC28-96AF-4638-AFA5-5C260BF3AE76} = {574C1572-AEB6-49BD-88F0-448848A6DBA1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F8B27114-EEC8-4C90-A8B9-336951F10840}
