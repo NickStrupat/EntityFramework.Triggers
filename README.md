@@ -4,9 +4,9 @@ EntityFramework.Triggers
 Add triggers to your entities with insert, update, and delete events. There are three events for each: before, after, and upon failure.
 
 | EF version | .NET support                                    | NuGet package                                                                                                                                              |
-|:-----------|:------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.3      | >= Framework 4.6.1                              | [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)         |
-| Core 2.0   | >= Framework 4.6.1 &#124;&#124; >= Standard 2.0 | [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/) |
+|:--------------|:------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| >= 6.1.3      | >= Framework 4.6.1                              | [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)         |
+| >= Core 2.0   | >= Framework 4.6.1 &#124;&#124; >= Standard 2.0 | [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/) |
 
 This repo contains the code for both the `EntityFramework` and `EntityFrameworkCore` projects.
 
@@ -141,10 +141,10 @@ namespace Example {
 				e.Context.Log.Add(new LogEntry { Message = "Insert trigger fired for " + e.Entity.FirstName });
 				Console.WriteLine("Inserting " + e.Entity.FirstName);
 			};
-			Triggers<Person>.Updating += e => Console.WriteLine("Updating " + e.Entity.FirstName);
+			Triggers<Person>.Updating += e => Console.WriteLine($"Updating {e.Original.FirstName} to {e.Entity.FirstName}");
 			Triggers<Person>.Deleting += e => Console.WriteLine("Deleting " + e.Entity.FirstName);
 			Triggers<Person>.Inserted += e => Console.WriteLine("Inserted " + e.Entity.FirstName);
-			Triggers<Person>.Updated += e => Console.WriteLine("Updated " + e.Original.FirstName);
+			Triggers<Person>.Updated += e => Console.WriteLine("Updated " + e.Entity.FirstName);
 			Triggers<Person>.Deleted += e => Console.WriteLine("Deleted " + e.Entity.FirstName);
 		}
 		

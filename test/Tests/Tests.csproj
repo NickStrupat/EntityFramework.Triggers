@@ -73,7 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\EntityFramework.Triggers\EntityFramework.Triggers.csproj">
-      <Project>{196ecc20-7fbc-407c-abb7-d2e347bbd484}</Project>
+      <Project>{7248163d-e00a-44f4-b0fe-d1a798d8058f}</Project>
       <Name>EntityFramework.Triggers</Name>
     </ProjectReference>
   </ItemGroup>
