@@ -8,11 +8,12 @@ using System.Data.Entity;
 namespace EntityFramework.Triggers
 #endif
 {
-	[Obsolete("This interface is for internal use by the library. It is not intended to be used by calling code.")]
-	public interface ITriggerEvent
+	internal interface ITriggerEventInternal
 	{
 		void Raise(Object entry);
 	}
+
+	public interface ITriggerEvent {}
 	
 	public interface ITriggerEvent<out TEntry>
 	: ITriggerEvent

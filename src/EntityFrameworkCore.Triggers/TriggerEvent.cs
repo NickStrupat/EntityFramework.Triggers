@@ -9,7 +9,7 @@ using System.Data.Entity;
 namespace EntityFramework.Triggers
 #endif
 {
-	internal abstract class TriggerEvent : ITriggerEvent
+	internal abstract class TriggerEvent : ITriggerEvent, ITriggerEventInternal
 	{
 		public void Raise(Object entry) => RaiseInternal(entry);
 
