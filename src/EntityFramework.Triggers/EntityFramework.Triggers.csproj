@@ -11,6 +11,7 @@
     <Version>6.2.0</Version>
     <PackageTags>entity-framework entityframework ef triggers trigger</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageReleaseNotes>Added dependency-injectable objects. The context, triggersr, and arbitrary services you need inside your triggers are now supported with DI. Added async handlers to the triggers. Async handlers are run asynchronously with `.SaveChangesAsync()`, and are called synchronously using .Wait() with `.SaveChanges()`</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
