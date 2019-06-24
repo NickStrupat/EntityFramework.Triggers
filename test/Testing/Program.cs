@@ -74,9 +74,6 @@ namespace Testing
 				container.Register<Context>(Lifestyle.Transient);
 				container.Register<Foo>(Lifestyle.Transient);
 				container.Register<Bar>(Lifestyle.Transient);
-				container.Register(typeof(ITriggers<,>), typeof(Triggers<,>), Lifestyle.Singleton);
-				container.Register(typeof(ITriggers<>), typeof(Triggers<>), Lifestyle.Singleton);
-				container.Register(typeof(ITriggers), typeof(Triggers), Lifestyle.Singleton);
 
 				var triggers = container.GetInstance<ITriggers<Entity, Context>>();
 				var triggers1 = container.GetInstance<ITriggers<Entity>>();
@@ -87,11 +84,11 @@ namespace Testing
 				var bbb = ReferenceEquals(triggers1, triggers2);
 				var bbbb = triggers3.Equals(triggers4);
 				var bbbbb = ReferenceEquals(triggers3, triggers4);
-			    //triggers.Inserting.Add<Foo>((entry, foo) => entry.Entity.Inserted = DateTime.UtcNow);
-				//triggers.Updating.Add<Foo>((entry, foo) => entry.Entity.Updated = DateTime.UtcNow);
-				//triggers.Inserting.Add<Foo>((entry, foo) => entry.Entity.Name = foo.Count.ToString());
-				Triggers<Entity, Context>.GlobalInserting.Add<(Foo Foo, Bar Bar)>(entry => Console.WriteLine(entry.Service.Foo.Count + " " + entry.Service.Bar.Count));
-				Triggers<Entity, Context>.GlobalUpdating.Add<(Foo Foo, Bar Bar)>(entry => Console.WriteLine(entry.Service.Foo.Count + " " + entry.Service.Bar.Count));
+				//triggers.Inserting.Add<Foo>(entry => entry.Entity.Inserted = DateTime.UtcNow);
+				//triggers.Updating.Add<Foo>(entry => entry.Entity.Updated = DateTime.UtcNow);
+				//triggers.Inserting.Add<Foo>(entry => entry.Entity.Name = entry.Service.Count.ToString());
+				triggers.Inserting.Add<(Foo Foo, Bar Bar)>(entry => Console.WriteLine(entry.Service.Foo.Count + " " + entry.Service.Bar.Count));
+				triggers.Updating.Add<(Foo Foo, Bar Bar)>(entry => Console.WriteLine(entry.Service.Foo.Count + " " + entry.Service.Bar.Count));
 
 				using (var context = container.GetInstance<Context>())
 				{
