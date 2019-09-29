@@ -1,16 +1,25 @@
 EntityFramework.Triggers
-=======================
+========================
 
 Add triggers to your entities with insert, update, and delete events. There are three events for each: before, after, and upon failure.
 
-| EF version | .NET support                                    | NuGet package                                                                                                                                              |
-|:--------------|:------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| >= 6.1.3      | >= Framework 4.6.1                              | [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)         |
-| >= Core 2.0   | >= Framework 4.6.1 &#124;&#124; >= Standard 2.0 | [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/) |
+This repo contains the code for both the `EntityFramework` and `EntityFrameworkCore` projects, as well as the ASP.NET Core support projects.
 
-This repo contains the code for both the `EntityFramework` and `EntityFrameworkCore` projects.
+### Nuget packages for triggers
 
-## Basic usage
+| EF version  | .NET support                                    | NuGet package                                                                                                                                              |
+|:------------|:------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| >= 6.1.3    | >= Framework 4.6.1                              | [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)         |
+| >= Core 2.0 | >= Framework 4.6.1 &#124;&#124; >= Standard 2.0 | [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/) |
+
+### Nuget packages for ASP.NET Core dependency injection methods
+
+| EF version  | .NET support                                    | NuGet package                                                                                                                                                            |
+|:------------|:------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| >= 6.1.3    | >= Framework 4.6.1                              | [![NuGet Status](http://img.shields.io/nuget/v/NickStrupat.EntityFramework.Triggers.AspNetCore.svg?style=flat)](https://www.nuget.org/packages/NickStrupat.EntityFramework.Triggers.AspNetCore/)|
+| >= Core 2.0 | >= Framework 4.6.1 &#124;&#124; >= Standard 2.0 | [![NuGet Status](http://img.shields.io/nuget/v/NickStrupat.EntityFrameworkCore.Triggers.AspNetCore.svg?style=flat)](https://www.nuget.org/packages/NickStrupat.EntityFrameworkCore.Triggers.AspNetCore/)               |
+
+## Basic usage with a global singleton
 
 To use triggers on your entities, simply have your DbContext inherit from `DbContextWithTriggers`. If you can't change your DbContext inheritance chain, you simply need to override your `SaveChanges...` as demonstrated [below](#manual-overriding-to-enable-triggers)
 
@@ -37,7 +46,74 @@ public class Context : DbContextWithTriggers {
 
 As you may have guessed, what we're doing above is enabling automatic insert and update stamps for any entity that inherits `Trackable`. Events are raised from the base class/interfaces, up to the events specified on the entity class being used. It's just as easy to set up soft deletes (the Deleting, Updating, and Inserting events are cancellable from within a handler, logging, auditing, and more!).
 
-## Manual overriding to enable triggers
+## Usage with dependency injection
+
+This library fully supports dependency injection. The two features are:
+
+1) Injecting the triggers and handler registrations to avoid the global singleton in previous versions
+
+```csharp
+serviceCollection
+	.AddSingleton(typeof(ITriggers<,>), typeof(Triggers<,>))
+	.AddSingleton(typeof(ITriggers<>), typeof(Triggers<>))
+	.AddSingleton(typeof(ITriggers), typeof(Triggers));
+```
+
+2) Using injected services right inside your global handlers
+
+```csharp
+Triggers<Person, Context>().GlobalInserted.Add<IServiceBus>(
+	entry => entry.Service.Broadcast("Inserted", entry.Entity)
+);
+
+Triggers<Person, Context>().GlobalInserted.Add<(IServiceBus Bus, IServiceX X)>(
+	entry => {
+		entry.Service.Bus.Broadcast("Inserted", entry.Entity);
+		entry.Service.X.DoSomething();
+	}
+);
+```
+
+3) Using injected services right inside your injected handlers
+
+```csharp
+public class Startup
+{
+	public void ConfigureServices(IServiceCollection services)
+	{
+		...
+		services.AddDbContext<Context>();
+		services.AddTriggers();
+	}
+
+	public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+	{
+		...
+		app.UseTriggers(builder =>
+		{
+			builder.Triggers().Inserted.Add(
+				entry => Debug.WriteLine(entry.Entity.ToString())
+			);
+			builder.Triggers<Person, Context>().Inserted.Add(
+				entry => Debug.WriteLine(entry.Entity.FirstName)
+			);
+
+			// receive injected services inside your handler, either with just a single service type or with a value tuple of services
+			builder.Triggers<Person, Context>().GlobalInserted.Add<IServiceBus>(
+				entry => entry.Service.Broadcast("Inserted", entry.Entity)
+			);
+			builder.Triggers<Person, Context>().GlobalInserted.Add<(IServiceBus Bus, IServiceX X)>(
+				entry => {
+					entry.Service.Bus.Broadcast("Inserted", entry.Entity);
+					entry.Service.X.DoSomething();
+				}
+			);
+		});
+	}
+}
+```
+
+## How to enable triggers if you can't derive from `DbContextWithTriggers`
 
 If you can't easily change what your `DbContext` class inherits from (ASP.NET Identity users, for example), you can override your `SaveChanges...` methods to call the `SaveChangesWithTriggers...` extension methods. Alternatively, you can call `SaveChangesWithTriggers...` directly instead of `SaveChanges...` if, for example, you want to control which changes cause triggers to be fired.
 
@@ -70,7 +146,7 @@ class YourContext : DbContext {
 	#endregion
 }
 
-#region If you're calling `SaveChangesWithTriggers...` directly (instead of an overridden `SaveChanges...`)
+#region If you didn't/can't override `SaveChanges...`, you can (not recommended) call 
 dbContext.SaveChangesWithTriggers(dbContext.SaveChanges);
 dbContext.SaveChangesWithTriggersAsync(dbContext.SaveChangesAsync);
 #endregion
