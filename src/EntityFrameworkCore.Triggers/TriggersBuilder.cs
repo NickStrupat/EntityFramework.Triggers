@@ -2,10 +2,10 @@
 using Microsoft.Extensions.DependencyInjection;
 #if EF_CORE
 using Microsoft.EntityFrameworkCore;
-namespace EntityFrameworkCore.Triggers.AspNetCore
+namespace EntityFrameworkCore.Triggers
 #else
 using System.Data.Entity;
-namespace EntityFramework.Triggers.AspNetCore
+namespace EntityFramework.Triggers
 #endif
 {
     internal class TriggersBuilder : ITriggersBuilder

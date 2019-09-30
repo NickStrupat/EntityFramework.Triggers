@@ -1,9 +1,10 @@
-﻿#if EF_CORE
+﻿using System;
+#if EF_CORE
 using Microsoft.EntityFrameworkCore;
-namespace EntityFrameworkCore.Triggers.AspNetCore
+namespace EntityFrameworkCore.Triggers
 #else
 using System.Data.Entity;
-namespace EntityFramework.Triggers.AspNetCore
+namespace EntityFramework.Triggers
 #endif
 {
     public interface ITriggersBuilder
@@ -17,4 +18,10 @@ namespace EntityFramework.Triggers.AspNetCore
 
 	    ITriggers Triggers();
     }
+
+	public static class TriggersBuilderFactory
+	{
+		public static ITriggersBuilder Create(IServiceProvider serviceProvider) =>
+			new TriggersBuilder(serviceProvider);
+	}
 }
