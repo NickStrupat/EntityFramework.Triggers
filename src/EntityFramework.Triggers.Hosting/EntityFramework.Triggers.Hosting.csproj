@@ -1,7 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net461;netstandard2.1</TargetFrameworks>
+    <Description>EntityFramework.Triggers integration library for .NET Core Service Workers</Description>
+    <Authors>Nick Strupat</Authors>
+    <PackageTags>entity-framework;entityframework;triggers</PackageTags>
+    <PackageProjectUrl>https://github.com/NickStrupat/EntityFramework.Triggers</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/NickStrupat/EntityFramework.Triggers/master/LICENSE</PackageLicenseUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.0.0</Version>
+    <PackageId>NickStrupat.EntityFramework.Triggers.Hosting</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,11 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="EntityFramework.Triggers" Version="6.2.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\EntityFramework.Triggers\EntityFramework.Triggers.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net461;netstandard2.1</TargetFrameworks>
     <LangVersion>latest</LangVersion>
     <NoWarn>618</NoWarn>
     <Description>Supports events for entity inserting, inserted, updating, updated, deleting, and deleted. Also events on insert failure, update failure, and delete failure.</Description>
     <Authors>Nick Strupat</Authors>
     <PackageProjectUrl>https://github.com/NickStrupat/EntityFramework.Triggers</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/NickStrupat/EntityFramework.Triggers/master/LICENSE</PackageLicenseUrl>
-    <Version>6.2.0</Version>
+    <Version>6.2.1</Version>
     <PackageTags>entity-framework entityframework ef triggers trigger</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageReleaseNotes>Added dependency-injectable objects. The context, triggers, and arbitrary services you need inside your triggers are now supported with DI. Added async handlers to the triggers. Async handlers are run asynchronously with `.SaveChangesAsync()`, and are called synchronously using .Wait() with `.SaveChanges()`</PackageReleaseNotes>
+    <PackageReleaseNotes>EF 6.3.0 support through .NET Standard 2.1. Also moved the `AddTriggers` and `TriggersBuilder` to this library for use from `AspNetCore` and `Hosting` packages</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,7 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.1.3" />
+    <PackageReference Include="EntityFramework" Version="[6.0.*,6.2.0]" Condition="'$(TargetFramework)' == 'net461'" />
+    <PackageReference Include="EntityFramework" Version="6.3.0" Condition="'$(TargetFramework)' == 'netstandard2.1'" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.1.1" />
     <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
   </ItemGroup>
