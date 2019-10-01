@@ -8,7 +8,7 @@ using System.Data.Entity;
 namespace EntityFramework.Triggers
 #endif
 {
-    internal class TriggersBuilder : ITriggersBuilder
+    internal sealed class TriggersBuilder : ITriggersBuilder
     {
         private readonly IServiceProvider serviceProvider;
 

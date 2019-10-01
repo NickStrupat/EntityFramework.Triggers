@@ -1,5 +1,4 @@
-﻿using System;
-#if EF_CORE
+﻿#if EF_CORE
 using Microsoft.EntityFrameworkCore;
 namespace EntityFrameworkCore.Triggers
 #else
@@ -7,7 +6,7 @@ using System.Data.Entity;
 namespace EntityFramework.Triggers
 #endif
 {
-    public interface ITriggersBuilder
+	public interface ITriggersBuilder
     {
         ITriggers<TEntity, TDbContext> Triggers<TEntity, TDbContext>()
         where TEntity : class
@@ -18,10 +17,4 @@ namespace EntityFramework.Triggers
 
 	    ITriggers Triggers();
     }
-
-	public static class TriggersBuilderFactory
-	{
-		public static ITriggersBuilder Create(IServiceProvider serviceProvider) =>
-			new TriggersBuilder(serviceProvider);
-	}
 }
