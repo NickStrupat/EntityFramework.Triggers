@@ -23,9 +23,9 @@ namespace EntityFramework.Triggers
 			var afterEvents = new List<DelegateSynchronyUnion<DbContext>>(entries.Count);
 			while (entries.Any())
 			{
-				var cancel = false;
 				foreach (var entry in entries)
 				{
+					var cancel = false;
 					DelegateSynchronyUnion<DbContext>? after;
 					(after, cancel) = await RaiseChangingEventAsync(entry, dbContext, serviceProvider, cancel);
 					if (after != null && !cancel)

@@ -12,11 +12,11 @@
     <PackageTags>entity-framework-core;entityframeworkcore;triggers</PackageTags>
     <PackageProjectUrl>https://github.com/NickStrupat/EntityFramework.Triggers</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/NickStrupat/EntityFramework.Triggers/master/LICENSE</PackageLicenseUrl>
-    <AssemblyVersion>1.2.2.0</AssemblyVersion>
-    <FileVersion>1.2.2.0</FileVersion>
-    <Version>1.2.2</Version>
+    <AssemblyVersion>1.2.3.0</AssemblyVersion>
+    <FileVersion>1.2.3.0</FileVersion>
+    <Version>1.2.3</Version>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	  <PackageReleaseNotes>EF 6.3.0 support through .NET Standard 2.1. Also moved the `AddTriggers` and `TriggersBuilder` to this library for use from `AspNetCore` and `Hosting` packages</PackageReleaseNotes>
+	  <PackageReleaseNotes>Fix bug in async change events: https://github.com/NickStrupat/EntityFramework.Triggers/issues/61</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

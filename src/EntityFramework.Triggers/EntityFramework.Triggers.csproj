@@ -8,10 +8,10 @@
     <Authors>Nick Strupat</Authors>
     <PackageProjectUrl>https://github.com/NickStrupat/EntityFramework.Triggers</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/NickStrupat/EntityFramework.Triggers/master/LICENSE</PackageLicenseUrl>
-    <Version>6.2.2</Version>
+    <Version>6.2.3</Version>
     <PackageTags>entity-framework entityframework ef triggers trigger</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageReleaseNotes>EF 6.3.0 support through .NET Standard 2.1. Also moved the `AddTriggers` and `TriggersBuilder` to this library for use from `AspNetCore` and `Hosting` packages</PackageReleaseNotes>
+    <PackageReleaseNotes>Fix bug in async change events: https://github.com/NickStrupat/EntityFramework.Triggers/issues/61</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
