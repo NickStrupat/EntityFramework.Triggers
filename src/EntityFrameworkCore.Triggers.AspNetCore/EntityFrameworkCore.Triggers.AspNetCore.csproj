@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Description>EntityFrameworkCore.Triggers integration library for ASP.NET Core</Description>
     <Authors>Nick Strupat</Authors>
     <PackageTags>entity-framework-core;entityframeworkcore;triggers</PackageTags>
     <PackageProjectUrl>https://github.com/NickStrupat/EntityFramework.Triggers</PackageProjectUrl>
     <PackageLicenseUrl>https://raw.githubusercontent.com/NickStrupat/EntityFramework.Triggers/master/LICENSE</PackageLicenseUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.3</Version>
+    <Version>2.0.0</Version>
     <PackageId>NickStrupat.EntityFrameworkCore.Triggers.AspNetCore</PackageId>
   </PropertyGroup>
 
@@ -21,8 +21,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EntityFrameworkCore.Triggers" Version="1.2.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EntityFrameworkCore.Triggers\EntityFrameworkCore.Triggers.csproj" />
   </ItemGroup>
 
 </Project>
