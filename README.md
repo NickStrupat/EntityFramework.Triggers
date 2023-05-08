@@ -9,15 +9,15 @@ This repo contains the code for both the `EntityFramework` and `EntityFrameworkC
 
 | EF version  | .NET support                                    | NuGet package                                                                                                                                              |
 |:------------|:------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| >= 6.1.3    | >= Framework 4.6.1                              | [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)         |
-| >= Core 2.0 | >= Framework 4.6.1 &#124;&#124; >= Standard 2.0 | [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/) |
+| >= 6.1.3    | >= Framework 4.6.2                              | [![NuGet Status](http://img.shields.io/nuget/v/EntityFramework.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFramework.Triggers/)         |
+| >= .NET 6 | >= .NET 6 | [![NuGet Status](http://img.shields.io/nuget/v/EntityFrameworkCore.Triggers.svg?style=flat)](https://www.nuget.org/packages/EntityFrameworkCore.Triggers/) |
 
 ### Nuget packages for ASP.NET Core dependency injection methods
 
 | EF version  | .NET support                                    | NuGet package                                                                                                                                                            |
 |:------------|:------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| >= 6.1.3    | >= Framework 4.6.1                              | [![NuGet Status](http://img.shields.io/nuget/v/NickStrupat.EntityFramework.Triggers.AspNetCore.svg?style=flat)](https://www.nuget.org/packages/NickStrupat.EntityFramework.Triggers.AspNetCore/)|
-| >= Core 2.0 | >= Framework 4.6.1 &#124;&#124; >= Standard 2.0 | [![NuGet Status](http://img.shields.io/nuget/v/NickStrupat.EntityFrameworkCore.Triggers.AspNetCore.svg?style=flat)](https://www.nuget.org/packages/NickStrupat.EntityFrameworkCore.Triggers.AspNetCore/)               |
+| >= 6.1.3    | >= Framework 4.6.2                              | [![NuGet Status](http://img.shields.io/nuget/v/NickStrupat.EntityFramework.Triggers.AspNetCore.svg?style=flat)](https://www.nuget.org/packages/NickStrupat.EntityFramework.Triggers.AspNetCore/)|
+| >= .NET 6 | >= .NET 6 | [![NuGet Status](http://img.shields.io/nuget/v/NickStrupat.EntityFrameworkCore.Triggers.AspNetCore.svg?style=flat)](https://www.nuget.org/packages/NickStrupat.EntityFrameworkCore.Triggers.AspNetCore/)               |
 
 ## Basic usage with a global singleton
 
