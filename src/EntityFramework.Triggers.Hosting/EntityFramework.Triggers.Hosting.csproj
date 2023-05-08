@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net462;netstandard2.1</TargetFrameworks>
     <Description>EntityFramework.Triggers integration library for .NET Core Service Workers</Description>
     <Authors>Nick Strupat</Authors>
     <PackageTags>entity-framework;entityframework;triggers</PackageTags>
