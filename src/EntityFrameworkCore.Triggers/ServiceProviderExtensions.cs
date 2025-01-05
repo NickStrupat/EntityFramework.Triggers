@@ -1,21 +1,16 @@
 ﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-#if EF_CORE
-namespace EntityFrameworkCore.Triggers
-#else
-namespace EntityFramework.Triggers
-#endif
+
+namespace EntityFrameworkCore.Triggers;
+
+public static class ServiceProviderExtensions
 {
-	public static class ServiceProviderExtensions
+	public static IServiceProvider UseTriggers(this IServiceProvider services, Action<ITriggersBuilder> configureTriggers)
 	{
-		public static IServiceProvider UseTriggers(this IServiceProvider services, Action<ITriggersBuilder> configureTriggers)
-		{
-			if (services == null)
-				throw new ArgumentNullException(nameof(services));
-			if (configureTriggers == null)
-				throw new ArgumentNullException(nameof(configureTriggers));
-			configureTriggers.Invoke(new TriggersBuilder(services));
-			return services;
-		}
+		if (services == null)
+			throw new ArgumentNullException(nameof(services));
+		if (configureTriggers == null)
+			throw new ArgumentNullException(nameof(configureTriggers));
+		configureTriggers.Invoke(new TriggersBuilder(services));
+		return services;
 	}
 }

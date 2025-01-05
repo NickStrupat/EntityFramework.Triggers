@@ -6,49 +6,43 @@
 <#@ output extension=".cs" #>
 using System;
 using System.Threading.Tasks;
-
-#if EF_CORE
 using Microsoft.EntityFrameworkCore;
-namespace EntityFrameworkCore.Triggers
-#else
-using System.Data.Entity;
-namespace EntityFramework.Triggers
-#endif
-{
+
+namespace EntityFrameworkCore.Triggers;
+
 <#	foreach (var triggerName in new [] { "Inserting", "InsertFailed", "Inserted", "Deleting", "DeleteFailed", "Deleted", "Updating", "UpdateFailed", "Updated" })
 {
 	var entryTypeName = $"I{triggerName}Entry<TEntity, TDbContext>";
 	var entryWithServiceTypeName = $"I{triggerName}Entry<TEntity, TDbContext, TService>";
 #>
-	public interface I<#= triggerName #>TriggerEvent<out TEntity, out TDbContext>
-	: ITriggerEvent<I<#= triggerName #>Entry<TEntity, TDbContext>, TEntity, TDbContext>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		void Add<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler);
-		void Remove<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler);
-		void Add<TService>(Func<I<#= triggerName #>Entry<TEntity, TDbContext, TService>, Task> handler);
-		void Remove<TService>(Func<I<#= triggerName #>Entry<TEntity, TDbContext, TService>, Task> handler);
-	}
+public interface I<#= triggerName #>TriggerEvent<out TEntity, out TDbContext>
+: ITriggerEvent<I<#= triggerName #>Entry<TEntity, TDbContext>, TEntity, TDbContext>
+where TEntity : class
+where TDbContext : DbContext
+{
+	void Add<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler);
+	void Remove<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler);
+	void Add<TService>(Func<I<#= triggerName #>Entry<TEntity, TDbContext, TService>, Task> handler);
+	void Remove<TService>(Func<I<#= triggerName #>Entry<TEntity, TDbContext, TService>, Task> handler);
+}
 
-	internal class <#= triggerName #>TriggerEvent<TEntity, TDbContext>
-	: TriggerEvent<I<#= triggerName #>Entry<TEntity, TDbContext>, TEntity, TDbContext>
-	, I<#= triggerName #>TriggerEvent<TEntity, TDbContext>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public void Add<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler) =>
-			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<<#= entryTypeName #>>(entry => handler.Invoke(new Wrapped<#= triggerName #>Entry<TEntity, TDbContext, TService>(entry))));
+internal class <#= triggerName #>TriggerEvent<TEntity, TDbContext>
+: TriggerEvent<I<#= triggerName #>Entry<TEntity, TDbContext>, TEntity, TDbContext>
+, I<#= triggerName #>TriggerEvent<TEntity, TDbContext>
+where TEntity : class
+where TDbContext : DbContext
+{
+	public void Add<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler) =>
+		Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<<#= entryTypeName #>>(entry => handler.Invoke(new Wrapped<#= triggerName #>Entry<TEntity, TDbContext, TService>(entry))));
 
-		public void Remove<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler) =>
-			Remove(ref wrappedHandlers, handler);
+	public void Remove<TService>(Action<I<#= triggerName #>Entry<TEntity, TDbContext, TService>> handler) =>
+		Remove(ref wrappedHandlers, handler);
 
-		public void Add<TService>(Func<I<#= triggerName #>Entry<TEntity, TDbContext, TService>, Task> handler) =>
-			Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<<#= entryTypeName #>>(entry => handler.Invoke(new Wrapped<#= triggerName #>Entry<TEntity, TDbContext, TService>(entry))));
+	public void Add<TService>(Func<I<#= triggerName #>Entry<TEntity, TDbContext, TService>, Task> handler) =>
+		Add(ref wrappedHandlers, handler, new DelegateSynchronyUnion<<#= entryTypeName #>>(entry => handler.Invoke(new Wrapped<#= triggerName #>Entry<TEntity, TDbContext, TService>(entry))));
 
-		public void Remove<TService>(Func<I<#= triggerName #>Entry<TEntity, TDbContext, TService>, Task> handler) =>
-			Remove(ref wrappedHandlers, handler);
-	}
+	public void Remove<TService>(Func<I<#= triggerName #>Entry<TEntity, TDbContext, TService>, Task> handler) =>
+		Remove(ref wrappedHandlers, handler);
+}
 
 <# } #>
-}
