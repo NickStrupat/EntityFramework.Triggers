@@ -1,447 +1,450 @@
 ﻿using System;
 
-#if EF_CORE
 using Microsoft.EntityFrameworkCore;
-namespace EntityFrameworkCore.Triggers
-#else
-using System.Data.Entity;
-namespace EntityFramework.Triggers
-#endif
-{
-	#region Base classes
-	#region Non-generic service
-	internal abstract class Entry<TEntity, TDbContext>
+
+namespace EntityFrameworkCore.Triggers;
+
+#region Base classes
+
+#region Non-generic service
+
+internal abstract class Entry<TEntity, TDbContext>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service)
 	: IEntry<TEntity, TDbContext>
 	where TEntity : class
 	where TDbContext : DbContext
-	{
-		protected Entry(TEntity entity, TDbContext context, IServiceProvider service) {
-			Entity = entity;
-			Context = context;
-			Service = service;
-		}
-		public TEntity Entity { get; }
-		Object IEntry.Entity => Entity;
-		public TDbContext Context { get; }
-		public IServiceProvider Service { get; }
-		DbContext IEntry.Context => Context;
-	}
+{
+	public TEntity Entity { get; } = entity;
+	Object IEntry.Entity => Entity;
+	public TDbContext Context { get; } = context;
+	public IServiceProvider Service { get; } = service;
+	DbContext IEntry.Context => Context;
+}
 
-	internal abstract class BeforeEntry<TEntity, TDbContext>
-	: Entry<TEntity, TDbContext>
-	, IBeforeEntry<TEntity, TDbContext>
+internal abstract class BeforeEntry<TEntity, TDbContext>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Boolean cancel)
+	: Entry<TEntity, TDbContext>(entity, context, service), IBeforeEntry<TEntity, TDbContext>
 	where TEntity : class
 	where TDbContext : DbContext
-	{
-		protected BeforeEntry(TEntity entity, TDbContext context, IServiceProvider service, Boolean cancel) : base(entity, context, service) => Cancel = cancel;
-		public Boolean Cancel { get; set; }
-	}
+{
+	public Boolean Cancel { get; set; } = cancel;
+}
 
-	internal abstract class BeforeChangeEntry<TEntity, TDbContext>
-	: BeforeEntry<TEntity, TDbContext>
-	, IBeforeChangeEntry<TEntity, TDbContext>
+internal abstract class BeforeChangeEntry<TEntity, TDbContext>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Boolean cancel)
+	: BeforeEntry<TEntity, TDbContext>(entity, context, service, cancel), IBeforeChangeEntry<TEntity, TDbContext>
 	where TEntity : class
 	where TDbContext : DbContext
-	{
-		protected BeforeChangeEntry(TEntity entity, TDbContext context, IServiceProvider service, Boolean cancel) : base(entity, context, service, cancel) {}
-		private TEntity original;
-		public TEntity Original => original ?? (original = (TEntity)Context.Entry(Entity).OriginalValues.ToObject());
-	}
+{
+	private TEntity? original;
+	public TEntity Original => original ??= (TEntity)Context.Entry(Entity).OriginalValues.ToObject();
+}
 
-	internal abstract class FailedEntry<TEntity, TDbContext>
-	: Entry<TEntity, TDbContext>
-	, IFailedEntry<TEntity, TDbContext>
+internal abstract class FailedEntry<TEntity, TDbContext>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Exception exception,
+	Boolean swallow)
+	: Entry<TEntity, TDbContext>(entity, context, service), IFailedEntry<TEntity, TDbContext>
 	where TEntity : class
 	where TDbContext : DbContext
-	{
-		protected FailedEntry(TEntity entity, TDbContext context, IServiceProvider service, Exception exception, Boolean swallow) : base(entity, context, service)
-		{
-			Exception = exception;
-			Swallow = swallow;
-		}
-		public Exception Exception { get; }
-		public Boolean Swallow { get; set; }
-	}
+{
+	public Exception Exception { get; } = exception;
+	public Boolean Swallow { get; set; } = swallow;
+}
 
-	internal abstract class ChangeFailedEntry<TEntity, TDbContext>
-	: FailedEntry<TEntity, TDbContext>
-	, IChangeFailedEntry<TEntity, TDbContext>
+internal abstract class ChangeFailedEntry<TEntity, TDbContext>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Exception exception,
+	Boolean swallow)
+	: FailedEntry<TEntity, TDbContext>(entity, context, service, exception, swallow)
+		, IChangeFailedEntry<TEntity, TDbContext>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		protected ChangeFailedEntry(TEntity entity, TDbContext context, IServiceProvider service, Exception exception, Boolean swallow) : base(entity, context, service, exception, swallow) {}
-	}
-	#endregion
-	#region Generic service
-	internal abstract class Entry<TEntity, TDbContext, TService>
-	: Entry<TEntity, TDbContext>
-	, IEntry<TEntity, TDbContext, TService>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		protected Entry(TEntity entity, TDbContext context, IServiceProvider service) : base(entity, context, service) => Service = ServiceRetrieval<TService>.GetService(service);
-		public new TService Service { get; }
-	}
+	where TDbContext : DbContext;
 
-	internal abstract class BeforeEntry<TEntity, TDbContext, TService>
-	: Entry<TEntity, TDbContext, TService>
-	, IBeforeEntry<TEntity, TDbContext, TService>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		protected BeforeEntry(TEntity entity, TDbContext context, IServiceProvider service, Boolean cancel) : base(entity, context, service) => Cancel = cancel;
-		public Boolean Cancel { get; set; }
-	}
+#endregion
 
-	internal abstract class BeforeChangeEntry<TEntity, TDbContext, TService>
-	: BeforeEntry<TEntity, TDbContext, TService>
-	, IBeforeChangeEntry<TEntity, TDbContext, TService>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		protected BeforeChangeEntry(TEntity entity, TDbContext context, IServiceProvider service, Boolean cancel) : base(entity, context, service, cancel) {}
-		private TEntity original;
-		public TEntity Original => original ?? (original = (TEntity)Context.Entry(Entity).OriginalValues.ToObject());
-	}
+#region Generic service
 
-	internal abstract class FailedEntry<TEntity, TDbContext, TService>
-	: Entry<TEntity, TDbContext, TService>
-	, IFailedEntry<TEntity, TDbContext, TService>
+internal abstract class Entry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service)
+	: Entry<TEntity, TDbContext>(entity, context, service), IEntry<TEntity, TDbContext, TService>
 	where TEntity : class
 	where TDbContext : DbContext
-	{
-		protected FailedEntry(TEntity entity, TDbContext context, IServiceProvider service, Exception exception, Boolean swallow) : base(entity, context, service)
-		{
-			Exception = exception;
-			Swallow = swallow;
-		}
-		public Exception Exception { get; }
-		public Boolean Swallow { get; set; }
-	}
+{
+	public new TService Service { get; } = ServiceRetrieval<TService>.GetService(service);
+}
 
-	internal abstract class ChangeFailedEntry<TEntity, TDbContext, TService>
-	: FailedEntry<TEntity, TDbContext, TService>
-	, IChangeFailedEntry<TEntity, TDbContext, TService>
+internal abstract class BeforeEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Boolean cancel)
+	: Entry<TEntity, TDbContext, TService>(entity, context, service), IBeforeEntry<TEntity, TDbContext, TService>
 	where TEntity : class
 	where TDbContext : DbContext
-	{
-		protected ChangeFailedEntry(TEntity entity, TDbContext context, IServiceProvider service, Exception exception, Boolean swallow) : base(entity, context, service, exception, swallow) {}
-	}
-	#endregion
-	#region Wrapped with generic service
-	internal abstract class WrappedEntry<TEntry, TEntity, TDbContext, TService>
+{
+	public Boolean Cancel { get; set; } = cancel;
+}
+
+internal abstract class BeforeChangeEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Boolean cancel)
+	: BeforeEntry<TEntity, TDbContext, TService>(entity, context, service, cancel),
+		IBeforeChangeEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext
+{
+	private TEntity? original;
+	public TEntity Original => original ??= (TEntity)Context.Entry(Entity).OriginalValues.ToObject();
+}
+
+internal abstract class FailedEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Exception exception,
+	Boolean swallow)
+	: Entry<TEntity, TDbContext, TService>(entity, context, service), IFailedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext
+{
+	public Exception Exception { get; } = exception;
+	public Boolean Swallow { get; set; } = swallow;
+}
+
+internal abstract class ChangeFailedEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Exception exception,
+	Boolean swallow)
+	: FailedEntry<TEntity, TDbContext, TService>(entity, context, service, exception, swallow),
+		IChangeFailedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext;
+
+#endregion
+
+#region Wrapped with generic service
+
+internal abstract class WrappedEntry<TEntry, TEntity, TDbContext, TService>(TEntry entry)
 	: IEntry<TEntity, TDbContext, TService>
 	where TEntry : class, IEntry<TEntity, TDbContext>
 	where TEntity : class
 	where TDbContext : DbContext
-	{
-		protected readonly TEntry Entry;
-		protected WrappedEntry(TEntry entry)
-		{
-			Entry = entry;
-			Service = ServiceRetrieval<TService>.GetService(entry.Service);
-		}
-		Object IEntry.Entity => Entity;
-		public TDbContext Context => Entry.Context;
-		public TEntity Entity => Entry.Entity;
-		DbContext IEntry.Context => Context;
-		IServiceProvider IEntry.Service => Entry.Service;
-		public TService Service { get; }
-	}
+{
+	protected readonly TEntry Entry = entry;
 
-	internal abstract class WrappedBeforeEntry<TEntry, TEntity, TDbContext, TService>
-	: WrappedEntry<TEntry, TEntity, TDbContext, TService>
-	, IBeforeEntry<TEntity, TDbContext, TService>
+	Object IEntry.Entity => Entity;
+	public TDbContext Context => Entry.Context;
+	public TEntity Entity => Entry.Entity;
+	DbContext IEntry.Context => Context;
+	IServiceProvider IEntry.Service => Entry.Service;
+	public TService Service { get; } = ServiceRetrieval<TService>.GetService(entry.Service);
+}
+
+internal abstract class WrappedBeforeEntry<TEntry, TEntity, TDbContext, TService>(TEntry entry)
+	: WrappedEntry<TEntry, TEntity, TDbContext, TService>(entry), IBeforeEntry<TEntity, TDbContext, TService>
 	where TEntry : class, IBeforeEntry<TEntity, TDbContext>
 	where TEntity : class
 	where TDbContext : DbContext
+{
+	public Boolean Cancel
 	{
-		protected WrappedBeforeEntry(TEntry entry) : base(entry) {}
-		public Boolean Cancel { get => Entry.Cancel; set => Entry.Cancel = value; }
+		get => Entry.Cancel;
+		set => Entry.Cancel = value;
 	}
+}
 
-	internal abstract class WrappedBeforeChangeEntry<TEntry, TEntity, TDbContext, TService>
-	: WrappedBeforeEntry<TEntry, TEntity, TDbContext, TService>
-	, IBeforeChangeEntry<TEntity, TDbContext, TService>
+internal abstract class WrappedBeforeChangeEntry<TEntry, TEntity, TDbContext, TService>(TEntry entry)
+	: WrappedBeforeEntry<TEntry, TEntity, TDbContext, TService>(entry),
+		IBeforeChangeEntry<TEntity, TDbContext, TService>
 	where TEntry : class, IBeforeChangeEntry<TEntity, TDbContext>
 	where TEntity : class
 	where TDbContext : DbContext
-	{
-		protected WrappedBeforeChangeEntry(TEntry entry) : base(entry) {}
-		public TEntity Original => Entry.Original;
-	}
+{
+	public TEntity Original => Entry.Original;
+}
 
-	internal abstract class WrappedFailedEntry<TEntry, TEntity, TDbContext, TService>
-	: WrappedEntry<TEntry, TEntity, TDbContext, TService>
-	, IFailedEntry<TEntity, TDbContext, TService>
+internal abstract class WrappedFailedEntry<TEntry, TEntity, TDbContext, TService>(TEntry entry)
+	: WrappedEntry<TEntry, TEntity, TDbContext, TService>(entry), IFailedEntry<TEntity, TDbContext, TService>
 	where TEntry : class, IFailedEntry<TEntity, TDbContext>
 	where TEntity : class
-		where TDbContext : DbContext
-	{
-		protected WrappedFailedEntry(TEntry entry) : base(entry) {}
-		public Exception Exception => Entry.Exception;
-		public Boolean Swallow { get => Entry.Swallow; set => Entry.Swallow = value; }
-	}
+	where TDbContext : DbContext
+{
+	public Exception Exception => Entry.Exception;
 
-	internal abstract class WrappedChangeFailedEntry<TEntry, TEntity, TDbContext, TService>
-	: WrappedFailedEntry<TEntry, TEntity, TDbContext, TService>
-	, IChangeFailedEntry<TEntity, TDbContext, TService>
+	public Boolean Swallow
+	{
+		get => Entry.Swallow;
+		set => Entry.Swallow = value;
+	}
+}
+
+internal abstract class WrappedChangeFailedEntry<TEntry, TEntity, TDbContext, TService>(TEntry entry)
+	: WrappedFailedEntry<TEntry, TEntity, TDbContext, TService>(entry),
+		IChangeFailedEntry<TEntity, TDbContext, TService>
 	where TEntry : class, IChangeFailedEntry<TEntity, TDbContext>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		protected WrappedChangeFailedEntry(TEntry entry) : base(entry) {}
-	}
-	#endregion
-	#endregion
-	
-	#region Final classes
-	#region Non-generic service
-	internal class InsertingEntry<TEntity, TDbContext>
-	: BeforeEntry<TEntity, TDbContext>
-	, IInsertingEntry<TEntity, TDbContext>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public InsertingEntry(TEntity entity, TDbContext context, IServiceProvider service, Boolean cancel) : base(entity, context, service, cancel) { }
-	}
+	where TDbContext : DbContext;
 
-	internal class UpdatingEntry<TEntity, TDbContext>
-	: BeforeChangeEntry<TEntity, TDbContext>
-	, IUpdatingEntry<TEntity, TDbContext>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public UpdatingEntry(TEntity entity, TDbContext context, IServiceProvider service, Boolean cancel) : base(entity, context, service, cancel) { }
-	}
+#endregion
 
-	internal class DeletingEntry<TEntity, TDbContext>
-	: BeforeChangeEntry<TEntity, TDbContext>
-	, IDeletingEntry<TEntity, TDbContext>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public DeletingEntry(TEntity entity, TDbContext context, IServiceProvider service, Boolean cancel) : base(entity, context, service, cancel) { }
-	}
+#endregion
 
-	internal class InsertFailedEntry<TEntity, TDbContext>
-	: FailedEntry<TEntity, TDbContext>
-	, IInsertFailedEntry<TEntity, TDbContext>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public InsertFailedEntry(TEntity entity, TDbContext context, IServiceProvider service, Exception exception, Boolean swallow) : base(entity, context, service, exception, swallow) {}
-	}
+#region Final classes
 
-	internal class UpdateFailedEntry<TEntity, TDbContext>
-	: ChangeFailedEntry<TEntity, TDbContext>
-	, IUpdateFailedEntry<TEntity, TDbContext>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public UpdateFailedEntry(TEntity entity, TDbContext context, IServiceProvider service, Exception exception, Boolean swallow) : base(entity, context, service, exception, swallow) {}
-	}
+#region Non-generic service
 
-	internal class DeleteFailedEntry<TEntity, TDbContext>
-	: ChangeFailedEntry<TEntity, TDbContext>
-	, IDeleteFailedEntry<TEntity, TDbContext>
+internal class InsertingEntry<TEntity, TDbContext>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Boolean cancel)
+	: BeforeEntry<TEntity, TDbContext>(entity, context, service, cancel), IInsertingEntry<TEntity, TDbContext>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public DeleteFailedEntry(TEntity entity, TDbContext context, IServiceProvider service, Exception exception, Boolean swallow) : base(entity, context, service, exception, swallow) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class InsertedEntry<TEntity, TDbContext>
-	: Entry<TEntity, TDbContext>
-	, IInsertedEntry<TEntity, TDbContext>
+internal class UpdatingEntry<TEntity, TDbContext>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Boolean cancel)
+	: BeforeChangeEntry<TEntity, TDbContext>(entity, context, service, cancel), IUpdatingEntry<TEntity, TDbContext>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public InsertedEntry(TEntity entity, TDbContext context, IServiceProvider service) : base(entity, context, service) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class UpdatedEntry<TEntity, TDbContext>
-	: Entry<TEntity, TDbContext>
-	, IUpdatedEntry<TEntity, TDbContext>
+internal class DeletingEntry<TEntity, TDbContext>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Boolean cancel)
+	: BeforeChangeEntry<TEntity, TDbContext>(entity, context, service, cancel), IDeletingEntry<TEntity, TDbContext>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public UpdatedEntry(TEntity entity, TDbContext context, IServiceProvider service) : base(entity, context, service) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class DeletedEntry<TEntity, TDbContext>
-	: Entry<TEntity, TDbContext>
-	, IDeletedEntry<TEntity, TDbContext>
+internal class InsertFailedEntry<TEntity, TDbContext>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Exception exception,
+	Boolean swallow)
+	: FailedEntry<TEntity, TDbContext>(entity, context, service, exception, swallow),
+		IInsertFailedEntry<TEntity, TDbContext>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public DeletedEntry(TEntity entity, TDbContext context, IServiceProvider service) : base(entity, context, service) {}
-	}
-	#endregion
-	#region Generic service
-	internal class InsertingEntry<TEntity, TDbContext, TService>
-	: BeforeEntry<TEntity, TDbContext, TService>
-	, IInsertingEntry<TEntity, TDbContext, TService>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public InsertingEntry(TEntity entity, TDbContext context, IServiceProvider service, Boolean cancel) : base(entity, context, service, cancel) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class UpdatingEntry<TEntity, TDbContext, TService>
-	: BeforeChangeEntry<TEntity, TDbContext, TService>
-	, IUpdatingEntry<TEntity, TDbContext, TService>
+internal class UpdateFailedEntry<TEntity, TDbContext>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Exception exception,
+	Boolean swallow)
+	: ChangeFailedEntry<TEntity, TDbContext>(entity, context, service, exception, swallow),
+		IUpdateFailedEntry<TEntity, TDbContext>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public UpdatingEntry(TEntity entity, TDbContext context, IServiceProvider service, Boolean cancel) : base(entity, context, service, cancel) { }
-	}
+	where TDbContext : DbContext;
 
-	internal class DeletingEntry<TEntity, TDbContext, TService>
-	: BeforeChangeEntry<TEntity, TDbContext, TService>
-	, IDeletingEntry<TEntity, TDbContext, TService>
+internal class DeleteFailedEntry<TEntity, TDbContext>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Exception exception,
+	Boolean swallow)
+	: ChangeFailedEntry<TEntity, TDbContext>(entity, context, service, exception, swallow),
+		IDeleteFailedEntry<TEntity, TDbContext>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public DeletingEntry(TEntity entity, TDbContext context, IServiceProvider service, Boolean cancel) : base(entity, context, service, cancel) { }
-	}
+	where TDbContext : DbContext;
 
-	internal class InsertFailedEntry<TEntity, TDbContext, TService>
-	: FailedEntry<TEntity, TDbContext, TService>
-	, IInsertFailedEntry<TEntity, TDbContext, TService>
+internal class InsertedEntry<TEntity, TDbContext>(TEntity entity, TDbContext context, IServiceProvider service)
+	: Entry<TEntity, TDbContext>(entity, context,
+		service), IInsertedEntry<TEntity, TDbContext>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public InsertFailedEntry(TEntity entity, TDbContext context, IServiceProvider service, Exception exception, Boolean swallow) : base(entity, context, service, exception, swallow) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class UpdateFailedEntry<TEntity, TDbContext, TService>
-	: ChangeFailedEntry<TEntity, TDbContext, TService>
-	, IUpdateFailedEntry<TEntity, TDbContext, TService>
+internal class UpdatedEntry<TEntity, TDbContext>(TEntity entity, TDbContext context, IServiceProvider service)
+	: Entry<TEntity, TDbContext>(entity, context,
+		service), IUpdatedEntry<TEntity, TDbContext>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public UpdateFailedEntry(TEntity entity, TDbContext context, IServiceProvider service, Exception exception, Boolean swallow) : base(entity, context, service, exception, swallow) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class DeleteFailedEntry<TEntity, TDbContext, TService>
-	: ChangeFailedEntry<TEntity, TDbContext, TService>
-	, IDeleteFailedEntry<TEntity, TDbContext, TService>
+internal class DeletedEntry<TEntity, TDbContext>(TEntity entity, TDbContext context, IServiceProvider service)
+	: Entry<TEntity, TDbContext>(entity, context,
+		service), IDeletedEntry<TEntity, TDbContext>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public DeleteFailedEntry(TEntity entity, TDbContext context, IServiceProvider service, Exception exception, Boolean swallow) : base(entity, context, service, exception, swallow) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class InsertedEntry<TEntity, TDbContext, TService>
-	: Entry<TEntity, TDbContext, TService>
-	, IInsertedEntry<TEntity, TDbContext, TService>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public InsertedEntry(TEntity entity, TDbContext context, IServiceProvider service) : base(entity, context, service) {}
-	}
+#endregion
 
-	internal class UpdatedEntry<TEntity, TDbContext, TService>
-	: Entry<TEntity, TDbContext, TService>
-	, IUpdatedEntry<TEntity, TDbContext, TService>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public UpdatedEntry(TEntity entity, TDbContext context, IServiceProvider service) : base(entity, context, service) {}
-	}
+#region Generic service
 
-	internal class DeletedEntry<TEntity, TDbContext, TService>
-	: Entry<TEntity, TDbContext, TService>
-	, IDeletedEntry<TEntity, TDbContext, TService>
+internal class InsertingEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Boolean cancel)
+	: BeforeEntry<TEntity, TDbContext, TService>(entity, context, service, cancel),
+		IInsertingEntry<TEntity, TDbContext, TService>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public DeletedEntry(TEntity entity, TDbContext context, IServiceProvider service) : base(entity, context, service) {}
-	}
-	#endregion
-	#region Wrapped with generic service
-	internal class WrappedInsertingEntry<TEntity, TDbContext, TService> 
-	: WrappedBeforeEntry<IInsertingEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>
-	, IInsertingEntry<TEntity, TDbContext, TService>
-	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public WrappedInsertingEntry(IInsertingEntry<TEntity, TDbContext> entry) : base(entry) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class WrappedUpdatingEntry<TEntity, TDbContext, TService>
-	: WrappedBeforeChangeEntry<IUpdatingEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>
-	, IUpdatingEntry<TEntity, TDbContext, TService>
+internal class UpdatingEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Boolean cancel)
+	: BeforeChangeEntry<TEntity, TDbContext, TService>(entity, context, service, cancel),
+		IUpdatingEntry<TEntity, TDbContext, TService>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public WrappedUpdatingEntry(IUpdatingEntry<TEntity, TDbContext> entry) : base(entry) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class WrappedDeletingEntry<TEntity, TDbContext, TService>
-	: WrappedBeforeChangeEntry<IDeletingEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>
-	, IDeletingEntry<TEntity, TDbContext, TService>
+internal class DeletingEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Boolean cancel)
+	: BeforeChangeEntry<TEntity, TDbContext, TService>(entity, context, service, cancel),
+		IDeletingEntry<TEntity, TDbContext, TService>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public WrappedDeletingEntry(IDeletingEntry<TEntity, TDbContext> entry) : base(entry) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class WrappedInsertFailedEntry<TEntity, TDbContext, TService>
-	: WrappedFailedEntry<IInsertFailedEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>
-	, IInsertFailedEntry<TEntity, TDbContext, TService>
+internal class InsertFailedEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Exception exception,
+	Boolean swallow)
+	: FailedEntry<TEntity, TDbContext, TService>(entity, context, service, exception, swallow),
+		IInsertFailedEntry<TEntity, TDbContext, TService>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public WrappedInsertFailedEntry(IInsertFailedEntry<TEntity, TDbContext> entry) : base(entry) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class WrappedUpdateFailedEntry<TEntity, TDbContext, TService>
-	: WrappedChangeFailedEntry<IUpdateFailedEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>
-	, IUpdateFailedEntry<TEntity, TDbContext, TService>
+internal class UpdateFailedEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Exception exception,
+	Boolean swallow)
+	: ChangeFailedEntry<TEntity, TDbContext, TService>(entity, context, service, exception, swallow),
+		IUpdateFailedEntry<TEntity, TDbContext, TService>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public WrappedUpdateFailedEntry(IUpdateFailedEntry<TEntity, TDbContext> entry) : base(entry) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class WrappedDeleteFailedEntry<TEntity, TDbContext, TService>
-	: WrappedChangeFailedEntry<IDeleteFailedEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>
-	, IDeleteFailedEntry<TEntity, TDbContext, TService>
+internal class DeleteFailedEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service,
+	Exception exception,
+	Boolean swallow)
+	: ChangeFailedEntry<TEntity, TDbContext, TService>(entity, context, service, exception, swallow),
+		IDeleteFailedEntry<TEntity, TDbContext, TService>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public WrappedDeleteFailedEntry(IDeleteFailedEntry<TEntity, TDbContext> entry) : base(entry) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class WrappedInsertedEntry<TEntity, TDbContext, TService>
-	: WrappedEntry<IInsertedEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>
-	, IInsertedEntry<TEntity, TDbContext, TService>
+internal class InsertedEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service)
+	: Entry<TEntity, TDbContext, TService>(entity, context,
+		service), IInsertedEntry<TEntity, TDbContext, TService>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public WrappedInsertedEntry(IInsertedEntry<TEntity, TDbContext> entry) : base(entry) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class WrappedUpdatedEntry<TEntity, TDbContext, TService>
-	: WrappedEntry<IUpdatedEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>
-	, IUpdatedEntry<TEntity, TDbContext, TService>
+internal class UpdatedEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service)
+	: Entry<TEntity, TDbContext, TService>(entity, context,
+		service), IUpdatedEntry<TEntity, TDbContext, TService>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public WrappedUpdatedEntry(IUpdatedEntry<TEntity, TDbContext> entry) : base(entry) {}
-	}
+	where TDbContext : DbContext;
 
-	internal class WrappedDeletedEntry<TEntity, TDbContext, TService>
-	: WrappedEntry<IDeletedEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>
-	, IDeletedEntry<TEntity, TDbContext, TService>
+internal class DeletedEntry<TEntity, TDbContext, TService>(
+	TEntity entity,
+	TDbContext context,
+	IServiceProvider service)
+	: Entry<TEntity, TDbContext, TService>(entity, context,
+		service), IDeletedEntry<TEntity, TDbContext, TService>
 	where TEntity : class
-	where TDbContext : DbContext
-	{
-		public WrappedDeletedEntry(IDeletedEntry<TEntity, TDbContext> entry) : base(entry) {}
-	}
-	#endregion
-	#endregion
+	where TDbContext : DbContext;
 
-}
+#endregion
+
+#region Wrapped with generic service
+
+internal class WrappedInsertingEntry<TEntity, TDbContext, TService>(IInsertingEntry<TEntity, TDbContext> entry)
+	: WrappedBeforeEntry<IInsertingEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>(entry),
+		IInsertingEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext;
+
+internal class WrappedUpdatingEntry<TEntity, TDbContext, TService>(IUpdatingEntry<TEntity, TDbContext> entry)
+	: WrappedBeforeChangeEntry<IUpdatingEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>(entry),
+		IUpdatingEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext;
+
+internal class WrappedDeletingEntry<TEntity, TDbContext, TService>(IDeletingEntry<TEntity, TDbContext> entry)
+	: WrappedBeforeChangeEntry<IDeletingEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>(entry),
+		IDeletingEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext;
+
+internal class
+	WrappedInsertFailedEntry<TEntity, TDbContext, TService>(IInsertFailedEntry<TEntity, TDbContext> entry)
+	: WrappedFailedEntry<IInsertFailedEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>(entry),
+		IInsertFailedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext;
+
+internal class
+	WrappedUpdateFailedEntry<TEntity, TDbContext, TService>(IUpdateFailedEntry<TEntity, TDbContext> entry)
+	: WrappedChangeFailedEntry<IUpdateFailedEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>(entry),
+		IUpdateFailedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext;
+
+internal class
+	WrappedDeleteFailedEntry<TEntity, TDbContext, TService>(IDeleteFailedEntry<TEntity, TDbContext> entry)
+	: WrappedChangeFailedEntry<IDeleteFailedEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>(entry),
+		IDeleteFailedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext;
+
+internal class WrappedInsertedEntry<TEntity, TDbContext, TService>(IInsertedEntry<TEntity, TDbContext> entry)
+	: WrappedEntry<IInsertedEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>(entry),
+		IInsertedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext;
+
+internal class WrappedUpdatedEntry<TEntity, TDbContext, TService>(IUpdatedEntry<TEntity, TDbContext> entry)
+	: WrappedEntry<IUpdatedEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>(entry),
+		IUpdatedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext;
+
+internal class WrappedDeletedEntry<TEntity, TDbContext, TService>(IDeletedEntry<TEntity, TDbContext> entry)
+	: WrappedEntry<IDeletedEntry<TEntity, TDbContext>, TEntity, TDbContext, TService>(entry),
+		IDeletedEntry<TEntity, TDbContext, TService>
+	where TEntity : class
+	where TDbContext : DbContext;
+
+#endregion
+
+#endregion
