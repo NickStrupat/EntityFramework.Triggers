@@ -46,8 +46,8 @@ namespace EntityFramework.Triggers
 		public static event Action<IUpdatedEntry     <Object, DbContext>> Updated      { add => Triggers<Object>.Updated      += value; remove => Triggers<Object>.Updated      -= value; }
 
 		public override Int32 GetHashCode() => TriggersEqualityComparer<ITriggers>.Instance.GetHashCode(triggers);
-		public override Boolean Equals(Object obj) => obj is ITriggers other && Equals(other);
+		public override Boolean Equals(Object? obj) => obj is ITriggers other && Equals(other);
 
-		public Boolean Equals(ITriggers other) => other is Triggers te ? ReferenceEquals(triggers, te.triggers) : TriggersEqualityComparer<ITriggers>.Instance.Equals(this, other);
+		public Boolean Equals(ITriggers? other) => other is Triggers te ? ReferenceEquals(triggers, te.triggers) : TriggersEqualityComparer<ITriggers>.Instance.Equals(this, other);
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -17,9 +18,9 @@ namespace EntityFramework.Triggers
 		private static readonly Func<IServiceProvider, TService> func =
 			typeof(TService).IsGenericType && IsAValueTupleType(typeof(TService), out var valueTupleFactory)
 				? valueTupleFactory
-				: ServiceProviderServiceExtensions.GetRequiredService<TService>;
+				: sp => (TService)sp.GetRequiredService(typeof(TService));
 
-		private static Boolean IsAValueTupleType(Type type, out Func<IServiceProvider, TService> valueTupleFactory)
+		private static Boolean IsAValueTupleType(Type type, [NotNullWhen(true)] out Func<IServiceProvider, TService>? valueTupleFactory)
 		{
 			var genericTypeDefinition = type.GetGenericTypeDefinition();
 			if (ServiceRetrieval.ValueTupleTypes.Contains(genericTypeDefinition))

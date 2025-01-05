@@ -59,7 +59,7 @@ namespace EntityFramework.Triggers
 			}
 
 			public Boolean Equals(WrappedHandler other) => ReferenceEquals(source, other.source) || source == other.source;
-			public override Boolean Equals(Object o) => o is WrappedHandler wrappedHandler && Equals(wrappedHandler);
+			public override Boolean Equals(Object? o) => o is WrappedHandler wrappedHandler && Equals(wrappedHandler);
 			public override Int32 GetHashCode() => source.GetHashCode() ^ wrapper.GetHashCode();
 			public void Invoke(TEntry entry) => wrapper.Invoke(entry);
 			public Task InvokeAsync(TEntry entry) => wrapper.InvokeAsync(entry);
@@ -93,8 +93,8 @@ namespace EntityFramework.Triggers
 		private static ImmutableArray<WrappedHandler> ImmutableInterlockedRead(ref ImmutableArray<WrappedHandler> array) =>
 			ImmutableInterlocked.InterlockedCompareExchange(ref array, ImmutableArray<WrappedHandler>.Empty, ImmutableArray<WrappedHandler>.Empty);
 
-		public override Boolean Equals(Object obj) => obj is TriggerEvent<TEntry, TEntity, TDbContext> triggerEvent && Equals(triggerEvent);
-		public Boolean Equals(TriggerEvent<TEntry, TEntity, TDbContext> other) => other != null && ImmutableInterlockedRead(ref wrappedHandlers).Equals(ImmutableInterlockedRead(ref other.wrappedHandlers));
+		public override Boolean Equals(Object? obj) => obj is TriggerEvent<TEntry, TEntity, TDbContext> triggerEvent && Equals(triggerEvent);
+		public Boolean Equals(TriggerEvent<TEntry, TEntity, TDbContext>? other) => other != null && ImmutableInterlockedRead(ref wrappedHandlers).Equals(ImmutableInterlockedRead(ref other.wrappedHandlers));
 		public override Int32 GetHashCode() => ImmutableInterlockedRead(ref wrappedHandlers).GetHashCode();
 
 		public void Add(Action<TEntry> handler)

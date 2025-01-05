@@ -12,7 +12,7 @@ namespace EntityFramework.Triggers
 	{
 		public static readonly TriggersEqualityComparer<TTriggers> Instance = new TriggersEqualityComparer<TTriggers>();
 
-		public Boolean Equals(TTriggers x, TTriggers y)
+		public Boolean Equals(TTriggers? x, TTriggers? y)
 		{
 			if (ReferenceEquals(x, y))
 				return true;

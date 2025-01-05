@@ -17,7 +17,7 @@ namespace EntityFramework.Triggers
 		private static ITriggerInvokerAsync ValueFactory(Type type)
 		{
 			var triggerInvokerType = typeof(TriggerInvoker<>).MakeGenericType(type);
-			return (ITriggerInvokerAsync)Activator.CreateInstance(triggerInvokerType);
+			return (ITriggerInvokerAsync)Activator.CreateInstance(triggerInvokerType)!;
 		}
 
 		private static readonly ConcurrentDictionary<Type, ITriggerInvokerAsync> cache = new ConcurrentDictionary<Type, ITriggerInvokerAsync>();

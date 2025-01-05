@@ -75,8 +75,8 @@ namespace EntityFramework.Triggers
 		public static event Action<IUpdatedEntry     <TEntity, TDbContext>> Updated      { add => GlobalUpdated     .Add(value); remove => GlobalUpdated     .Remove(value); }
 
 		public override Int32 GetHashCode() => TriggersEqualityComparer<ITriggers<TEntity, TDbContext>>.Instance.GetHashCode(this);
-		public override Boolean Equals(Object obj) => obj is ITriggers<TEntity, TDbContext> other && Equals(other);
+		public override Boolean Equals(Object? obj) => obj is ITriggers<TEntity, TDbContext> other && Equals(other);
 
-		public Boolean Equals(ITriggers<TEntity, TDbContext> other) => other is Triggers<TEntity, TDbContext> ted ? ReferenceEquals(this, ted) : TriggersEqualityComparer<ITriggers<TEntity, TDbContext>>.Instance.Equals(this, other);
+		public Boolean Equals(ITriggers<TEntity, TDbContext>? other) => other is Triggers<TEntity, TDbContext> ted ? ReferenceEquals(this, ted) : TriggersEqualityComparer<ITriggers<TEntity, TDbContext>>.Instance.Equals(this, other);
 	}
 }

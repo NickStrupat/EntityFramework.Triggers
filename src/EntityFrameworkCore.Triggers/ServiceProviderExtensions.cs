@@ -14,8 +14,7 @@ namespace EntityFramework.Triggers
 				throw new ArgumentNullException(nameof(services));
 			if (configureTriggers == null)
 				throw new ArgumentNullException(nameof(configureTriggers));
-			var triggersBuilder = TriggersBuilderFactory.Create(services);
-			configureTriggers.Invoke(triggersBuilder);
+			configureTriggers.Invoke(new TriggersBuilder(services));
 			return services;
 		}
 	}

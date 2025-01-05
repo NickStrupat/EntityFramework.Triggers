@@ -59,14 +59,14 @@ namespace EntityFramework.Triggers
 
 				var globalTriggerEventGetter =
 					triggersType
-						.GetProperty(globalTriggersEventName)
-						.GetGetMethod()
+						.GetProperty(globalTriggersEventName)!
+						.GetGetMethod()!
 						.CreateDelegate<Func<ITriggerEvent>>();
 
 				var instanceTriggerEventGetter =
 					typeof(ITriggers)
-						.GetProperty(triggersEventName)
-						.GetGetMethod()
+						.GetProperty(triggersEventName)!
+						.GetGetMethod()!
 						.CreateDelegate<Func<ITriggers, ITriggerEvent>>();
 
 
@@ -110,18 +110,17 @@ namespace EntityFramework.Triggers
 			}
 		}
 
-		private static List<Type> GetInheritanceChain<T>(Boolean includeInterfaces = true, Type terminator = null) where T : class
+		private static List<Type> GetInheritanceChain<T>(Boolean includeInterfaces = true, Type? terminator = null) where T : class
 		{
-			if (terminator == null)
-				terminator = typeof(Object);
+			terminator ??= typeof(Object);
 			var types = new List<Type>();
-			for (var type = typeof(T);; type = type.BaseType)
+			for (var type = typeof(T);; type = type!.BaseType)
 			{
-				types.Add(type);
+				types.Add(type!);
 				if (type == terminator)
 					break;
 				if (includeInterfaces)
-					types.AddRange(type.GetDeclaredInterfaces().Reverse());
+					types.AddRange(type!.GetDeclaredInterfaces().Reverse());
 			}
 			types.Reverse();
 			return types;
