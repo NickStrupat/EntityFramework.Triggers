@@ -34,10 +34,8 @@ namespace EntityFramework.Triggers
 		public Int32 GetHashCode(TElement[] types)
 		{
 			var hashCode = 0x51ed270b;
-			if (types == null)
-				return hashCode;
-			for (var i = 0; i != types.Length; i++)
-				hashCode = hashCode * -1521134295 + elementEqualityComparer.GetHashCode(types[i]);
+			if (types != null)
+				hashCode = hashCode * -1521134295 + types.Length.GetHashCode();
 			return hashCode;
 		}
 	}
